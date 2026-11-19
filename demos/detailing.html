@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GLOSS Lab — детейлинг (демо)</title>
+  <meta name="description" content="Демо-сайт детейлинг-центра от SiteCode: пакеты услуг, сравнение до и после, запись на удобный день.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400;0,500;0,600;0,700;1,800&family=Russo+One&display=swap">
+  <link rel="stylesheet" href="assets/demo.css">
+  <style>
+    :root {
+      --bg: #09090A; --fg: #F2F2F3; --muted: #8C8C95; --accent: #FF4D1A; --accent-fg: #FFF; --card: #131315; --line: rgba(255, 255, 255, .09);
+      --font-head: "Russo One", "Arial Black", sans-serif; --font-body: "Exo 2", system-ui, sans-serif;
+      --sheet-bg: #131315; --sheet-fg: #F2F2F3; --radius: 18px; --btn-radius: 12px; --sheet-title: 400 26px/1.1 "Russo One", sans-serif;
+      --pad: clamp(18px, 4.5vw, 72px);
+    }
+    .btn { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; padding: 0 30px; border: 0; border-radius: 12px; background: var(--accent); color: #fff; font: 700 15px/1 var(--font-body); letter-spacing: .08em; text-transform: uppercase; text-decoration: none; cursor: pointer; overflow: hidden; transition: transform .3s, box-shadow .3s; box-shadow: 0 0 0 0 rgba(255, 77, 26, .5); }
+    .btn::after { content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .45), transparent); transform: skewX(-20deg); transition: left .7s; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -6px rgba(255, 77, 26, .6); }
+    .btn:hover::after { left: 120%; }
+    .btn.ghost { background: transparent; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .3); }
+    .h2 { font: 400 clamp(36px, 5vw, 80px)/1 var(--font-head); text-transform: uppercase; letter-spacing: -.01em; }
+    .tag { display: inline-block; margin-bottom: 18px; font: 600 13px/1 var(--font-body); letter-spacing: .3em; text-transform: uppercase; color: var(--accent); }
+
+    .hdr { position: fixed; inset: 0 0 auto; z-index: 50; display: flex; align-items: center; gap: 30px; height: 78px; padding: 0 var(--pad); transition: background-color .4s, height .4s; }
+    .hdr.scrolled { height: 64px; background: rgba(9, 9, 10, .85); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+    .logo { font: 400 24px/1 var(--font-head); text-decoration: none; letter-spacing: .04em; }
+    .logo span { color: var(--accent); }
+    .nav { display: flex; gap: 30px; margin-left: auto; font-weight: 600; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; }
+    .nav a { text-decoration: none; opacity: .8; }
+    .nav a:hover { opacity: 1; color: var(--accent); }
+    .hdr .btn { min-height: 44px; padding: 0 20px; font-size: 13px; }
+
+    /* первый экран */
+    .hero { position: relative; display: flex; flex-direction: column; justify-content: center; min-height: 100vh; min-height: 100svh; padding: 120px var(--pad) 80px; overflow: hidden; isolation: isolate; }
+    .hero-bg { position: absolute; inset: 0; z-index: -2; }
+    .hero-bg img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; transform: scale(1.08); }
+    .hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(ellipse at 70% 60%, rgba(9, 9, 10, 0) 0%, rgba(9, 9, 10, .55) 55%, rgba(9, 9, 10, .95) 100%), linear-gradient(90deg, rgba(9, 9, 10, .9), rgba(9, 9, 10, 0) 60%); }
+    .hero h1 { max-width: 12ch; font: 400 clamp(46px, 7.6vw, 128px)/.92 var(--font-head); text-transform: uppercase; }
+    .shine { background: linear-gradient(110deg, #9a9aa3 0%, #fff 18%, #9a9aa3 30%, #6d6d75 50%, #fff 64%, #9a9aa3 78%); background-size: 260% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 5s cubic-bezier(.6, 0, .4, 1) infinite; }
+    @keyframes shine { 0% { background-position: 100% 0; } 60%, 100% { background-position: -40% 0; } }
+    .hero p { max-width: 32em; margin: 26px 0 34px; font-size: clamp(17px, 1.4vw, 20px); color: rgba(242, 242, 243, .78); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .speed { position: absolute; right: var(--pad); bottom: 70px; display: grid; gap: 4px; text-align: right; }
+    .speed b { font: 400 clamp(42px, 5vw, 72px)/1 var(--font-head); }
+    .speed > span { color: var(--muted); font-size: 14px; letter-spacing: .14em; text-transform: uppercase; }
+
+    .ticker { width: 104%; margin: -10px 0 0 -2%; padding: 20px 0; background: var(--accent); color: #fff; --gap: 30px; --dur: 22s; transform: rotate(-1.5deg); }
+    .ticker span { font: 400 clamp(24px, 2.6vw, 38px)/1 var(--font-head); text-transform: uppercase; }
+    .ticker i { width: 12px; height: 12px; background: #fff; transform: rotate(45deg); }
+
+    /* пакеты */
+    .packs { padding: 150px var(--pad) 120px; }
+    .packs-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 56px; }
+    .pack { position: relative; display: flex; flex-direction: column; padding: 34px 30px 30px; border-radius: 20px; background: var(--card); overflow: hidden; isolation: isolate; transition: transform .25s ease-out; --gx: 50%; --gy: 0%; }
+    .pack::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(circle at var(--gx) var(--gy), rgba(255, 77, 26, .28), rgba(255, 77, 26, 0) 55%); opacity: 0; transition: opacity .4s; }
+    .pack:hover::before { opacity: 1; }
+    .pack::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--line); }
+    .pack.hot::after { box-shadow: inset 0 0 0 1.5px var(--accent); }
+    .pack .label { position: absolute; right: 22px; top: 22px; padding: 6px 12px; border-radius: 8px; background: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .pack h3 { font: 400 28px/1.05 var(--font-head); text-transform: uppercase; }
+    .pack .time { margin: 8px 0 24px; color: var(--muted); }
+    .pack ul { display: grid; gap: 12px; margin-bottom: 30px; }
+    .pack li { display: flex; gap: 12px; color: rgba(242, 242, 243, .85); }
+    .pack li::before { content: ""; flex: none; width: 8px; height: 8px; margin-top: 9px; background: var(--accent); transform: rotate(45deg); }
+    .pack .price { margin-top: auto; font: 400 clamp(32px, 3vw, 44px)/1 var(--font-head); }
+    .pack .price small { display: block; margin-bottom: 6px; font: 500 14px var(--font-body); color: var(--muted); }
+    .pack .btn { width: 100%; margin-top: 24px; }
+
+    /* до/после */
+    .ba-sec { display: grid; grid-template-columns: 1.3fr .7fr; align-items: center; gap: clamp(30px, 5vw, 80px); padding: 60px var(--pad) 130px; }
+    .ba { aspect-ratio: 16 / 10; border-radius: 22px; --before-filter: grayscale(.9) brightness(.55) contrast(.8) sepia(.35); }
+    .ba .dust { position: absolute; inset: 0; z-index: 1; clip-path: inset(0 calc(100% - var(--pos)) 0 0); pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55  0 0 0 0 .45  0 0 0 0 .32  0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); mix-blend-mode: multiply; opacity: .9; }
+    .ba .ba-line { z-index: 2; }
+    .ba-sec p.text { margin: 22px 0 30px; color: var(--muted); font-size: 18px; }
+    .ba-sec ul { display: grid; gap: 14px; }
+    .ba-sec li { display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+    .ba-sec li b { color: var(--accent); }
+
+    /* процесс */
+    .process { padding: 120px var(--pad); background: var(--card); }
+    .proc { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin-top: 60px; counter-reset: s; }
+    .proc div { position: relative; padding: 30px 26px 10px 0; border-top: 1px solid var(--line); }
+    .proc div::before { counter-increment: s; content: "0" counter(s); display: block; margin-bottom: 18px; font: 400 54px/1 var(--font-head); color: transparent; -webkit-text-stroke: 1px rgba(255, 255, 255, .35); }
+    .proc div::after { content: ""; position: absolute; left: 0; top: -1px; width: 0; height: 2px; background: var(--accent); transition: width 1.2s cubic-bezier(.2, .8, .2, 1); transition-delay: var(--d, 0s); }
+    .proc div.in::after { width: 100%; }
+    .proc h3 { margin-bottom: 8px; font: 400 22px/1.1 var(--font-head); text-transform: uppercase; }
+    .proc p { color: var(--muted); }
+
+    /* галерея */
+    .gallery { padding: 130px var(--pad); }
+    .gal { display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: 160px; gap: 14px; margin-top: 50px; }
+    .gal figure { position: relative; overflow: hidden; border-radius: 18px; }
+    .gal figure:nth-child(1) { grid-column: span 7; grid-row: span 3; }
+    .gal figure:nth-child(2) { grid-column: span 5; grid-row: span 2; }
+    .gal figure:nth-child(3) { grid-column: span 5; grid-row: span 2; }
+    .gal figure:nth-child(4) { grid-column: span 4; grid-row: span 2; }
+    .gal figure:nth-child(5) { grid-column: span 3; grid-row: span 2; }
+    .gal img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(.2, .8, .2, 1), filter .6s; filter: saturate(.85); }
+    .gal figure:hover img { transform: scale(1.07); filter: saturate(1.15); }
+    .gal figcaption { position: absolute; left: 16px; bottom: 14px; padding: 6px 12px; border-radius: 8px; background: rgba(9, 9, 10, .7); font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+
+    /* запись */
+    .cta { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 30px; margin: 0 var(--pad) 130px; padding: clamp(30px, 5vw, 70px); border-radius: 26px; overflow: hidden; background: linear-gradient(120deg, #FF4D1A, #C2290A); }
+    .cta h2 { font: 400 clamp(32px, 4.4vw, 68px)/1 var(--font-head); text-transform: uppercase; }
+    .cta p { margin-top: 14px; font-size: 18px; opacity: .85; }
+    .cta .btn { background: #fff; color: #09090A; }
+    .cta::after { content: "GLOSS"; position: absolute; right: -2%; bottom: -18%; font: 400 22vw/1 var(--font-head); color: rgba(255, 255, 255, .08); pointer-events: none; }
+
+    footer { display: flex; justify-content: space-between; gap: 16px; padding: 28px var(--pad) 100px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+
+    @media (max-width: 1000px) {
+      .nav { display: none; }
+      .hdr .btn { margin-left: auto; }
+      .speed { display: none; }
+      .packs-grid { grid-template-columns: 1fr; }
+      .ba-sec { grid-template-columns: 1fr; }
+      .proc { grid-template-columns: 1fr 1fr; gap: 20px; }
+      .gal { grid-auto-rows: 120px; }
+      .gal figure:nth-child(n) { grid-column: span 6; grid-row: span 2; }
+      .gal figure:nth-child(1) { grid-column: span 12; }
+      .cta { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .proc { grid-template-columns: 1fr; }
+      .gal figure:nth-child(n) { grid-column: span 12; }
+      footer { flex-direction: column; }
+    }
+  </style>
+</head>
+<body data-brand="GLOSS Lab">
+
+<header class="hdr" data-header>
+  <a class="logo" href="#top">GLOSS<span>.</span>LAB</a>
+  <nav class="nav" aria-label="Меню">
+    <a href="#packs">Услуги</a>
+    <a href="#result">Результат</a>
+    <a href="#gallery">Работы</a>
+  </nav>
+  <button class="btn" type="button" data-open="book">Записаться</button>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="hero-bg"><img data-speed=".12" src="https://images.unsplash.com/photo-1567808291548-fc3ee04dbcf0?auto=format&fit=crop&w=2000&q=80" alt="Чёрный автомобиль в боксе"></div>
+    <p class="tag" data-r data-now>Детейлинг-центр · Алматы</p>
+    <h1 class="lines" data-now><span class="ln"><span class="shine">Блеск, который</span></span><span class="ln"><span class="shine">видно</span></span><span class="ln"><span class="shine">с парковки</span></span></h1>
+    <p data-r data-now style="--d:.5s">Мойка, полировка, керамика и химчистка салона. Отдаёте машину утром — забираете как из салона вечером.</p>
+    <div class="hero-actions" data-r data-now style="--d:.65s">
+      <button class="btn" type="button" data-open="book">Записаться на бокс</button>
+      <a class="btn ghost" href="#packs">Пакеты и цены</a>
+    </div>
+    <div class="speed" data-r="fade" data-now style="--d:.9s"><b><span data-count="2400">0</span>+</b><span>машин отполировали</span></div>
+  </section>
+
+  <div class="ticker d-marquee" aria-hidden="true">
+    <div class="d-marquee-track">
+      <span>Полировка</span><i></i><span>Керамика</span><i></i><span>Химчистка салона</span><i></i><span>Антидождь</span><i></i><span>Бронеплёнка</span><i></i>
+      <span>Полировка</span><i></i><span>Керамика</span><i></i><span>Химчистка салона</span><i></i><span>Антидождь</span><i></i><span>Бронеплёнка</span><i></i>
+    </div>
+  </div>
+
+  <section class="packs" id="packs">
+    <p class="tag" data-r>Пакеты</p>
+    <h2 class="h2 lines"><span class="ln"><span>Выберите уровень</span></span><span class="ln"><span>блеска</span></span></h2>
+    <div class="packs-grid">
+      <article class="pack" data-tilt data-r>
+        <h3>Экспресс</h3><p class="time">1 час · пока пьёте кофе</p>
+        <ul><li>Бесконтактная мойка кузова</li><li>Сушка и чернение шин</li><li>Пылесос салона</li><li>Стёкла изнутри и снаружи</li></ul>
+        <p class="price"><small>седан</small>6 000 ₸</p>
+        <button class="btn ghost" type="button" data-open="book" data-preset='{"pack":"Экспресс"}'>Выбрать</button>
+      </article>
+      <article class="pack hot" data-tilt data-r style="--d:.1s">
+        <span class="label">Хит</span>
+        <h3>Полировка</h3><p class="time">1 день</p>
+        <ul><li>Глубокая мойка и очистка битума</li><li>Двухэтапная полировка кузова</li><li>Убираем до 90% царапин</li><li>Защитный воск на 3 месяца</li></ul>
+        <p class="price"><small>седан</small>60 000 ₸</p>
+        <button class="btn" type="button" data-open="book" data-preset='{"pack":"Полировка"}'>Выбрать</button>
+      </article>
+      <article class="pack" data-tilt data-r style="--d:.2s">
+        <h3>Керамика</h3><p class="time">2 дня</p>
+        <ul><li>Всё из пакета «Полировка»</li><li>Керамическое покрытие 9H</li><li>Защита до 3 лет</li><li>Грязь смывается водой</li></ul>
+        <p class="price"><small>седан</small>150 000 ₸</p>
+        <button class="btn ghost" type="button" data-open="book" data-preset='{"pack":"Керамика"}'>Выбрать</button>
+      </article>
+    </div>
+  </section>
+
+  <section class="ba-sec" id="result">
+    <div class="ba" data-r="scale">
+      <img class="ba-before" src="https://images.unsplash.com/photo-1554294314-80a5fb7e6bd5?auto=format&fit=crop&w=1600&q=80" alt="Автомобиль до детейлинга">
+      <div class="ba-after"><img src="https://images.unsplash.com/photo-1554294314-80a5fb7e6bd5?auto=format&fit=crop&w=1600&q=80" alt="Автомобиль после детейлинга"></div>
+      <span class="dust" aria-hidden="true"></span>
+      <input type="range" min="0" max="100" value="50" aria-label="Сравнить до и после">
+      <span class="ba-line"></span>
+      <span class="ba-tag l" style="z-index:3">До</span><span class="ba-tag r" style="z-index:3">После</span>
+    </div>
+    <div>
+      <p class="tag" data-r>Результат</p>
+      <h2 class="h2 lines"><span class="ln"><span>Потяните</span></span><span class="ln"><span>ползунок</span></span></h2>
+      <p class="text" data-r>Слева — машина, которая приехала после зимы. Справа — она же через день в нашем боксе.</p>
+      <ul data-r>
+        <li><span>Царапины</span><b>−90%</b></li>
+        <li><span>Глубина цвета</span><b>+40%</b></li>
+        <li><span>Защита кузова</span><b>до 3 лет</b></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="process">
+    <p class="tag" data-r>Как работаем</p>
+    <h2 class="h2 lines"><span class="ln"><span>Четыре шага</span></span></h2>
+    <div class="proc">
+      <div data-r><h3>Осмотр</h3><p>Смотрим кузов под лампой и называем точную цену.</p></div>
+      <div data-r style="--d:.15s"><h3>Подготовка</h3><p>Мойка, очистка битума и металлических вкраплений.</p></div>
+      <div data-r style="--d:.3s"><h3>Работа</h3><p>Полировка или керамика в закрытом боксе без пыли.</p></div>
+      <div data-r style="--d:.45s"><h3>Выдача</h3><p>Показываем результат при вас и даём советы по уходу.</p></div>
+    </div>
+  </section>
+
+  <section class="gallery" id="gallery">
+    <p class="tag" data-r>Работы</p>
+    <h2 class="h2 lines"><span class="ln"><span>Из нашего бокса</span></span></h2>
+    <div class="gal">
+      <figure data-r="clip"><img src="https://images.unsplash.com/photo-1780558852670-3f49298ecc1f?auto=format&fit=crop&w=1200&q=80" alt="Полировка капота машинкой" loading="lazy"><figcaption>Полировка</figcaption></figure>
+      <figure data-r="clip" style="--d:.1s"><img src="https://images.unsplash.com/photo-1633014041037-f5446fb4ce99?auto=format&fit=crop&w=900&q=80" alt="Машина в пене" loading="lazy"><figcaption>Мойка</figcaption></figure>
+      <figure data-r="clip" style="--d:.2s"><img src="https://images.unsplash.com/photo-1605437241278-c1806d14a4d9?auto=format&fit=crop&w=900&q=80" alt="Чистый салон автомобиля" loading="lazy"><figcaption>Салон</figcaption></figure>
+      <figure data-r="clip" style="--d:.15s"><img src="https://images.unsplash.com/photo-1708805282683-50a060eba80f?auto=format&fit=crop&w=900&q=80" alt="Чистка дисков щёткой" loading="lazy"><figcaption>Диски</figcaption></figure>
+      <figure data-r="clip" style="--d:.25s"><img src="https://images.unsplash.com/photo-1632823469850-2f77dd9c7f93?auto=format&fit=crop&w=900&q=80" alt="Нанесение воска" loading="lazy"><figcaption>Воск</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="cta" data-r="scale">
+    <div>
+      <h2>Свободный бокс<br>есть завтра</h2>
+      <p>Запишитесь сейчас — подтвердим время в WhatsApp.</p>
+    </div>
+    <button class="btn" type="button" data-open="book">Записаться</button>
+  </section>
+</main>
+
+<footer>
+  <p>© 2026 GLOSS Lab · Алматы, ул. Рыскулова, 180</p>
+  <p>Демо-сайт. Сделано в SiteCode</p>
+</footer>
+
+<div class="d-modal" id="book" role="dialog" aria-modal="true" aria-labelledby="bookTitle">
+  <div class="d-sheet">
+    <button class="d-close" type="button" data-close aria-label="Закрыть">×</button>
+    <h3 id="bookTitle">Запись на бокс</h3>
+    <p>Выберите пакет и день — подтвердим время в WhatsApp.</p>
+    <form class="d-form" data-wa-form="Новая запись на детейлинг" novalidate>
+      <fieldset class="d-field" data-label="Пакет" data-required>
+        <legend>Пакет</legend>
+        <div class="d-chips">
+          <label class="d-chip"><input type="radio" name="pack" value="Экспресс"><span>Экспресс</span></label>
+          <label class="d-chip"><input type="radio" name="pack" value="Полировка"><span>Полировка</span></label>
+          <label class="d-chip"><input type="radio" name="pack" value="Керамика"><span>Керамика</span></label>
+          <label class="d-chip"><input type="radio" name="pack" value="Химчистка салона"><span>Химчистка</span></label>
+        </div>
+        <span class="d-err">Выберите пакет</span>
+      </fieldset>
+      <fieldset class="d-field" data-label="Кузов">
+        <legend>Кузов</legend>
+        <div class="d-chips">
+          <label class="d-chip"><input type="radio" name="body" value="Седан" checked><span>Седан</span></label>
+          <label class="d-chip"><input type="radio" name="body" value="Кроссовер"><span>Кроссовер</span></label>
+          <label class="d-chip"><input type="radio" name="body" value="Внедорожник"><span>Внедорожник</span></label>
+        </div>
+      </fieldset>
+      <fieldset class="d-field" data-label="День">
+        <legend>День</legend>
+        <div class="d-chips" data-days="day" data-n="6"></div>
+      </fieldset>
+      <div class="d-field">
+        <label for="bCar">Марка и модель</label>
+        <input class="d-input" id="bCar" type="text" placeholder="Например, Toyota Camry" data-label="Автомобиль">
+      </div>
+      <div class="d-field">
+        <label for="bName">Имя</label>
+        <input class="d-input" id="bName" type="text" autocomplete="name" placeholder="Как к вам обращаться" data-label="Имя" data-required>
+        <span class="d-err">Напишите имя</span>
+      </div>
+      <div class="d-field">
+        <label for="bPhone">Телефон</label>
+        <input class="d-input" id="bPhone" type="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __" data-label="Телефон" data-required>
+        <span class="d-err">Нужен номер из 10–11 цифр</span>
+      </div>
+      <button class="d-submit" type="submit">Записаться</button>
+    </form>
+  </div>
+</div>
+
+<script src="assets/demo.js"></script>
+</body>
+</html>

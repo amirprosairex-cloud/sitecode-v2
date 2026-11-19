@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DALA coffee — кофейня (демо)</title>
+  <meta name="description" content="Демо-сайт кофейни от SiteCode: меню с ценами и заказ навынос через WhatsApp.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Yeseva+One&display=swap">
+  <link rel="stylesheet" href="assets/demo.css">
+  <style>
+    :root {
+      --bg: #EFE7DA; --fg: #2A1D16; --muted: #7A685B; --accent: #3F5A3C; --accent-fg: #F6F0E6;
+      --saffron: #E2A43A; --roast: #2A1D16; --line: rgba(42, 29, 22, .14); --card: #F7F1E8;
+      --font-head: "Yeseva One", Georgia, serif; --font-body: "Golos Text", system-ui, sans-serif;
+      --sheet-bg: #F7F1E8; --sheet-fg: #2A1D16; --radius: 26px;
+      --pad: clamp(18px, 4.5vw, 70px);
+    }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; padding: 0 28px; border: 0; border-radius: 999px; background: var(--accent); color: var(--accent-fg); font-weight: 600; font-size: 16px; text-decoration: none; cursor: pointer; transition: transform .35s cubic-bezier(.2, .8, .2, 1), background-color .3s; }
+    .btn:hover { transform: translateY(-3px); background: #324A30; }
+    .btn.line { background: transparent; color: var(--fg); box-shadow: inset 0 0 0 1.5px rgba(42, 29, 22, .35); }
+    .btn.line:hover { background: var(--fg); color: var(--bg); }
+    h2.title { font: 400 clamp(38px, 5.4vw, 84px)/1 var(--font-head); letter-spacing: -.01em; }
+    .kicker { margin-bottom: 18px; font-weight: 600; color: var(--accent); }
+
+    .hdr { position: fixed; inset: 0 0 auto; z-index: 50; display: flex; align-items: center; gap: 28px; height: 80px; padding: 0 var(--pad); transition: background-color .4s, box-shadow .4s, height .4s; }
+    .hdr.scrolled { height: 66px; background: rgba(239, 231, 218, .9); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 1px 0 var(--line); }
+    .logo { display: flex; align-items: center; gap: 10px; font: 400 28px/1 var(--font-head); text-decoration: none; }
+    .logo svg { width: 30px; height: 30px; }
+    .nav { display: flex; gap: 30px; margin-left: auto; font-weight: 500; }
+    .nav a { text-decoration: none; }
+    .nav a:hover { color: var(--accent); }
+    .cart-pill { display: inline-flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 18px; border: 0; border-radius: 999px; background: var(--roast); color: var(--bg); font-weight: 600; cursor: pointer; }
+    .cart-pill b { display: grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 12px; background: var(--saffron); color: var(--roast); font-size: 13px; }
+    .cart-pill.bump b { animation: bump .5s cubic-bezier(.2, 1.6, .3, 1); }
+    @keyframes bump { 40% { transform: scale(1.5); } }
+    .burger { display: none; }
+
+    /* первый экран */
+    .hero { display: grid; grid-template-columns: 1.05fr .95fr; align-items: center; gap: 40px; min-height: 100vh; min-height: 100svh; padding: 110px var(--pad) 60px; }
+    .hero h1 { font: 400 clamp(46px, 6.4vw, 104px)/.98 var(--font-head); letter-spacing: -.015em; }
+    .hero-lead { max-width: 30em; margin: 28px 0 36px; font-size: clamp(17px, 1.35vw, 20px); color: var(--muted); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .hero-meta { display: flex; gap: 28px; margin-top: 46px; font-size: 15px; color: var(--muted); }
+    .hero-meta b { display: block; font: 400 28px/1.1 var(--font-head); color: var(--fg); }
+    .cup { position: relative; justify-self: center; width: min(560px, 100%); aspect-ratio: 1; }
+    .cup .photo { position: absolute; inset: 11%; overflow: hidden; border-radius: 50%; box-shadow: 0 50px 90px -40px rgba(42, 29, 22, .6); }
+    .cup .photo img { width: 100%; height: 100%; object-fit: cover; }
+    .ring { position: absolute; inset: 0; animation: turn 26s linear infinite; }
+    .ring text { font: 600 15.5px/1 var(--font-body); letter-spacing: .32em; fill: var(--fg); text-transform: uppercase; }
+    @keyframes turn { to { transform: rotate(360deg); } }
+    .steam { position: absolute; left: 50%; top: -6%; width: 40%; height: 40%; transform: translateX(-50%); pointer-events: none; }
+    .steam i { position: absolute; bottom: 0; width: 14px; height: 90%; border-radius: 50%; background: linear-gradient(to top, rgba(255, 255, 255, .7), rgba(255, 255, 255, 0)); filter: blur(7px); opacity: 0; animation: steam 4.5s ease-in infinite; }
+    .steam i:nth-child(1) { left: 30%; }
+    .steam i:nth-child(2) { left: 50%; animation-delay: 1.4s; }
+    .steam i:nth-child(3) { left: 68%; animation-delay: 2.8s; }
+    @keyframes steam { 0% { transform: translateY(40%) scaleX(.6); opacity: 0; } 30% { opacity: .9; } 100% { transform: translateY(-60%) scaleX(1.6) skewX(10deg); opacity: 0; } }
+    .bean { position: absolute; width: 40px; height: 56px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #6B4430, #2A1D16 70%); box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .1); }
+    .bean::after { content: ""; position: absolute; left: 47%; top: 12%; bottom: 12%; width: 3px; border-radius: 3px; background: rgba(239, 231, 218, .45); transform: rotate(8deg); }
+    .bean.b1 { left: -2%; top: 20%; transform: rotate(-30deg); }
+    .bean.b2 { right: 0; bottom: 14%; width: 30px; height: 42px; transform: rotate(40deg); }
+    .bean.b3 { left: 10%; bottom: 2%; width: 24px; height: 34px; transform: rotate(-10deg); }
+
+    .ticker { padding: 22px 0; background: var(--roast); color: var(--bg); --gap: 34px; --dur: 30s; }
+    .ticker span { font: 400 clamp(26px, 3vw, 44px)/1 var(--font-head); }
+    .ticker i { width: 12px; height: 18px; border-radius: 50%; background: var(--saffron); transform: rotate(20deg); }
+
+    /* меню */
+    .menu { padding: 130px var(--pad) 120px; }
+    .menu-head { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 24px; margin-bottom: 44px; }
+    .tabs { display: inline-flex; gap: 6px; padding: 6px; border-radius: 999px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); }
+    .tabs button { min-height: 46px; padding: 0 22px; border: 0; border-radius: 999px; background: none; font-weight: 600; cursor: pointer; transition: background-color .3s, color .3s; }
+    .tabs button[aria-selected="true"] { background: var(--fg); color: var(--bg); }
+    .items { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; }
+    .item { display: flex; flex-direction: column; overflow: hidden; border-radius: 26px; background: var(--card); box-shadow: 0 1px 0 var(--line); transition: transform .5s cubic-bezier(.2, .8, .2, 1), box-shadow .5s; }
+    .item:hover { transform: translateY(-8px); box-shadow: 0 30px 50px -30px rgba(42, 29, 22, .45); }
+    .item .pic { aspect-ratio: 1; overflow: hidden; }
+    .item .pic img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s cubic-bezier(.2, .8, .2, 1); }
+    .item:hover .pic img { transform: scale(1.08) rotate(1.5deg); }
+    .item .info { display: flex; flex-direction: column; flex: 1; gap: 6px; padding: 20px 20px 22px; }
+    .item h3 { font: 400 26px/1.1 var(--font-head); }
+    .item p { font-size: 14px; color: var(--muted); }
+    .item .buy { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 14px; }
+    .item .price { font-weight: 700; font-size: 18px; }
+    .add { position: relative; display: grid; place-items: center; width: 46px; height: 46px; border: 0; border-radius: 50%; background: var(--accent); color: var(--accent-fg); font-size: 24px; line-height: 1; cursor: pointer; transition: transform .3s, background-color .3s; }
+    .add:hover { transform: rotate(90deg); }
+    .add.done { background: var(--saffron); color: var(--roast); }
+
+    /* заказ */
+    .orderbar { position: fixed; left: 50%; bottom: 18px; z-index: 60; display: flex; align-items: center; gap: 18px; padding: 10px 10px 10px 24px; border-radius: 999px; background: var(--roast); color: var(--bg); box-shadow: 0 24px 50px -20px rgba(42, 29, 22, .7); transform: translate(-50%, 160%); transition: transform .6s cubic-bezier(.2, .8, .2, 1); }
+    .orderbar.show { transform: translate(-50%, 0); }
+    .orderbar .btn { min-height: 48px; background: var(--saffron); color: var(--roast); }
+    .order-list { display: grid; gap: 10px; margin-bottom: 6px; }
+    .order-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+    .qty { display: inline-flex; align-items: center; gap: 4px; }
+    .qty button { width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(42, 29, 22, .08); font-size: 18px; cursor: pointer; }
+    .order-total { display: flex; justify-content: space-between; font-weight: 700; font-size: 18px; }
+
+    /* о нас */
+    .about { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(30px, 6vw, 100px); align-items: center; padding: 120px var(--pad); background: var(--roast); color: var(--bg); }
+    .about .kicker { color: var(--saffron); }
+    .about .pic { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 300px 300px 26px 26px; }
+    .about .pic img { width: 100%; height: 120%; object-fit: cover; }
+    .about p.big { margin: 26px 0 40px; font-size: clamp(18px, 1.5vw, 22px); color: rgba(239, 231, 218, .78); }
+    .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .facts div { padding: 20px; border-radius: 20px; background: rgba(239, 231, 218, .07); }
+    .facts b { display: block; font: 400 34px/1.1 var(--font-head); color: var(--saffron); }
+    .facts > div > span { font-size: 14px; opacity: .75; }
+
+    /* инстаграм */
+    .gram { padding: 120px var(--pad); }
+    .gram-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-top: 40px; }
+    .gram-grid a { position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 18px; }
+    .gram-grid a:nth-child(1), .gram-grid a:nth-child(4) { grid-row: span 2; grid-column: span 2; aspect-ratio: auto; }
+    .gram-grid img { width: 100%; height: 100%; object-fit: cover; transition: transform .9s cubic-bezier(.2, .8, .2, 1), filter .5s; }
+    .gram-grid a:hover img { transform: scale(1.08); filter: saturate(1.2); }
+
+    /* адрес */
+    .visit { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 0 var(--pad) 130px; }
+    .card { padding: 40px; border-radius: 30px; background: var(--card); }
+    .hours { display: grid; gap: 10px; margin-top: 26px; }
+    .hours div { display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px dashed var(--line); }
+    .hours .now { color: var(--accent); font-weight: 700; }
+    .addr { font: 400 clamp(28px, 3vw, 44px)/1.1 var(--font-head); margin: 18px 0 26px; }
+
+    footer { display: flex; justify-content: space-between; gap: 16px; padding: 30px var(--pad) 100px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+
+    @media (max-width: 1000px) {
+      .nav { display: none; }
+      .hero, .about, .visit { grid-template-columns: 1fr; }
+      .hero { padding-top: 100px; }
+      .cup { width: min(440px, 100%); order: -1; }
+      .items { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+      .gram-grid { grid-template-columns: repeat(3, 1fr); }
+      .gram-grid a:nth-child(4) { grid-row: auto; grid-column: auto; aspect-ratio: 1; }
+      .cart-pill { margin-left: auto; }
+    }
+    @media (max-width: 560px) {
+      .item h3 { font-size: 21px; }
+      .item .info { padding: 14px 14px 16px; }
+      .item p { display: none; }
+      .add { width: 40px; height: 40px; }
+      .facts { grid-template-columns: 1fr; }
+      .tabs { width: 100%; }
+      .tabs button { flex: 1; padding: 0 10px; }
+      .orderbar { width: calc(100% - 24px); justify-content: space-between; }
+      .card { padding: 28px; }
+      footer { flex-direction: column; }
+    }
+  </style>
+</head>
+<body data-brand="DALA coffee">
+
+<header class="hdr" data-header>
+  <a class="logo" href="#top">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="16" rx="10" ry="14" fill="#2A1D16" transform="rotate(25 16 16)"/><path d="M12 5c6 6 2 16 8 22" stroke="#E2A43A" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+    DALA
+  </a>
+  <nav class="nav" aria-label="Меню">
+    <a href="#menu">Меню</a>
+    <a href="#about">О нас</a>
+    <a href="#visit">Адрес</a>
+  </nav>
+  <button class="cart-pill" type="button" id="cartPill">Заказ <b id="cartCount">0</b></button>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div>
+      <h1 class="lines" data-now><span class="ln"><span>Кофе, ради</span></span><span class="ln"><span>которого</span></span><span class="ln"><span>сворачивают</span></span><span class="ln"><span>с дороги</span></span></h1>
+      <p class="hero-lead" data-r data-now style="--d:.45s">Обжариваем зерно сами, печём круассаны каждое утро. Закажите на сайте — заберёте горячим, без очереди.</p>
+      <div class="hero-actions" data-r data-now style="--d:.6s">
+        <a class="btn" href="#menu">Заказать навынос</a>
+        <a class="btn line" href="#visit">Как добраться</a>
+      </div>
+      <div class="hero-meta" data-r data-now style="--d:.75s">
+        <p><b>7:30</b>открываемся</p>
+        <p><b>5 мин</b>готовим заказ</p>
+        <p><b>100%</b>арабика</p>
+      </div>
+    </div>
+    <div class="cup" data-r="scale" data-now style="--d:.2s">
+      <svg class="ring" viewBox="0 0 500 500" aria-hidden="true">
+        <defs><path id="circle" d="M250,250 m-226,0 a226,226 0 1,1 452,0 a226,226 0 1,1 -452,0"/></defs>
+        <text><textPath href="#circle">свежая обжарка • заказ навынос • завтраки весь день • свежая обжарка • заказ навынос •</textPath></text>
+      </svg>
+      <div class="photo"><img src="https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=1100&q=80" alt="Бариста рисует латте-арт"></div>
+      <div class="steam" aria-hidden="true"><i></i><i></i><i></i></div>
+      <span class="bean b1" data-speed="-.15" aria-hidden="true"></span>
+      <span class="bean b2" data-speed=".12" aria-hidden="true"></span>
+      <span class="bean b3" data-speed="-.08" aria-hidden="true"></span>
+    </div>
+  </section>
+
+  <div class="ticker d-marquee" aria-hidden="true">
+    <div class="d-marquee-track">
+      <span>эспрессо</span><i></i><span>капучино</span><i></i><span>раф</span><i></i><span>флэт уайт</span><i></i><span>колд брю</span><i></i><span>круассаны</span><i></i>
+      <span>эспрессо</span><i></i><span>капучино</span><i></i><span>раф</span><i></i><span>флэт уайт</span><i></i><span>колд брю</span><i></i><span>круассаны</span><i></i>
+    </div>
+  </div>
+
+  <section class="menu" id="menu" data-tabs>
+    <div class="menu-head">
+      <div>
+        <p class="kicker" data-r>Меню</p>
+        <h2 class="title lines"><span class="ln"><span>Выберите и заберите</span></span></h2>
+      </div>
+      <div class="tabs" role="tablist" data-r>
+        <button type="button" role="tab" data-tab="hot" aria-selected="true">Кофе</button>
+        <button type="button" role="tab" data-tab="cold" aria-selected="false">Холодные</button>
+        <button type="button" role="tab" data-tab="bake" aria-selected="false">Выпечка</button>
+      </div>
+    </div>
+
+    <div class="items" data-panel="hot">
+      <article class="item" data-r style="--d:0s"><div class="pic"><img src="https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&w=600&q=80" alt="Эспрессо в стеклянной чашке" loading="lazy"></div><div class="info"><h3>Эспрессо</h3><p>Двойной шот, наша смесь Бразилия и Эфиопия · 60 мл</p><div class="buy"><span class="price">900 ₸</span><button class="add" type="button" data-add="Эспрессо" data-price="900" aria-label="Добавить эспрессо">+</button></div></div></article>
+      <article class="item" data-r style="--d:.08s"><div class="pic"><img src="https://images.unsplash.com/photo-1512568400610-62da28bc8a13?auto=format&fit=crop&w=600&q=80" alt="Капучино с сердечком" loading="lazy"></div><div class="info"><h3>Капучино</h3><p>Эспрессо и бархатное молоко · 300 мл</p><div class="buy"><span class="price">1 400 ₸</span><button class="add" type="button" data-add="Капучино" data-price="1400" aria-label="Добавить капучино">+</button></div></div></article>
+      <article class="item" data-r style="--d:.16s"><div class="pic"><img src="https://images.unsplash.com/photo-1485808191679-5f86510681a2?auto=format&fit=crop&w=600&q=80" alt="Флэт уайт в чашке" loading="lazy"></div><div class="info"><h3>Флэт уайт</h3><p>Больше кофе, меньше молока · 250 мл</p><div class="buy"><span class="price">1 500 ₸</span><button class="add" type="button" data-add="Флэт уайт" data-price="1500" aria-label="Добавить флэт уайт">+</button></div></div></article>
+      <article class="item" data-r style="--d:.24s"><div class="pic"><img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80" alt="Раф в кружке" loading="lazy"></div><div class="info"><h3>Раф ванильный</h3><p>Сливки, ваниль, эспрессо · 350 мл</p><div class="buy"><span class="price">1 700 ₸</span><button class="add" type="button" data-add="Раф ванильный" data-price="1700" aria-label="Добавить раф">+</button></div></div></article>
+    </div>
+    <div class="items" data-panel="cold" hidden>
+      <article class="item" data-r><div class="pic"><img src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=600&q=80" alt="Айс латте" loading="lazy"></div><div class="info"><h3>Айс латте</h3><p>Эспрессо, молоко, много льда · 400 мл</p><div class="buy"><span class="price">1 600 ₸</span><button class="add" type="button" data-add="Айс латте" data-price="1600" aria-label="Добавить айс латте">+</button></div></div></article>
+      <article class="item" data-r><div class="pic"><img src="https://images.unsplash.com/photo-1559496417-e7f25cb247f3?auto=format&fit=crop&w=600&q=80" alt="Колд брю в стакане" loading="lazy"></div><div class="info"><h3>Колд брю</h3><p>Холодное заваривание 16 часов · 350 мл</p><div class="buy"><span class="price">1 500 ₸</span><button class="add" type="button" data-add="Колд брю" data-price="1500" aria-label="Добавить колд брю">+</button></div></div></article>
+      <article class="item" data-r><div class="pic"><img src="https://images.unsplash.com/photo-1760662018512-e881f06d0fe0?auto=format&fit=crop&w=600&q=80" alt="Холодный кофе с карамелью" loading="lazy"></div><div class="info"><h3>Карамельный фраппе</h3><p>Кофе, карамель, молоко и лёд · 400 мл</p><div class="buy"><span class="price">1 800 ₸</span><button class="add" type="button" data-add="Карамельный фраппе" data-price="1800" aria-label="Добавить фраппе">+</button></div></div></article>
+      <article class="item" data-r><div class="pic"><img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80" alt="Кофе с собой" loading="lazy"></div><div class="info"><h3>Эспрессо-тоник</h3><p>Тоник, лёд и двойной эспрессо · 300 мл</p><div class="buy"><span class="price">1 700 ₸</span><button class="add" type="button" data-add="Эспрессо-тоник" data-price="1700" aria-label="Добавить эспрессо-тоник">+</button></div></div></article>
+    </div>
+    <div class="items" data-panel="bake" hidden>
+      <article class="item" data-r><div class="pic"><img src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80" alt="Круассаны" loading="lazy"></div><div class="info"><h3>Круассан</h3><p>Сливочное масло, 27 слоёв теста</p><div class="buy"><span class="price">900 ₸</span><button class="add" type="button" data-add="Круассан" data-price="900" aria-label="Добавить круассан">+</button></div></div></article>
+      <article class="item" data-r><div class="pic"><img src="https://images.unsplash.com/photo-1623334044303-241021148842?auto=format&fit=crop&w=600&q=80" alt="Круассаны с миндалём" loading="lazy"></div><div class="info"><h3>Миндальный круассан</h3><p>Франжипан и лепестки миндаля</p><div class="buy"><span class="price">1 200 ₸</span><button class="add" type="button" data-add="Миндальный круассан" data-price="1200" aria-label="Добавить миндальный круассан">+</button></div></div></article>
+      <article class="item" data-r><div class="pic"><img src="https://images.unsplash.com/photo-1515823662972-da6a2e4d3002?auto=format&fit=crop&w=600&q=80" alt="Выпечка и кофе" loading="lazy"></div><div class="info"><h3>Булочка с корицей</h3><p>Мягкое тесто, корица, сливочный крем</p><div class="buy"><span class="price">1 100 ₸</span><button class="add" type="button" data-add="Булочка с корицей" data-price="1100" aria-label="Добавить булочку">+</button></div></div></article>
+      <article class="item" data-r><div class="pic"><img src="https://images.unsplash.com/photo-1542372147193-a7aca54189cd?auto=format&fit=crop&w=600&q=80" alt="Завтрак: латте и круассан" loading="lazy"></div><div class="info"><h3>Завтрак «DALA»</h3><p>Любой кофе и круассан со скидкой</p><div class="buy"><span class="price">2 000 ₸</span><button class="add" type="button" data-add="Завтрак DALA" data-price="2000" aria-label="Добавить завтрак">+</button></div></div></article>
+    </div>
+  </section>
+
+  <section class="about" id="about">
+    <div class="pic" data-r="clip"><img data-speed="-.1" src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1000&q=80" alt="Зал кофейни" loading="lazy"></div>
+    <div>
+      <p class="kicker" data-r>О нас</p>
+      <h2 class="title lines"><span class="ln"><span>Маленькая</span></span><span class="ln"><span>кофейня с большой</span></span><span class="ln"><span>кофемашиной</span></span></h2>
+      <p class="big" data-r>DALA значит «степь». Мы хотели место, где просторно и спокойно даже в час пик. Обжариваем зерно раз в неделю, поэтому кофе всегда свежий.</p>
+      <div class="facts">
+        <div data-r><b><span data-count="15">0</span></b><span>мест у окна</span></div>
+        <div data-r style="--d:.1s"><b><span data-count="1">0</span> раз</b><span>в неделю обжарка</span></div>
+        <div data-r style="--d:.2s"><b><span data-count="40">0</span>+</b><span>позиций в меню</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="gram">
+    <p class="kicker" data-r>Instagram</p>
+    <h2 class="title lines"><span class="ln"><span>@dala.coffee</span></span></h2>
+    <div class="gram-grid">
+      <a href="#top" data-r="scale" aria-label="Фото из Instagram"><img src="https://images.unsplash.com/photo-1567880905822-56f8e06fe630?auto=format&fit=crop&w=800&q=80" alt="Стойка кофейни" loading="lazy"></a>
+      <a href="#top" data-r="scale" style="--d:.05s" aria-label="Фото из Instagram"><img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=500&q=80" alt="Кофейные зёрна" loading="lazy"></a>
+      <a href="#top" data-r="scale" style="--d:.1s" aria-label="Фото из Instagram"><img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=500&q=80" alt="Латте и зёрна" loading="lazy"></a>
+      <a href="#top" data-r="scale" style="--d:.15s" aria-label="Фото из Instagram"><img src="https://images.unsplash.com/photo-1511081692775-05d0f180a065?auto=format&fit=crop&w=800&q=80" alt="Зал с лампами" loading="lazy"></a>
+      <a href="#top" data-r="scale" style="--d:.2s" aria-label="Фото из Instagram"><img src="https://images.unsplash.com/photo-1512568400610-62da28bc8a13?auto=format&fit=crop&w=500&q=80" alt="Латте-арт" loading="lazy"></a>
+      <a href="#top" data-r="scale" style="--d:.25s" aria-label="Фото из Instagram"><img src="https://images.unsplash.com/photo-1600093463592-8e36ae95ef56?auto=format&fit=crop&w=500&q=80" alt="Уютный зал с растениями" loading="lazy"></a>
+    </div>
+  </section>
+
+  <section class="visit" id="visit">
+    <div class="card" data-r="left">
+      <p class="kicker">Адрес</p>
+      <p class="addr">Алматы, ул. Кабанбай батыра, 52</p>
+      <p style="color:var(--muted)">Вход со двора, рядом парковка. Есть столики на улице с мая по сентябрь.</p>
+      <p style="margin-top:22px"><a class="btn line" href="#top">Построить маршрут</a></p>
+    </div>
+    <div class="card" data-r="right">
+      <p class="kicker">Время работы</p>
+      <div class="hours" id="hours">
+        <div data-day="1"><span>Понедельник — пятница</span><b>7:30 — 21:00</b></div>
+        <div data-day="6"><span>Суббота</span><b>8:30 — 22:00</b></div>
+        <div data-day="0"><span>Воскресенье</span><b>9:00 — 20:00</b></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>© 2026 DALA coffee</p>
+  <p>Демо-сайт. Сделано в SiteCode</p>
+</footer>
+
+<div class="orderbar" id="orderbar" aria-live="polite">
+  <span id="orderSum">0 ₸</span>
+  <button class="btn" type="button" data-open="order">Оформить заказ</button>
+</div>
+
+<div class="d-modal" id="order" role="dialog" aria-modal="true" aria-labelledby="orderTitle">
+  <div class="d-sheet">
+    <button class="d-close" type="button" data-close aria-label="Закрыть">×</button>
+    <h3 id="orderTitle">Ваш заказ</h3>
+    <p>Приготовим к нужному времени. Оплата при получении.</p>
+    <form class="d-form" data-wa-form="Новый заказ навынос" novalidate>
+      <div class="order-list" id="orderList"></div>
+      <div class="order-total"><span>Итого</span><span id="orderTotal">0 ₸</span></div>
+      <fieldset class="d-field" data-label="Заберу">
+        <legend>Когда заберёте</legend>
+        <div class="d-chips">
+          <label class="d-chip"><input type="radio" name="when" value="через 10 минут" checked><span>Через 10 мин</span></label>
+          <label class="d-chip"><input type="radio" name="when" value="через 20 минут"><span>Через 20 мин</span></label>
+          <label class="d-chip"><input type="radio" name="when" value="через 30 минут"><span>Через 30 мин</span></label>
+        </div>
+      </fieldset>
+      <div class="d-field">
+        <label for="oName">Имя</label>
+        <input class="d-input" id="oName" type="text" autocomplete="name" placeholder="Напишем на стакане" data-label="Имя" data-required>
+        <span class="d-err">Напишите имя</span>
+      </div>
+      <div class="d-field">
+        <label for="oPhone">Телефон</label>
+        <input class="d-input" id="oPhone" type="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __" data-label="Телефон" data-required>
+        <span class="d-err">Нужен номер из 10–11 цифр</span>
+      </div>
+      <button class="d-submit" type="submit">Отправить заказ</button>
+    </form>
+  </div>
+</div>
+
+<script src="assets/demo.js"></script>
+<script>
+  (() => {
+    const { $, $$, money, openModal } = window.Demo;
+    const cart = new Map();
+    const pill = $('#cartPill');
+    const count = $('#cartCount');
+    const bar = $('#orderbar');
+    const sum = $('#orderSum');
+    const total = () => Array.from(cart.values()).reduce((a, it) => a + it.price * it.qty, 0);
+    const qtyAll = () => Array.from(cart.values()).reduce((a, it) => a + it.qty, 0);
+
+    function refresh() {
+      const n = qtyAll();
+      count.textContent = n;
+      sum.textContent = n + ' шт. · ' + money(total());
+      bar.classList.toggle('show', n > 0);
+      pill.classList.remove('bump');
+      void pill.offsetWidth;
+      pill.classList.add('bump');
+      renderList();
+    }
+    function renderList() {
+      const list = $('#orderList');
+      if (!list) return;
+      list.textContent = '';
+      cart.forEach((it, name) => {
+        const row = document.createElement('div');
+        row.className = 'order-row';
+        const t = document.createElement('span');
+        t.textContent = name;
+        const q = document.createElement('span');
+        q.className = 'qty';
+        const minus = document.createElement('button');
+        minus.type = 'button'; minus.textContent = '−'; minus.setAttribute('aria-label', 'Меньше');
+        const num = document.createElement('b');
+        num.textContent = it.qty;
+        const plus = document.createElement('button');
+        plus.type = 'button'; plus.textContent = '+'; plus.setAttribute('aria-label', 'Больше');
+        minus.addEventListener('click', () => { it.qty -= 1; if (it.qty <= 0) cart.delete(name); refresh(); });
+        plus.addEventListener('click', () => { it.qty += 1; refresh(); });
+        q.append(minus, num, plus);
+        const p = document.createElement('span');
+        p.textContent = money(it.price * it.qty);
+        row.append(t, q, p);
+        list.appendChild(row);
+      });
+      const tt = $('#orderTotal');
+      if (tt) tt.textContent = money(total());
+    }
+
+    $$('[data-add]').forEach((b) => b.addEventListener('click', () => {
+      const name = b.dataset.add;
+      const it = cart.get(name) || { price: Number(b.dataset.price), qty: 0 };
+      it.qty += 1;
+      cart.set(name, it);
+      b.classList.add('done');
+      b.textContent = '✓';
+      setTimeout(() => { b.classList.remove('done'); b.textContent = '+'; }, 900);
+      refresh();
+    }));
+    pill.addEventListener('click', () => {
+      if (qtyAll() > 0) openModal('order');
+      else document.getElementById('menu').scrollIntoView({ behavior: 'smooth' });
+    });
+    window.addEventListener('demo:modal', (e) => { if (e.detail.id === 'order') renderList(); });
+    window.DemoExtraRows = () => {
+      const rows = [];
+      cart.forEach((it, name) => rows.push([name + ' × ' + it.qty, money(it.price * it.qty)]));
+      rows.push(['Итого', money(total())]);
+      return rows;
+    };
+    window.addEventListener('demo:sent', () => { cart.clear(); count.textContent = '0'; bar.classList.remove('show'); });
+
+    // подсветка сегодняшнего дня в часах работы
+    const d = new Date().getDay();
+    const key = d === 0 ? '0' : d === 6 ? '6' : '1';
+    const row = document.querySelector('#hours [data-day="' + key + '"]');
+    if (row) { row.classList.add('now'); row.querySelector('span').textContent += ' · сегодня'; }
+  })();
+</script>
+</body>
+</html>

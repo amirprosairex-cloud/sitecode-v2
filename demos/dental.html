@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inzhu Dental — стоматология (демо)</title>
+  <meta name="description" content="Демо-сайт стоматологии от SiteCode: врачи, цены, запись на приём и ответы на вопросы.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="assets/demo.css">
+  <style>
+    :root {
+      --bg: #F4F9F8; --fg: #0B2C31; --muted: #557277; --accent: #0E9E95; --accent-fg: #FFF; --soft: #DFF1EE; --warm: #FFB86B;
+      --card: #FFFFFF; --line: rgba(11, 44, 49, .1);
+      --font-head: "Manrope", system-ui, sans-serif; --font-body: "Golos Text", system-ui, sans-serif;
+      --radius: 26px; --sheet-title: 800 26px/1.15 "Manrope", sans-serif;
+      --pad: clamp(18px, 4.5vw, 72px);
+    }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; padding: 0 28px; border: 0; border-radius: 16px; background: var(--accent); color: #fff; font: 700 16px/1 var(--font-head); text-decoration: none; cursor: pointer; transition: transform .35s cubic-bezier(.2, .8, .2, 1), box-shadow .35s, background-color .3s; box-shadow: 0 14px 30px -14px rgba(14, 158, 149, .8); }
+    .btn:hover { transform: translateY(-3px); background: #0B8A82; }
+    .btn.white { background: #fff; color: var(--fg); box-shadow: 0 0 0 1px var(--line); }
+    .btn.white:hover { box-shadow: 0 0 0 1px var(--fg); }
+    .h2 { font: 800 clamp(34px, 4.4vw, 64px)/1.05 var(--font-head); letter-spacing: -.035em; }
+    .pill { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 18px; padding: 8px 14px; border-radius: 999px; background: var(--soft); color: var(--accent); font: 700 13px/1 var(--font-head); }
+
+    .hdr { position: fixed; inset: 0 0 auto; z-index: 50; display: flex; align-items: center; gap: 26px; height: 80px; padding: 0 var(--pad); transition: background-color .4s, box-shadow .4s, height .4s; }
+    .hdr.scrolled { height: 68px; background: rgba(244, 249, 248, .9); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 1px 0 var(--line); }
+    .logo { display: flex; align-items: center; gap: 10px; font: 800 21px/1 var(--font-head); text-decoration: none; letter-spacing: -.02em; }
+    .logo svg { width: 36px; height: 36px; }
+    .nav { display: flex; gap: 28px; margin-left: auto; font-weight: 500; }
+    .nav a { text-decoration: none; }
+    .nav a:hover { color: var(--accent); }
+    .hdr .tel { font: 700 16px/1 var(--font-head); text-decoration: none; }
+    .hdr .btn { min-height: 46px; padding: 0 20px; font-size: 14px; }
+
+    /* первый экран */
+    .hero { display: grid; grid-template-columns: 1.05fr .95fr; align-items: center; gap: clamp(30px, 5vw, 80px); min-height: 100vh; min-height: 100svh; padding: 120px var(--pad) 80px; }
+    .hero h1 { font: 800 clamp(42px, 5.8vw, 92px)/1 var(--font-head); letter-spacing: -.045em; }
+    .hero h1 em { font-style: normal; color: var(--accent); }
+    .hero-lead { max-width: 30em; margin: 26px 0 34px; font-size: clamp(17px, 1.35vw, 20px); color: var(--muted); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .trust { display: flex; flex-wrap: wrap; gap: 26px; margin-top: 44px; }
+    .trust div { display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--muted); }
+    .trust b { font: 800 32px/1 var(--font-head); color: var(--fg); }
+    .visual { position: relative; }
+    .blob { position: relative; aspect-ratio: 1 / 1.08; overflow: hidden; border-radius: 46% 54% 42% 58% / 52% 44% 56% 48%; animation: morph 14s ease-in-out infinite; background: var(--soft); }
+    .blob img { width: 100%; height: 100%; object-fit: cover; }
+    @keyframes morph { 50% { border-radius: 56% 44% 52% 48% / 44% 56% 44% 56%; } }
+    .float { position: absolute; display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 18px; background: #fff; box-shadow: 0 24px 40px -22px rgba(11, 44, 49, .35); font-size: 14px; animation: bob 6s ease-in-out infinite; }
+    .float b { display: block; font: 800 15px/1.2 var(--font-head); }
+    .float .ico { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--soft); color: var(--accent); font-size: 20px; }
+    .f1 { left: -30px; top: 14%; }
+    .f2 { right: -20px; top: 46%; animation-delay: -2s; }
+    .f3 { left: 6%; bottom: -10px; animation-delay: -4s; }
+    @keyframes bob { 50% { transform: translateY(-10px); } }
+    .sparkle { position: absolute; width: 26px; height: 26px; background: var(--warm); clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); animation: twinkle 2.6s ease-in-out infinite; }
+    .s1 { right: 14%; top: 8%; }
+    .s2 { right: 4%; top: 22%; width: 16px; height: 16px; animation-delay: -1.2s; }
+    @keyframes twinkle { 50% { transform: scale(.4) rotate(45deg); opacity: .4; } }
+
+    /* цифры */
+    .numbers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 0 var(--pad); }
+    .num { padding: 30px 28px; border-radius: 24px; background: #fff; box-shadow: 0 0 0 1px var(--line); }
+    .num b { display: block; font: 800 clamp(36px, 3.6vw, 54px)/1 var(--font-head); letter-spacing: -.04em; color: var(--accent); }
+    .num > span { color: var(--muted); }
+
+    /* услуги */
+    .services { padding: 140px var(--pad) 110px; }
+    .services-head { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 24px; margin-bottom: 40px; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tabs button { min-height: 46px; padding: 0 20px; border: 0; border-radius: 14px; background: #fff; box-shadow: 0 0 0 1px var(--line); font: 700 15px/1 var(--font-head); cursor: pointer; transition: background-color .3s, color .3s, box-shadow .3s; }
+    .tabs button[aria-selected="true"] { background: var(--fg); color: #fff; box-shadow: none; }
+    .table { display: grid; gap: 10px; }
+    .row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 24px; padding: 22px 26px; border-radius: 20px; background: #fff; box-shadow: 0 0 0 1px var(--line); transition: transform .4s cubic-bezier(.2, .8, .2, 1), box-shadow .4s; }
+    .row:hover { transform: translateX(8px); box-shadow: 0 0 0 1.5px var(--accent); }
+    .row h3 { font: 700 19px/1.25 var(--font-head); }
+    .row p { margin-top: 4px; font-size: 14px; color: var(--muted); }
+    .row .price { font: 800 20px/1 var(--font-head); white-space: nowrap; }
+    .row button { min-height: 42px; padding: 0 16px; border: 0; border-radius: 12px; background: var(--soft); color: var(--accent); font: 700 14px/1 var(--font-head); cursor: pointer; transition: background-color .3s, color .3s; }
+    .row button:hover { background: var(--accent); color: #fff; }
+
+    /* врачи */
+    .doctors { padding: 110px var(--pad); background: var(--fg); color: #EAF6F4; }
+    .doctors .pill { background: rgba(255, 255, 255, .08); color: #7FE0D6; }
+    .doc-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-top: 50px; }
+    .doc { overflow: hidden; border-radius: 24px; background: rgba(255, 255, 255, .05); }
+    .doc .ph { position: relative; aspect-ratio: 4 / 4.6; overflow: hidden; }
+    .doc img { width: 100%; height: 100%; object-fit: cover; object-position: top; transition: transform 1.1s cubic-bezier(.2, .8, .2, 1); }
+    .doc:hover img { transform: scale(1.07); }
+    .doc .exp { position: absolute; left: 14px; top: 14px; padding: 8px 12px; border-radius: 12px; background: rgba(11, 44, 49, .7); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); font: 700 13px/1 var(--font-head); color: #fff; }
+    .doc .info { padding: 20px 22px 24px; }
+    .doc h3 { font: 800 20px/1.2 var(--font-head); }
+    .doc p { margin: 4px 0 14px; font-size: 14px; color: rgba(234, 246, 244, .65); }
+    .doc button { padding: 0; border: 0; background: none; color: #7FE0D6; font: 700 14px/1 var(--font-head); cursor: pointer; }
+
+    /* первый визит */
+    .visit { padding: 130px var(--pad); }
+    .steps { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; margin-top: 60px; }
+    .step { position: relative; padding: 30px 26px; border-radius: 24px; background: #fff; box-shadow: 0 0 0 1px var(--line); }
+    .step .n { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: 22px; border-radius: 14px; background: var(--accent); color: #fff; font: 800 20px/1 var(--font-head); }
+    .step h3 { margin-bottom: 8px; font: 800 20px/1.2 var(--font-head); }
+    .step p { color: var(--muted); font-size: 15px; }
+
+    /* клиника */
+    .clinic { display: grid; grid-template-columns: 1.3fr 1fr 1fr; grid-template-rows: 260px 260px; gap: 16px; padding: 0 var(--pad) 120px; }
+    .clinic figure { overflow: hidden; border-radius: 24px; }
+    .clinic figure:first-child { grid-row: span 2; }
+    .clinic img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(.2, .8, .2, 1); }
+    .clinic figure:hover img { transform: scale(1.06); }
+    .clinic .note { display: flex; flex-direction: column; justify-content: end; padding: 30px; border-radius: 24px; background: var(--accent); color: #fff; }
+    .clinic .note b { font: 800 30px/1.1 var(--font-head); }
+
+    /* вопросы + запись */
+    .bottom { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(30px, 5vw, 80px); padding: 0 var(--pad) 130px; }
+    .faq details { border-bottom: 1px solid var(--line); }
+    .faq summary { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 22px 0; font: 700 18px/1.3 var(--font-head); cursor: pointer; list-style: none; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: "+"; display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--soft); color: var(--accent); font-size: 20px; transition: transform .4s; }
+    .faq details[open] summary::after { transform: rotate(45deg); }
+    .faq details p { padding-bottom: 22px; color: var(--muted); }
+    .form-card { padding: clamp(26px, 3vw, 44px); border-radius: 30px; background: #fff; box-shadow: 0 40px 70px -40px rgba(11, 44, 49, .35); }
+    .form-card h2 { margin-bottom: 8px; }
+    .form-card > p { margin-bottom: 24px; color: var(--muted); }
+
+    footer { display: flex; justify-content: space-between; gap: 16px; padding: 28px var(--pad) 100px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+
+    @media (max-width: 1060px) {
+      .nav, .hdr .tel { display: none; }
+      .hdr .btn { margin-left: auto; }
+      .hero, .bottom { grid-template-columns: 1fr; }
+      .visual { max-width: 520px; }
+      .numbers { grid-template-columns: 1fr 1fr; }
+      .doc-grid, .steps { grid-template-columns: 1fr 1fr; }
+      .clinic { grid-template-columns: 1fr 1fr; grid-template-rows: 220px 220px 220px; }
+      .clinic figure:first-child { grid-column: span 2; grid-row: auto; }
+    }
+    @media (max-width: 600px) {
+      .doc-grid, .steps { grid-template-columns: 1fr; }
+      .row { grid-template-columns: 1fr auto; padding: 18px; }
+      .row button { grid-column: 1 / -1; }
+      .f1 { left: -8px; } .f2 { right: -8px; }
+      .clinic { grid-template-columns: 1fr; grid-template-rows: none; }
+      .clinic figure, .clinic .note { height: 220px; }
+      .clinic figure:first-child { grid-column: auto; }
+      footer { flex-direction: column; }
+    }
+  </style>
+</head>
+<body data-brand="Inzhu Dental">
+
+<header class="hdr" data-header>
+  <a class="logo" href="#top">
+    <svg viewBox="0 0 36 36" aria-hidden="true"><rect width="36" height="36" rx="11" fill="#0E9E95"/><path d="M11 10c3-2 5 0 7 0s4-2 7 0c2 2 1 6 0 9l-1 7c-.5 2-2 2-2.5 0L20 21c-.5-2-3.5-2-4 0l-1.5 5c-.5 2-2 2-2.5 0l-1-7c-1-3-2-7 0-9z" fill="#fff"/></svg>
+    Inzhu Dental
+  </a>
+  <nav class="nav" aria-label="Меню">
+    <a href="#services">Услуги и цены</a>
+    <a href="#doctors">Врачи</a>
+    <a href="#faq">Вопросы</a>
+  </nav>
+  <a class="tel" href="#book">+7 700 000 00 00</a>
+  <a class="btn" href="#book">Записаться</a>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div>
+      <p class="pill" data-r data-now>Стоматология в Алматы</p>
+      <h1 class="lines" data-now><span class="ln"><span>Лечим зубы</span></span><span class="ln"><span><em>без страха</em></span></span><span class="ln"><span>и очередей</span></span></h1>
+      <p class="hero-lead" data-r data-now style="--d:.45s">Современная анестезия, врачи с опытом от 7 лет и приём в удобное время. Запишитесь онлайн — перезвоним за 15 минут.</p>
+      <div class="hero-actions" data-r data-now style="--d:.6s">
+        <a class="btn" href="#book">Записаться на приём</a>
+        <a class="btn white" href="#services">Посмотреть цены</a>
+      </div>
+      <div class="trust" data-r data-now style="--d:.75s">
+        <div><b>0 ₸</b>консультация</div>
+        <div><b>1 день</b>ждать приёма</div>
+      </div>
+    </div>
+    <div class="visual" data-r="scale" data-now style="--d:.2s">
+      <div class="blob"><img src="https://images.unsplash.com/photo-1489278353717-f64c6ee8a4d2?auto=format&fit=crop&w=1000&q=80" alt="Улыбающаяся девушка"></div>
+      <div class="float f1"><span class="ico">✓</span><div><b>Без боли</b>современная анестезия</div></div>
+      <div class="float f2"><span class="ico">%</span><div><b>Рассрочка 0%</b>на 6 месяцев</div></div>
+      <div class="float f3"><span class="ico">★</span><div><b>4,9 из 5</b>отзывы пациентов</div></div>
+      <span class="sparkle s1" aria-hidden="true"></span><span class="sparkle s2" aria-hidden="true"></span>
+    </div>
+  </section>
+
+  <section class="numbers">
+    <div class="num" data-r><b><span data-count="12">0</span> лет</b><span>работаем в Алматы</span></div>
+    <div class="num" data-r style="--d:.08s"><b><span data-count="9">0</span></b><span>врачей в команде</span></div>
+    <div class="num" data-r style="--d:.16s"><b><span data-count="25000">0</span>+</b><span>пациентов</span></div>
+    <div class="num" data-r style="--d:.24s"><b><span data-count="5">0</span> лет</b><span>гарантия на импланты</span></div>
+  </section>
+
+  <section class="services" id="services" data-tabs>
+    <div class="services-head">
+      <div>
+        <p class="pill" data-r>Услуги и цены</p>
+        <h2 class="h2 lines"><span class="ln"><span>Честные цены</span></span><span class="ln"><span>до начала лечения</span></span></h2>
+      </div>
+      <div class="tabs" role="tablist" data-r>
+        <button type="button" role="tab" data-tab="treat" aria-selected="true">Лечение</button>
+        <button type="button" role="tab" data-tab="implant" aria-selected="false">Имплантация</button>
+        <button type="button" role="tab" data-tab="white" aria-selected="false">Отбеливание</button>
+        <button type="button" role="tab" data-tab="kids" aria-selected="false">Детская</button>
+      </div>
+    </div>
+    <div class="table" data-panel="treat">
+      <div class="row" data-r><div><h3>Консультация и план лечения</h3><p>Осмотр, снимок, понятный план и смета</p></div><span class="price">0 ₸</span><button type="button" data-open="bookModal" data-preset='{"service":"Консультация"}'>Записаться</button></div>
+      <div class="row" data-r><div><h3>Лечение кариеса</h3><p>Анестезия, светоотверждаемая пломба</p></div><span class="price">от 15 000 ₸</span><button type="button" data-open="bookModal" data-preset='{"service":"Лечение кариеса"}'>Записаться</button></div>
+      <div class="row" data-r><div><h3>Лечение каналов</h3><p>Под микроскопом, 1–2 визита</p></div><span class="price">от 35 000 ₸</span><button type="button" data-open="bookModal" data-preset='{"service":"Лечение каналов"}'>Записаться</button></div>
+      <div class="row" data-r><div><h3>Профессиональная чистка</h3><p>Ультразвук, Air Flow, полировка</p></div><span class="price">18 000 ₸</span><button type="button" data-open="bookModal" data-preset='{"service":"Чистка"}'>Записаться</button></div>
+    </div>
+    <div class="table" data-panel="implant" hidden>
+      <div class="row" data-r><div><h3>Имплант под ключ</h3><p>Имплант, абатмент и коронка</p></div><span class="price">от 280 000 ₸</span><button type="button" data-open="bookModal" data-preset='{"service":"Имплантация"}'>Записаться</button></div>
+      <div class="row" data-r><div><h3>Удаление зуба</h3><p>Простое или сложное, с анестезией</p></div><span class="price">от 12 000 ₸</span><button type="button" data-open="bookModal" data-preset='{"service":"Удаление"}'>Записаться</button></div>
+      <div class="row" data-r><div><h3>Коронка из циркония</h3><p>Изготовление за 5 дней</p></div><span class="price">от 95 000 ₸</span><button type="button" data-open="bookModal" data-preset='{"service":"Коронка"}'>Записаться</button></div>
+    </div>
+    <div class="table" data-panel="white" hidden>
+      <div class="row" data-r><div><h3>Отбеливание ZOOM</h3><p>До 8 тонов за один визит</p></div><span class="price">85 000 ₸</span><button type="button" data-open="bookModal" data-preset='{"service":"Отбеливание"}'>Записаться</button></div>
+      <div class="row" data-r><div><h3>Домашнее отбеливание</h3><p>Капы и гель на 2 недели</p></div><span class="price">45 000 ₸</span><button type="button" data-open="bookModal" data-preset='{"service":"Отбеливание"}'>Записаться</button></div>
+    </div>
+    <div class="table" data-panel="kids" hidden>
+      <div class="row" data-r><div><h3>Первый визит ребёнка</h3><p>Знакомство с врачом в игровой форме</p></div><span class="price">0 ₸</span><button type="button" data-open="bookModal" data-preset='{"service":"Детский приём"}'>Записаться</button></div>
+      <div class="row" data-r><div><h3>Лечение молочного зуба</h3><p>Цветная пломба на выбор</p></div><span class="price">от 10 000 ₸</span><button type="button" data-open="bookModal" data-preset='{"service":"Детский приём"}'>Записаться</button></div>
+    </div>
+  </section>
+
+  <section class="doctors" id="doctors">
+    <p class="pill" data-r>Врачи</p>
+    <h2 class="h2 lines"><span class="ln"><span>Врачи, к которым</span></span><span class="ln"><span>возвращаются семьями</span></span></h2>
+    <div class="doc-grid">
+      <article class="doc" data-r><div class="ph"><img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=700&q=80" alt="Врач Ерлан Сапаров" loading="lazy"><span class="exp">14 лет опыта</span></div><div class="info"><h3>Ерлан Сапаров</h3><p>Главный врач, имплантолог</p><button type="button" data-open="bookModal" data-preset='{"doctor":"Ерлан Сапаров"}'>Записаться →</button></div></article>
+      <article class="doc" data-r style="--d:.08s"><div class="ph"><img src="https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=700&q=80" alt="Врач Алия Нурланова" loading="lazy"><span class="exp">9 лет опыта</span></div><div class="info"><h3>Алия Нурланова</h3><p>Терапевт, эндодонтист</p><button type="button" data-open="bookModal" data-preset='{"doctor":"Алия Нурланова"}'>Записаться →</button></div></article>
+      <article class="doc" data-r style="--d:.16s"><div class="ph"><img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=700&q=80" alt="Врач Дамир Касымов" loading="lazy"><span class="exp">7 лет опыта</span></div><div class="info"><h3>Дамир Касымов</h3><p>Ортопед</p><button type="button" data-open="bookModal" data-preset='{"doctor":"Дамир Касымов"}'>Записаться →</button></div></article>
+      <article class="doc" data-r style="--d:.24s"><div class="ph"><img src="https://images.unsplash.com/photo-1659353888906-adb3e0041693?auto=format&fit=crop&w=700&q=80" alt="Врач Мадина Ахметова" loading="lazy"><span class="exp">10 лет опыта</span></div><div class="info"><h3>Мадина Ахметова</h3><p>Детский стоматолог</p><button type="button" data-open="bookModal" data-preset='{"doctor":"Мадина Ахметова"}'>Записаться →</button></div></article>
+    </div>
+  </section>
+
+  <section class="visit">
+    <p class="pill" data-r>Первый визит</p>
+    <h2 class="h2 lines"><span class="ln"><span>Как проходит</span></span><span class="ln"><span>первый приём</span></span></h2>
+    <div class="steps">
+      <div class="step" data-r><span class="n">1</span><h3>Знакомимся</h3><p>Врач расспросит о жалобах и ответит на вопросы. Никакой спешки.</p></div>
+      <div class="step" data-r style="--d:.1s"><span class="n">2</span><h3>Осматриваем</h3><p>Делаем снимок на месте и показываем его на экране.</p></div>
+      <div class="step" data-r style="--d:.2s"><span class="n">3</span><h3>Составляем план</h3><p>Несколько вариантов лечения с ценами. Выбираете вы.</p></div>
+      <div class="step" data-r style="--d:.3s"><span class="n">4</span><h3>Лечим</h3><p>Можно начать в тот же день, если удобно.</p></div>
+    </div>
+  </section>
+
+  <section class="clinic">
+    <figure data-r="clip"><img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1000&q=80" alt="Кабинет клиники" loading="lazy"></figure>
+    <figure data-r="clip" style="--d:.1s"><img src="https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=700&q=80" alt="Стоматологическое кресло" loading="lazy"></figure>
+    <div class="note" data-r style="--d:.2s"><b>Стерильно,<br>как в операционной</b><span>Инструменты в индивидуальных пакетах</span></div>
+    <figure data-r="clip" style="--d:.15s"><img src="https://images.unsplash.com/photo-1606811971618-4486d14f3f99?auto=format&fit=crop&w=700&q=80" alt="Осмотр у стоматолога" loading="lazy"></figure>
+    <figure data-r="clip" style="--d:.25s"><img src="https://images.unsplash.com/photo-1762625570087-6d98fca29531?auto=format&fit=crop&w=700&q=80" alt="Зона ожидания" loading="lazy"></figure>
+  </section>
+
+  <section class="bottom">
+    <div class="faq" id="faq">
+      <p class="pill" data-r>Вопросы</p>
+      <h2 class="h2 lines" style="margin-bottom:24px"><span class="ln"><span>Отвечаем честно</span></span></h2>
+      <details data-r><summary>Будет больно?</summary><p>Нет. Используем современную анестезию и ждём, пока она подействует. Если станет некомфортно — поднимите руку, врач остановится.</p></details>
+      <details data-r><summary>Можно ли платить частями?</summary><p>Да, есть рассрочка без переплаты на 6 месяцев для лечения от 100 000 ₸.</p></details>
+      <details data-r><summary>Сколько ждать приёма?</summary><p>Обычно запись есть на завтра. При острой боли примем в день обращения.</p></details>
+      <details data-r><summary>Есть ли гарантия?</summary><p>Да: на пломбы — 2 года, на коронки — 3 года, на импланты — 5 лет.</p></details>
+    </div>
+    <div class="form-card" id="book" data-r="right">
+      <h2 class="h2" style="font-size:clamp(28px,2.8vw,40px)">Запись на приём</h2>
+      <p>Оставьте номер — администратор подтвердит время в WhatsApp.</p>
+      <form class="d-form" data-wa-form="Запись на приём с сайта" novalidate>
+        <fieldset class="d-field" data-label="Услуга">
+          <legend>Что беспокоит</legend>
+          <div class="d-chips">
+            <label class="d-chip"><input type="radio" name="service2" value="Консультация" checked><span>Консультация</span></label>
+            <label class="d-chip"><input type="radio" name="service2" value="Болит зуб"><span>Болит зуб</span></label>
+            <label class="d-chip"><input type="radio" name="service2" value="Чистка"><span>Чистка</span></label>
+            <label class="d-chip"><input type="radio" name="service2" value="Имплантация"><span>Имплантация</span></label>
+            <label class="d-chip"><input type="radio" name="service2" value="Отбеливание"><span>Отбеливание</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="d-field" data-label="День">
+          <legend>Когда удобно</legend>
+          <div class="d-chips" data-days="day2" data-n="5"></div>
+        </fieldset>
+        <div class="d-field">
+          <label for="fName">Имя</label>
+          <input class="d-input" id="fName" type="text" autocomplete="name" placeholder="Как к вам обращаться" data-label="Имя" data-required>
+          <span class="d-err">Напишите имя</span>
+        </div>
+        <div class="d-field">
+          <label for="fPhone">Телефон</label>
+          <input class="d-input" id="fPhone" type="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __" data-label="Телефон" data-required>
+          <span class="d-err">Нужен номер из 10–11 цифр</span>
+        </div>
+        <button class="d-submit" type="submit" style="--btn-radius:16px">Записаться</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>© 2026 Inzhu Dental · Алматы, пр. Абая, 150</p>
+  <p>Демо-сайт. Сделано в SiteCode</p>
+</footer>
+
+<div class="d-modal" id="bookModal" role="dialog" aria-modal="true" aria-labelledby="bmTitle">
+  <div class="d-sheet">
+    <button class="d-close" type="button" data-close aria-label="Закрыть">×</button>
+    <h3 id="bmTitle">Запись на приём</h3>
+    <p>Подтвердим время в WhatsApp в течение 15 минут.</p>
+    <form class="d-form" data-wa-form="Запись на приём с сайта" novalidate>
+      <fieldset class="d-field" data-label="Услуга" data-required>
+        <legend>Услуга</legend>
+        <div class="d-chips">
+          <label class="d-chip"><input type="radio" name="service" value="Консультация"><span>Консультация</span></label>
+          <label class="d-chip"><input type="radio" name="service" value="Лечение кариеса"><span>Кариес</span></label>
+          <label class="d-chip"><input type="radio" name="service" value="Лечение каналов"><span>Каналы</span></label>
+          <label class="d-chip"><input type="radio" name="service" value="Чистка"><span>Чистка</span></label>
+          <label class="d-chip"><input type="radio" name="service" value="Имплантация"><span>Имплантация</span></label>
+          <label class="d-chip"><input type="radio" name="service" value="Удаление"><span>Удаление</span></label>
+          <label class="d-chip"><input type="radio" name="service" value="Коронка"><span>Коронка</span></label>
+          <label class="d-chip"><input type="radio" name="service" value="Отбеливание"><span>Отбеливание</span></label>
+          <label class="d-chip"><input type="radio" name="service" value="Детский приём"><span>Детский приём</span></label>
+        </div>
+        <span class="d-err">Выберите услугу</span>
+      </fieldset>
+      <fieldset class="d-field" data-label="Врач">
+        <legend>Врач</legend>
+        <div class="d-chips">
+          <label class="d-chip"><input type="radio" name="doctor" value="Любой" checked><span>Любой</span></label>
+          <label class="d-chip"><input type="radio" name="doctor" value="Ерлан Сапаров"><span>Ерлан</span></label>
+          <label class="d-chip"><input type="radio" name="doctor" value="Алия Нурланова"><span>Алия</span></label>
+          <label class="d-chip"><input type="radio" name="doctor" value="Дамир Касымов"><span>Дамир</span></label>
+          <label class="d-chip"><input type="radio" name="doctor" value="Мадина Ахметова"><span>Мадина</span></label>
+        </div>
+      </fieldset>
+      <fieldset class="d-field" data-label="День">
+        <legend>День</legend>
+        <div class="d-chips" data-days="day" data-n="6"></div>
+      </fieldset>
+      <div class="d-field">
+        <label for="mName">Имя</label>
+        <input class="d-input" id="mName" type="text" autocomplete="name" placeholder="Как к вам обращаться" data-label="Имя" data-required>
+        <span class="d-err">Напишите имя</span>
+      </div>
+      <div class="d-field">
+        <label for="mPhone">Телефон</label>
+        <input class="d-input" id="mPhone" type="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __" data-label="Телефон" data-required>
+        <span class="d-err">Нужен номер из 10–11 цифр</span>
+      </div>
+      <button class="d-submit" type="submit" style="--btn-radius:16px">Записаться</button>
+    </form>
+  </div>
+</div>
+
+<div class="d-modal" id="demoResult" role="dialog" aria-modal="true" aria-label="Заявка отправлена">
+  <div class="d-sheet"></div>
+</div>
+
+<script src="assets/demo.js"></script>
+</body>
+</html>

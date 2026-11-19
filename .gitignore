@@ -1,0 +1,8 @@
+# локальные настройки и временные файлы
+.claude/
+.playwright-mcp/
+desktop.ini
+Thumbs.db
+
+# личные заметки — не публикуем
+pamyatka-sitecode-instagram.md

@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>SiteCode — сайты для бизнеса в Казахстане</title>
+  <meta name="description" content="Делаем сайты для барбершопов, кофеен, клиник и магазинов. Заявки с сайта сразу приходят в WhatsApp. Лендинг от 15 000 ₸, запуск от 3 дней.">
+  <meta name="theme-color" content="#E7EBF1">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="SiteCode — сайты, которые приносят заявки">
+  <meta property="og:description" content="Сайты для бизнеса в Казахстане: онлайн-запись, прайс и заявки прямо в WhatsApp.">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Sacramento&family=Unbounded:wght@500;700;800&display=swap">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к содержимому</a>
+
+<!-- Интро: надпись пишется от руки, как в дизайн-редакторе -->
+<div class="intro" id="intro" aria-hidden="true">
+  <div class="intro-board">
+    <svg class="intro-sign" viewBox="0 0 640 230">
+      <defs>
+        <clipPath id="signClip"><rect id="signRect" x="0" y="0" width="0" height="230"/></clipPath>
+      </defs>
+      <text class="sign-text" x="320" y="140" text-anchor="middle" clip-path="url(#signClip)">SiteCode</text>
+      <path class="sign-line" d="M112 186 C 230 168, 404 166, 524 178 L 546 172" pathLength="1"/>
+    </svg>
+    <span class="intro-pen"></span>
+  </div>
+  <div class="intro-toolbar">
+    <span class="tool"><svg viewBox="0 0 24 24"><path d="M5 3l14 7.5-6.2 1.6L10 19z" fill="currentColor"/></svg></span>
+    <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v18M16 3v18M3 8h18M3 16h18"/></svg></span>
+    <span class="tool tool-pen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 20l3.6-.9L19 7.7 16.3 5 4.9 16.4z"/><path d="M14.5 6.8l2.7 2.7"/></svg></span>
+    <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5h14M12 5v14"/></svg></span>
+    <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/></svg></span>
+    <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/></svg></span>
+  </div>
+  <svg class="intro-cursor" viewBox="0 0 24 24"><path d="M4 2l16 9-7 2-3 7z" fill="#0F1733" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>
+  <p class="intro-skip">Нажмите, чтобы пропустить</p>
+</div>
+
+<canvas id="cubes" aria-hidden="true"></canvas>
+
+<header class="header" id="header">
+  <a class="logo" href="#top" aria-label="SiteCode, на главную">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#0F1733"/><path d="M25 15c-5 0-7 2.2-7 6.4v4.4c0 2.6-1.4 4.4-4.5 5.2 3.1.8 4.5 2.6 4.5 5.2v4.4c0 4.2 2 6.4 7 6.4M39 15c5 0 7 2.2 7 6.4v4.4c0 2.6 1.4 4.4 4.5 5.2-3.1.8-4.5 2.6-4.5 5.2v4.4c0 4.2-2 6.4-7 6.4" fill="none" stroke="#fff" stroke-width="4.4" stroke-linecap="round"/><path d="M36 19l-8 26" stroke="#2E62FF" stroke-width="5" stroke-linecap="round"/></svg>
+    <span>SiteCode</span>
+  </a>
+  <nav class="nav" aria-label="Разделы сайта">
+    <a href="#works">Примеры</a>
+    <a href="#prices">Цены</a>
+    <a href="#process">Как работаем</a>
+    <a href="#faq">Вопросы</a>
+  </nav>
+  <a class="btn btn-ink btn-sm header-cta" href="#contact" data-wa="Здравствуйте! Хочу обсудить сайт для бизнеса.">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.6a8.5 8.5 0 0 1-12.6 7.4L3.5 20.5l1.5-4.3a8.5 8.5 0 1 1 15.5-4.6z"/></svg>
+    <span>Написать в WhatsApp</span>
+  </a>
+  <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="mnav">
+    <span></span><span></span><span class="sr">Меню</span>
+  </button>
+</header>
+
+<div class="mnav" id="mnav" inert>
+  <nav aria-label="Меню">
+    <a href="#works">Примеры</a>
+    <a href="#prices">Цены</a>
+    <a href="#process">Как работаем</a>
+    <a href="#faq">Вопросы</a>
+    <a href="#contact">Оставить заявку</a>
+  </nav>
+  <div class="mnav-foot">
+    <a href="tel:+77789697305">+7 778 969 73 05</a>
+    <a href="https://t.me/Go_Lumi" target="_blank" rel="noopener">Telegram</a>
+    <a href="https://www.instagram.com/s1te_code/" target="_blank" rel="noopener">Instagram</a>
+  </div>
+</div>
+
+<main id="main">
+
+  <!-- ГЛАВНЫЙ ЭКРАН -->
+  <section class="hero" id="top" data-cubes-zone>
+    <div class="hero-copy">
+      <h1 class="hero-title" data-split>Сайты, которые приносят заявки</h1>
+      <p class="hero-lead">Делаем сайты для барбершопов, кофеен, клиник и магазинов по всему Казахстану. Клиент оставляет заявку — она сразу приходит вам в WhatsApp.</p>
+      <div class="hero-actions">
+        <a class="btn btn-blue" href="#works" data-magnetic>Посмотреть примеры</a>
+        <a class="btn btn-line" href="#calc" data-magnetic>Рассчитать цену</a>
+      </div>
+      <ul class="hero-facts">
+        <li>Лендинг от <b>15 000 ₸</b></li>
+        <li>Запуск от <b>3 дней</b></li>
+        <li>Оплата <b>50/50</b></li>
+      </ul>
+    </div>
+    <div class="hero-orb" aria-hidden="true"><div class="orb-fallback"></div></div>
+    <p class="hero-hint" aria-hidden="true"><span></span>Листайте — соберём сайт прямо здесь</p>
+    <p class="hero-word" aria-hidden="true">SiteCode</p>
+  </section>
+
+  <!-- ИСТОРИЯ: кубики собираются в сайт, телефон и заявку -->
+  <section class="story" id="story" data-cubes-zone aria-label="Как устроен сайт от SiteCode">
+    <div class="story-sticky">
+      <div class="story-stage" aria-hidden="true">
+        <div class="fallback-phone">
+          <i class="fp-notch"></i><i class="fp-hero"></i><i class="fp-line"></i><i class="fp-line fp-short"></i><i class="fp-btn"></i><i class="fp-card"></i><i class="fp-wa"></i>
+        </div>
+      </div>
+      <div class="story-steps">
+        <article class="story-step is-active">
+          <p class="story-num">01</p>
+          <h2>Собираем дизайн под ваш бизнес</h2>
+          <p>Логотип, фото, услуги и цены на одном понятном экране. Каждый сайт рисуем под вас, а не берём готовый шаблон из конструктора.</p>
+        </article>
+        <article class="story-step">
+          <p class="story-num">02</p>
+          <h2>Сначала думаем о телефоне</h2>
+          <p>Клиенты приходят из Instagram и 2ГИС, то есть с телефона. Поэтому кнопки крупные, текст читается без увеличения, а страница открывается быстро.</p>
+        </article>
+        <article class="story-step">
+          <p class="story-num">03</p>
+          <h2>Заявка сразу приходит вам в WhatsApp</h2>
+          <p>Клиент выбрал услугу и время, и у вас уже звенит телефон. Ни одна заявка не потеряется в директе.</p>
+        </article>
+      </div>
+      <div class="story-bars" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="lead-toast" id="leadToast" aria-hidden="true">
+        <div class="lead-top">
+          <span class="lead-app"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#25D366"/><path d="M17.6 11.9a5.6 5.6 0 0 1-8.3 4.9l-2.9.9.9-2.8a5.6 5.6 0 1 1 10.3-3z" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>WhatsApp</span>
+          <span>сейчас</span>
+        </div>
+        <p class="lead-title">Новая заявка с сайта</p>
+        <div class="lead-typing"><i></i><i></i><i></i></div>
+        <dl class="lead-rows">
+          <div><dt>Имя</dt><dd>Айгерим</dd></div>
+          <div><dt>Услуга</dt><dd>Стрижка и укладка</dd></div>
+          <div><dt>Когда</dt><dd>Сегодня, 18:30</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ПРИМЕРЫ -->
+  <section class="works" id="works">
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>барбершопы</span><i></i><span>кофейни</span><i></i><span>стоматологии</span><i></i><span>салоны красоты</span><i></i><span>детейлинг</span><i></i><span>магазины</span><i></i><span>учебные центры</span><i></i>
+        <span>барбершопы</span><i></i><span>кофейни</span><i></i><span>стоматологии</span><i></i><span>салоны красоты</span><i></i><span>детейлинг</span><i></i><span>магазины</span><i></i><span>учебные центры</span><i></i>
+      </div>
+    </div>
+
+    <div class="works-head">
+      <h2 data-split>Примеры сайтов</h2>
+      <p>Семь демо-сайтов для разных видов бизнеса. Откройте любой: всё кликается, а запись и заказы уходят в WhatsApp. Такой же соберём под ваш бизнес.</p>
+    </div>
+
+    <div class="works-pin" id="worksPin">
+      <div class="works-sticky">
+        <div class="works-track" id="worksTrack">
+
+          <article class="work" style="--tone:#2B2520">
+            <a class="work-frame" href="demos/barbershop.html" target="_blank" rel="noopener" aria-label="Открыть демо барбершопа USTARA">
+              <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>ustara.kz</span></span>
+              <span class="work-screen"><img src="assets/img/works/barbershop.jpg" alt="" loading="lazy" decoding="async"></span>
+              <span class="work-open" aria-hidden="true">Открыть демо</span>
+            </a>
+            <div class="work-meta">
+              <p class="work-kind">Барбершоп</p>
+              <h3>USTARA</h3>
+              <p class="work-desc">Запись к мастеру на свободное время, прайс, команда и отзывы.</p>
+            </div>
+          </article>
+
+          <article class="work" style="--tone:#6B4A35">
+            <a class="work-frame" href="demos/coffee.html" target="_blank" rel="noopener" aria-label="Открыть демо кофейни DALA coffee">
+              <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>dalacoffee.kz</span></span>
+              <span class="work-screen"><img src="assets/img/works/coffee.jpg" alt="" loading="lazy" decoding="async"></span>
+              <span class="work-open" aria-hidden="true">Открыть демо</span>
+            </a>
+            <div class="work-meta">
+              <p class="work-kind">Кофейня</p>
+              <h3>DALA coffee</h3>
+              <p class="work-desc">Меню с фото и ценами, заказ навынос через WhatsApp.</p>
+            </div>
+          </article>
+
+          <article class="work" style="--tone:#C98A9B">
+            <a class="work-frame" href="demos/beauty.html" target="_blank" rel="noopener" aria-label="Открыть демо салона красоты Aru Studio">
+              <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>arustudio.kz</span></span>
+              <span class="work-screen"><img src="assets/img/works/beauty.jpg" alt="" loading="lazy" decoding="async"></span>
+              <span class="work-open" aria-hidden="true">Открыть демо</span>
+            </a>
+            <div class="work-meta">
+              <p class="work-kind">Салон красоты</p>
+              <h3>Aru Studio</h3>
+              <p class="work-desc">Онлайн-запись, мастера, работы «до и после» и сертификаты.</p>
+            </div>
+          </article>
+
+          <article class="work" style="--tone:#0E8C88">
+            <a class="work-frame" href="demos/dental.html" target="_blank" rel="noopener" aria-label="Открыть демо стоматологии Inzhu Dental">
+              <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>inzhudental.kz</span></span>
+              <span class="work-screen"><img src="assets/img/works/dental.jpg" alt="" loading="lazy" decoding="async"></span>
+              <span class="work-open" aria-hidden="true">Открыть демо</span>
+            </a>
+            <div class="work-meta">
+              <p class="work-kind">Стоматология</p>
+              <h3>Inzhu Dental</h3>
+              <p class="work-desc">Врачи, цены на лечение, запись на приём и ответы на вопросы.</p>
+            </div>
+          </article>
+
+          <article class="work" style="--tone:#111214">
+            <a class="work-frame" href="demos/detailing.html" target="_blank" rel="noopener" aria-label="Открыть демо детейлинг-центра GLOSS Lab">
+              <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>glosslab.kz</span></span>
+              <span class="work-screen"><img src="assets/img/works/detailing.jpg" alt="" loading="lazy" decoding="async"></span>
+              <span class="work-open" aria-hidden="true">Открыть демо</span>
+            </a>
+            <div class="work-meta">
+              <p class="work-kind">Детейлинг</p>
+              <h3>GLOSS Lab</h3>
+              <p class="work-desc">Пакеты услуг, сравнение «до и после», запись на удобный день.</p>
+            </div>
+          </article>
+
+          <article class="work" style="--tone:#E9DFD3">
+            <a class="work-frame" href="demos/shop.html" target="_blank" rel="noopener" aria-label="Открыть демо интернет-магазина Ayla Store">
+              <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>aylastore.kz</span></span>
+              <span class="work-screen"><img src="assets/img/works/shop.jpg" alt="" loading="lazy" decoding="async"></span>
+              <span class="work-open" aria-hidden="true">Открыть демо</span>
+            </a>
+            <div class="work-meta">
+              <p class="work-kind">Интернет-магазин</p>
+              <h3>Ayla Store</h3>
+              <p class="work-desc">Каталог с фильтрами, корзина и заказ в WhatsApp.</p>
+            </div>
+          </article>
+
+          <article class="work" style="--tone:#FFD23F">
+            <a class="work-frame" href="demos/school.html" target="_blank" rel="noopener" aria-label="Открыть демо учебного центра Bilim Center">
+              <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>bilimcenter.kz</span></span>
+              <span class="work-screen"><img src="assets/img/works/school.jpg" alt="" loading="lazy" decoding="async"></span>
+              <span class="work-open" aria-hidden="true">Открыть демо</span>
+            </a>
+            <div class="work-meta">
+              <p class="work-kind">Учебный центр</p>
+              <h3>Bilim Center</h3>
+              <p class="work-desc">Курсы, расписание, преподаватели и запись на пробный урок.</p>
+            </div>
+          </article>
+
+        </div>
+        <div class="works-progress" aria-hidden="true"><i></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ЧТО ПОЛУЧАЕТ БИЗНЕС -->
+  <section class="benefits" id="benefits">
+    <div class="benefits-side">
+      <h2 data-split>Что получает ваш бизнес</h2>
+      <p>Всё, чтобы клиент нашёл вас, понял цены и записался, не выходя из телефона.</p>
+      <a class="btn btn-blue" href="#contact" data-wa="Здравствуйте! Хочу сайт для своего бизнеса." data-magnetic>Хочу такой сайт</a>
+    </div>
+    <ul class="benefit-list">
+      <li class="benefit">
+        <h3>Заявки в WhatsApp и Telegram</h3>
+        <p>Форма записи или заказа отправляет сообщение прямо вам. Без сложных программ и настроек.</p>
+      </li>
+      <li class="benefit">
+        <h3>Удобно с телефона</h3>
+        <p>Проверяем сайт на iPhone и Android, на маленьких и больших экранах.</p>
+      </li>
+      <li class="benefit">
+        <h3>Всё о бизнесе на одной странице</h3>
+        <p>Услуги и цены, фото, адрес на карте, кнопки звонка и Instagram.</p>
+      </li>
+      <li class="benefit">
+        <h3>Правки включены в стоимость</h3>
+        <p>Меняем тексты, фото и блоки, пока результат вам не понравится.</p>
+      </li>
+      <li class="benefit">
+        <h3>Все доступы остаются у вас</h3>
+        <p>После запуска передаём сайт и доступы. Вы ни от кого не зависите.</p>
+      </li>
+      <li class="benefit">
+        <h3>Видно, откуда приходят клиенты</h3>
+        <p>Подключаем аналитику: сколько людей зашло на сайт и откуда они пришли.</p>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ЦЕНЫ -->
+  <section class="prices" id="prices">
+    <div class="prices-head">
+      <h2 data-split>Цены</h2>
+      <p>Без скрытых платежей: цену называем до начала работы. Оплата частями — половина перед стартом, половина после запуска.</p>
+    </div>
+
+    <div class="tiers">
+      <article class="tier">
+        <div class="tier-name"><h3>Лендинг</h3><p>3–5 дней</p></div>
+        <p class="tier-desc">Одна страница, которая продаёт: услуги, цены, фото, отзывы и запись в WhatsApp.</p>
+        <p class="tier-price"><span>от</span>15 000 ₸</p>
+        <a class="btn btn-line tier-btn" href="#contact" data-wa="Здравствуйте! Хочу лендинг для бизнеса.">Хочу лендинг</a>
+      </article>
+      <article class="tier">
+        <div class="tier-name"><h3>Корпоративный сайт</h3><p>10–14 дней</p></div>
+        <p class="tier-desc">До 10 страниц: о компании, услуги, команда, портфолио и блог.</p>
+        <p class="tier-price"><span>от</span>35 000 ₸</p>
+        <a class="btn btn-line tier-btn" href="#contact" data-wa="Здравствуйте! Хочу корпоративный сайт.">Хочу корпоративный</a>
+      </article>
+      <article class="tier">
+        <div class="tier-name"><h3>Интернет-магазин</h3><p>21–30 дней</p></div>
+        <p class="tier-desc">Каталог с фильтрами, корзина, заказ в WhatsApp или онлайн-оплата.</p>
+        <p class="tier-price"><span>от</span>55 000 ₸</p>
+        <a class="btn btn-line tier-btn" href="#contact" data-wa="Здравствуйте! Хочу интернет-магазин.">Хочу магазин</a>
+      </article>
+    </div>
+
+    <div class="calc" id="calc">
+      <div class="calc-form">
+        <h3>Посчитайте свой сайт</h3>
+        <fieldset class="calc-group">
+          <legend>Тип сайта</legend>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="ctype" value="15000" data-name="Лендинг" checked><span>Лендинг</span></label>
+            <label class="chip"><input type="radio" name="ctype" value="35000" data-name="Корпоративный сайт"><span>Корпоративный</span></label>
+            <label class="chip"><input type="radio" name="ctype" value="55000" data-name="Интернет-магазин"><span>Магазин</span></label>
+            <label class="chip"><input type="radio" name="ctype" value="90000" data-name="Веб-приложение"><span>Веб-приложение</span></label>
+          </div>
+        </fieldset>
+        <div class="calc-group">
+          <label class="calc-label" for="cpages">Страниц: <output id="cpagesOut" for="cpages">5</output></label>
+          <input class="range" type="range" id="cpages" min="1" max="30" value="5">
+          <p class="calc-note">5 страниц входят в цену, каждая следующая — 900 ₸.</p>
+        </div>
+        <fieldset class="calc-group calc-extras">
+          <legend>Дополнительно</legend>
+          <div class="chips">
+            <label class="chip"><input type="checkbox" value="8000" data-name="SEO-оптимизация"><span>SEO-оптимизация</span></label>
+            <label class="chip"><input type="checkbox" value="12000" data-name="Интеграция с CRM"><span>Интеграция с CRM</span></label>
+            <label class="chip"><input type="checkbox" value="15000" data-name="Личный кабинет"><span>Личный кабинет</span></label>
+            <label class="chip"><input type="checkbox" value="5000" data-name="Онлайн-чат"><span>Онлайн-чат</span></label>
+            <label class="chip"><input type="checkbox" value="10000" data-name="Несколько языков"><span>Казахский и английский</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="calc-group">
+          <legend>Срок</legend>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="curg" value="1" data-name="Обычный срок" checked><span>Обычный</span></label>
+            <label class="chip"><input type="radio" name="curg" value="1.3" data-name="Быстрее, +30%"><span>Быстрее, +30%</span></label>
+            <label class="chip"><input type="radio" name="curg" value="1.6" data-name="Срочно, +60%"><span>Срочно, +60%</span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="receipt" aria-live="polite">
+        <p class="receipt-title">SiteCode<span>расчёт стоимости</span></p>
+        <ul class="receipt-lines" id="receiptLines"></ul>
+        <div class="receipt-total"><span>Итого примерно</span><b id="receiptTotal">15 000 ₸</b></div>
+        <p class="receipt-note">Точную цену назовём после короткого разговора о вашем бизнесе.</p>
+        <a class="btn btn-blue btn-wide" id="calcSend" href="#contact">Отправить расчёт в WhatsApp</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- КАК РАБОТАЕМ -->
+  <section class="process" id="process">
+    <div class="process-head">
+      <h2 data-split>Как мы работаем</h2>
+      <p>Четыре шага от первого сообщения до сайта, на который приходят клиенты.</p>
+    </div>
+    <ol class="steps" id="steps">
+      <li class="step">
+        <span class="step-num">1</span>
+        <h3>Заявка</h3>
+        <p>Пишете в WhatsApp или оставляете заявку на сайте. Задаём пару вопросов о бизнесе.</p>
+      </li>
+      <li class="step">
+        <span class="step-num">2</span>
+        <h3>Эскиз</h3>
+        <p>Показываем, как будет выглядеть главный экран вашего сайта. Бесплатно и до оплаты.</p>
+      </li>
+      <li class="step">
+        <span class="step-num">3</span>
+        <h3>Разработка</h3>
+        <p>После согласования эскиза — предоплата 50%. Собираем сайт, показываем по ходу и вносим правки.</p>
+      </li>
+      <li class="step">
+        <span class="step-num">4</span>
+        <h3>Запуск</h3>
+        <p>Подключаем домен, проверяем на телефонах и передаём доступы. Остальные 50% — после запуска.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ВОПРОСЫ -->
+  <section class="faq" id="faq">
+    <div class="faq-side">
+      <h2 data-split>Частые вопросы</h2>
+      <p>Не нашли ответ? Напишите нам в <a href="#contact" data-wa="Здравствуйте! У меня вопрос про сайт.">WhatsApp</a>.</p>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <h3><button class="faq-q" type="button" aria-expanded="false" aria-controls="faq1" id="faq1q">Сколько стоит сайт?<span class="faq-icon" aria-hidden="true"></span></button></h3>
+        <div class="faq-a" id="faq1" role="region" aria-labelledby="faq1q"><div><p>Лендинг — от 15 000 ₸, корпоративный сайт — от 35 000 ₸, интернет-магазин — от 55 000 ₸. Примерную цену можно посчитать в калькуляторе выше, точную назовём после короткого разговора.</p></div></div>
+      </div>
+      <div class="faq-item">
+        <h3><button class="faq-q" type="button" aria-expanded="false" aria-controls="faq2" id="faq2q">Как быстро будет готово?<span class="faq-icon" aria-hidden="true"></span></button></h3>
+        <div class="faq-a" id="faq2" role="region" aria-labelledby="faq2q"><div><p>Лендинг — за 3–5 дней, корпоративный сайт — за 10–14 дней, интернет-магазин — за 21–30 дней. Если нужно срочно, сделаем быстрее за доплату.</p></div></div>
+      </div>
+      <div class="faq-item">
+        <h3><button class="faq-q" type="button" aria-expanded="false" aria-controls="faq3" id="faq3q">Что нужно от меня?<span class="faq-icon" aria-hidden="true"></span></button></h3>
+        <div class="faq-a" id="faq3" role="region" aria-labelledby="faq3q"><div><p>Логотип, если он есть, фото, список услуг и цен, адрес и контакты. Если своих фото нет, подберём подходящие.</p></div></div>
+      </div>
+      <div class="faq-item">
+        <h3><button class="faq-q" type="button" aria-expanded="false" aria-controls="faq4" id="faq4q">Как приходят заявки?<span class="faq-icon" aria-hidden="true"></span></button></h3>
+        <div class="faq-a" id="faq4" role="region" aria-labelledby="faq4q"><div><p>Клиент заполняет форму на сайте, и сообщение сразу приходит вам в WhatsApp или Telegram. Вы отвечаете клиенту как обычно.</p></div></div>
+      </div>
+      <div class="faq-item">
+        <h3><button class="faq-q" type="button" aria-expanded="false" aria-controls="faq5" id="faq5q">Можно потом что-то поменять?<span class="faq-icon" aria-hidden="true"></span></button></h3>
+        <div class="faq-a" id="faq5" role="region" aria-labelledby="faq5q"><div><p>Да. До запуска правки входят в стоимость. После запуска поможем обновить цены, фото и тексты — об этом договоримся отдельно.</p></div></div>
+      </div>
+      <div class="faq-item">
+        <h3><button class="faq-q" type="button" aria-expanded="false" aria-controls="faq6" id="faq6q">Нужен ли домен и хостинг?<span class="faq-icon" aria-hidden="true"></span></button></h3>
+        <div class="faq-a" id="faq6" role="region" aria-labelledby="faq6q"><div><p>Да, сайту нужен свой адрес. Поможем выбрать и подключить домен, например ваш-бизнес.kz. Домен оплачивается отдельно.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ЗАЯВКА -->
+  <section class="contact" id="contact" data-cubes-zone>
+    <div class="contact-orb" aria-hidden="true"><span class="orb-logo-fallback">{/}</span></div>
+    <div class="contact-copy">
+      <h2 data-split>Давайте соберём ваш сайт</h2>
+      <p class="contact-lead">Расскажите о бизнесе — ответим в WhatsApp, обычно в течение 30 минут, и покажем, как может выглядеть ваш сайт.</p>
+      <form class="lead-form" id="leadForm" novalidate>
+        <div class="field" id="fNameField">
+          <label for="fName">Как вас зовут</label>
+          <input id="fName" type="text" autocomplete="name" placeholder="Например, Айдана" required aria-describedby="fNameErr">
+          <p class="field-error" id="fNameErr" hidden>Напишите, как к вам обращаться</p>
+        </div>
+        <fieldset class="field">
+          <legend>Ваш бизнес</legend>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="biz" value="Барбершоп"><span>Барбершоп</span></label>
+            <label class="chip"><input type="radio" name="biz" value="Кофейня"><span>Кофейня</span></label>
+            <label class="chip"><input type="radio" name="biz" value="Салон красоты"><span>Салон красоты</span></label>
+            <label class="chip"><input type="radio" name="biz" value="Клиника"><span>Клиника</span></label>
+            <label class="chip"><input type="radio" name="biz" value="Магазин"><span>Магазин</span></label>
+            <label class="chip"><input type="radio" name="biz" value="Другое"><span>Другое</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="field">
+          <legend>Что нужно</legend>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="need" value="Лендинг"><span>Лендинг</span></label>
+            <label class="chip"><input type="radio" name="need" value="Корпоративный сайт"><span>Корпоративный</span></label>
+            <label class="chip"><input type="radio" name="need" value="Интернет-магазин"><span>Магазин</span></label>
+            <label class="chip"><input type="radio" name="need" value="Пока не знаю" checked><span>Пока не знаю</span></label>
+          </div>
+        </fieldset>
+        <div class="field">
+          <label for="fNote">Комментарий <span>(необязательно)</span></label>
+          <textarea id="fNote" rows="3" placeholder="Например: нужна онлайн-запись и прайс"></textarea>
+        </div>
+        <button class="btn btn-blue btn-wide" type="submit">Отправить в WhatsApp</button>
+        <p class="form-status" id="formStatus" role="status"></p>
+        <p class="form-alt">Не любите формы? Напишите в <a href="https://t.me/Go_Lumi" target="_blank" rel="noopener">Telegram</a> или позвоните: <a href="tel:+77789697305">+7 778 969 73 05</a></p>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-top">
+    <div class="footer-col">
+      <p class="footer-label">Телефон и WhatsApp</p>
+      <a href="tel:+77789697305">+7 778 969 73 05</a>
+      <a href="mailto:Ss1teC0de@gmail.com">Ss1teC0de@gmail.com</a>
+    </div>
+    <div class="footer-col">
+      <p class="footer-label">Telegram</p>
+      <a href="https://t.me/Go_Lumi" target="_blank" rel="noopener">@Go_Lumi</a>
+      <a href="https://t.me/S1teCode" target="_blank" rel="noopener">Канал SiteCode</a>
+    </div>
+    <div class="footer-col">
+      <p class="footer-label">Instagram</p>
+      <a href="https://www.instagram.com/s1te_code/" target="_blank" rel="noopener">@s1te_code</a>
+    </div>
+    <a class="footer-up" href="#top">Наверх</a>
+  </div>
+  <p class="footer-word" aria-hidden="true">SiteCode</p>
+  <div class="footer-bottom">
+    <p>© 2026 SiteCode</p>
+    <p>Сайты для бизнеса в Казахстане</p>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script type="module" src="assets/js/cubes.js"></script>
+</body>
+</html>
