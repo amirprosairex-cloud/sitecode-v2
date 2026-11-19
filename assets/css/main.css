@@ -164,7 +164,17 @@ h1, h2, h3, p, dl, dd { margin: 0; }
   font: 800 15.2vw/.84 var(--display); letter-spacing: -.055em; white-space: nowrap;
   color: var(--ink); pointer-events: none; user-select: none;
 }
-.hero-word .ch { display: inline-block; transform: translate3d(0, 108%, 0); transition: transform 1.2s var(--ease); transition-delay: calc(.15s + var(--i, 0) * 60ms); }
+.hero-word .ch {
+  display: inline-block; transform: translate3d(0, 108%, 0);
+  transition: transform 1.2s var(--ease); transition-delay: calc(.15s + var(--i, 0) * 60ms);
+  /* запас по краям, чтобы градиент не обрезал верх букв */
+  padding: .16em .06em .06em; margin: -.16em -.06em -.06em;
+  /* фирменный градиент: синий сверху, тёмно-синий снизу — как кубики */
+  background: linear-gradient(180deg, #3A6BFF 18%, #2348D6 56%, #16215A 92%);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+}
+.hero-word .ch.cc { opacity: calc(1 - var(--code-fade, 0)); }
 .is-ready .hero-word .ch { transform: none; }
 .hero-lead, .hero-actions, .hero-facts, .hero-hint { opacity: 0; transform: translateY(18px); transition: opacity .9s var(--ease), transform 1s var(--ease); }
 .is-ready .hero-lead { opacity: 1; transform: none; transition-delay: .45s; }

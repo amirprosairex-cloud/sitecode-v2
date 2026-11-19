@@ -49,7 +49,8 @@ function boot() {
     y: '#FEBC2E', // жёлтая точка окна
     e: '#25C35A', // зелёный (WhatsApp)
     k: '#0F1733', // почти чёрный
-    m: '#8B9FDB'  // приглушённый синий
+    m: '#8B9FDB', // приглушённый синий
+    v: '#2348D6'  // насыщенный синий для слова Code
   };
   const PAL = {};
   Object.keys(HEX).forEach((k) => { PAL[k] = new THREE.Color(HEX[k]); });
@@ -379,6 +380,123 @@ function boot() {
     }
   };
 
+  /* Слово «Code» из кубиков. Клетки берутся из настоящих букв большого слова на первом экране,
+     поэтому кубики ложатся ровно на место текста и дальше едут вместе со страницей. */
+  const codeWord = (() => {
+    let cells = [];
+    const slot = new Int32Array(N).fill(-1);
+    const e = new THREE.Euler();
+    const gq = new THREE.Quaternion();
+    return {
+      at: 0, shift: 0, size: 0.3,
+      set(list, size, at) {
+        cells = list;
+        this.size = size;
+        this.at = at;
+        slot.fill(-1);
+        const M = Math.min(list.length, N);
+        for (let k = 0; k < M; k++) slot[Math.floor(k * N / M)] = k;
+      },
+      layout() {},
+      frame(t, ptr, sy) {
+        this.shift = ((sy || 0) - this.at) * view.H / view.h;
+        e.set(ptr.y * 0.12, ptr.x * 0.18, 0);
+        gq.setFromEuler(e);
+      },
+      target(i, t, p, q) {
+        const k = slot[i];
+        if (k < 0) {
+          // лишние кубики растворяются вдали, чтобы слово читалось чисто
+          cloud.target(i, t, p, q);
+          return 0;
+        }
+        const c = cells[k];
+        p.set(c.x, c.y + this.shift, Math.sin(t * 1.8 + c.x * 0.5) * this.size * 0.12);
+        q.copy(gq);
+        return this.size;
+      },
+      key(i) { const k = slot[i]; return k < 0 ? cloud.key(i) : cells[k].k; }
+    };
+  })();
+
+  /* Рисуем буквы «Code» в скрытом холсте тем же шрифтом и собираем из них сетку клеток */
+  const heroWord = document.querySelector('.hero-word');
+  function buildCodeCells() {
+    if (!heroWord) return null;
+    const chars = heroWord.querySelectorAll('.ch.cc');
+    if (!chars.length) return null;
+    const first = chars[0];
+    const last = chars[chars.length - 1];
+    const cs = getComputedStyle(first);
+    const fontSize = parseFloat(cs.fontSize);
+    const padX = fontSize * 0.08;
+    const padY = fontSize * 0.08;
+    const pt = parseFloat(cs.paddingTop) || 0;
+    const pb = parseFloat(cs.paddingBottom) || 0;
+    const pl = parseFloat(cs.paddingLeft) || 0;
+    const wr = heroWord.getBoundingClientRect();
+    const left = wr.left + first.offsetLeft + pl - padX;
+    const docTop = wr.top + window.scrollY + first.offsetTop + pt - padY;
+    const boxH = first.offsetHeight - pt - pb;
+    const W = Math.ceil(last.offsetLeft + last.offsetWidth - first.offsetLeft + padX * 2);
+    const H = Math.ceil(boxH + padY * 2);
+    if (W < 20 || H < 10) return null;
+    const cnv = document.createElement('canvas');
+    cnv.width = W;
+    cnv.height = H;
+    const ctx = cnv.getContext('2d', { willReadFrequently: true });
+    ctx.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#000';
+    const m = ctx.measureText('Code');
+    const fA = m.fontBoundingBoxAscent || fontSize * 0.95;
+    const fD = m.fontBoundingBoxDescent || fontSize * 0.25;
+    const base = padY + (boxH - (fA + fD)) / 2 + fA;
+    chars.forEach((ch) => ctx.fillText(ch.textContent, padX + ch.offsetLeft - first.offsetLeft, base));
+    const data = ctx.getImageData(0, 0, W, H).data;
+    const alpha = (x, y) => data[(Math.min(H - 1, y | 0) * W + Math.min(W - 1, x | 0)) * 4 + 3];
+    let cell = Math.max(3, fontSize / (view.w < 900 ? 12 : 18));
+    for (let tries = 0; tries < 8; tries++) {
+      const cols = Math.floor(W / cell);
+      const rows = Math.floor(H / cell);
+      const ox = (W - cols * cell) / 2;
+      const oy = (H - rows * cell) / 2;
+      const pts = [];
+      let minY = Infinity;
+      let maxY = -Infinity;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          let hit = 0;
+          for (let sy = 0; sy < 3; sy++) {
+            for (let sx = 0; sx < 3; sx++) {
+              if (alpha(ox + (c + (sx + 0.5) / 3) * cell, oy + (r + (sy + 0.5) / 3) * cell) > 127) hit++;
+            }
+          }
+          if (hit >= 5) {
+            const py = oy + (r + 0.5) * cell;
+            pts.push([left + ox + (c + 0.5) * cell, docTop + py]);
+            if (py < minY) minY = py;
+            if (py > maxY) maxY = py;
+          }
+        }
+      }
+      if (pts.length <= N * 0.8) {
+        if (pts.length < 12) return null;
+        const top = docTop + minY;
+        const span = Math.max(1, maxY - minY);
+        // сверху светлее, книзу темнее — как градиент у текста
+        pts.forEach((pt) => {
+          const tt = (pt[1] - top) / span;
+          pt.push(tt < 0.4 ? 'b' : tt < 0.72 ? 'v' : 'n');
+        });
+        return { pts, cellPx: cell, docCenter: docTop + H / 2 };
+      }
+      cell *= 1.18;
+    }
+    return null;
+  }
+  const codeFade = { on: false, from: 0, to: 1, last: -1 };
+
   /* ---------- Раскладка по экрану ---------- */
   const heroOrb = document.querySelector('.hero-orb');
   const stage = document.querySelector('.story-stage');
@@ -432,16 +550,40 @@ function boot() {
     const wTop = top(worksEl);
     const cTop = top(contactEl);
     const logoAt = cTop - vh * 0.12;
-    stations = [
-      { f: sphere, at: 0 },
-      // шар держит форму, пока первый экран почти не уехал, и только потом собирается в сайт
-      { f: browser, at: sTop, win: [0.34, 0.94] },
+
+    // шар → слово «Code» на месте текста → окно сайта
+    const code = buildCodeCells();
+    let codeOn = false;
+    let sCode = 0;
+    let sHold = 0;
+    if (code) {
+      sCode = Math.min(Math.max(code.docCenter - vh * 0.6, vh * 0.14), sTop - vh * 0.45);
+      sHold = Math.min(sCode + vh * 0.24, sTop - vh * 0.28);
+      if (sHold > sCode + 20) {
+        codeOn = true;
+        const unit = view.W / view.w;
+        codeWord.set(code.pts.map((pt) => ({
+          x: (pt[0] / view.w - 0.5) * view.W,
+          y: (0.5 - (pt[1] - sCode) / view.h) * view.H,
+          k: pt[2]
+        })), code.cellPx * unit * 0.86, sCode);
+      }
+    }
+    codeFade.on = codeOn;
+    codeFade.from = sCode * 0.35;
+    codeFade.to = sCode * 0.9;
+
+    stations = [{ f: sphere, at: 0 }];
+    if (codeOn) stations.push({ f: codeWord, at: sCode, win: [0.1, 0.96] }, { f: codeWord, at: sHold });
+    stations.push(
+      // без слова шар держит форму дольше и только потом собирается в сайт
+      { f: browser, at: sTop, win: codeOn ? [0.1, 0.94] : [0.34, 0.94] },
       { f: phone, at: sTop + vh },
       { f: phone, at: sTop + vh * 2 },
       { f: cloud, at: wTop - vh * 0.1 },
       { f: cloud, at: cTop - vh * 0.95 },
       { f: logo, at: logoAt }
-    ];
+    );
     if (w < 900) stations.push({ f: cloud, at: cTop + vh * 0.85 });
     lead.from = sTop + vh * 1.5;
     lead.to = wTop - vh * 0.35;
@@ -525,8 +667,15 @@ function boot() {
     const fa = A.f;
     const fb = B.f;
     const same = fa === fb;
-    fa.frame(time, ptr);
-    if (!same) fb.frame(time, ptr);
+    fa.frame(time, ptr, sy);
+    if (!same) fb.frame(time, ptr, sy);
+
+    // текст «Code» в большом слове растворяется, когда на его место прилетают кубики
+    const fade = codeFade.on ? clamp((sy - codeFade.from) / Math.max(1, codeFade.to - codeFade.from)) : 0;
+    if (Math.abs(fade - codeFade.last) > 0.004) {
+      codeFade.last = fade;
+      root.style.setProperty('--code-fade', fade.toFixed(3));
+    }
 
     // телефон вибрирует, когда приходит заявка
     const leadOn = sy > lead.from && sy < lead.to;
@@ -594,6 +743,8 @@ function boot() {
   });
   if ('ResizeObserver' in window) new ResizeObserver(relayout).observe(document.body);
   window.addEventListener('load', relayout);
+  // буквы для слова «Code» берутся из шрифта, поэтому пересчитываем, когда шрифты догрузятся
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
   canvas.addEventListener('webglcontextlost', (e) => {
     e.preventDefault();
     root.classList.add('no-cubes');

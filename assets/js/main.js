@@ -76,6 +76,8 @@
     if (!el.closest('.hero')) revealObserver.observe(el);
   });
   $$('.hero-word, .footer-word').forEach(splitChars);
+  // буквы «Code» в большом слове: их заменяют кубики при прокрутке
+  $$('.hero-word .ch').forEach((s, i) => { if (i >= 4) s.classList.add('cc'); });
 
   /* ---------- Интро ---------- */
   function ready() {
