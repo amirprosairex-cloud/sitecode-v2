@@ -61,6 +61,70 @@
     .s2 { right: 4%; top: 22%; width: 16px; height: 16px; animation-delay: -1.2s; }
     @keyframes twinkle { 50% { transform: scale(.4) rotate(45deg); opacity: .4; } }
 
+    /* ===== 3D-история: зуб превращается в имплант, разбирается и собирается ===== */
+    .hdr.dark { color: #fff; }
+    .hdr.dark.scrolled { background: rgba(4, 52, 50, .5); box-shadow: none; }
+    .hdr.dark .btn { background: #fff; color: var(--fg); box-shadow: none; }
+    .tshow { position: relative; height: 560vh; }
+    .tshow-stick { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; color: #fff; background: radial-gradient(75% 85% at 72% 44%, #5BE6D6 0%, #15AFA2 36%, #0B716B 70%, #053F3C 100%); }
+    .tshow-stick::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 30%; background: linear-gradient(180deg, rgba(5, 63, 60, 0), rgba(5, 63, 60, .5)); pointer-events: none; }
+    .tshow-word { position: absolute; right: var(--pad); top: 14vh; z-index: 0; margin: 0; font: 800 clamp(70px, 12vw, 210px)/.85 var(--font-head); letter-spacing: -.05em; color: transparent; -webkit-text-stroke: 2px rgba(214, 255, 249, .7); white-space: nowrap; pointer-events: none; }
+    .tshow-word span { display: block; transition: transform .9s cubic-bezier(.2, .8, .2, 1), opacity .5s; }
+    .tshow-word span.swap { transform: translateY(32%); opacity: 0; }
+    #tooth3d { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; }
+    .tscene { position: absolute; left: var(--pad); top: 53%; z-index: 4; width: min(460px, 36vw); opacity: 0; visibility: hidden; transform: translateY(-50%) translateY(30px); transition: opacity .5s, transform .8s cubic-bezier(.2, .8, .2, 1), visibility 0s .8s; }
+    .tscene.on { opacity: 1; visibility: visible; transform: translateY(-50%); transition: opacity .6s .1s, transform .9s cubic-bezier(.2, .8, .2, 1) .1s, visibility 0s; }
+    .tscene.thero { width: min(620px, 46vw); }
+    .tscene.thero h1 { font: 800 clamp(42px, 5.6vw, 92px)/1 var(--font-head); letter-spacing: -.045em; }
+    .tscene.thero h1 em { font-style: normal; color: #D2FFF8; }
+    .tscene .hero-lead { max-width: 30em; margin: 24px 0 30px; color: rgba(255, 255, 255, .84); font-size: clamp(16px, 1.3vw, 19px); }
+    .tscene .pill { background: rgba(255, 255, 255, .16); color: #fff; }
+    .tscene .btn { background: #fff; color: var(--fg); box-shadow: 0 16px 34px -16px rgba(0, 0, 0, .45); }
+    .tscene .btn:hover { background: #E8FFFB; }
+    .tscene .btn.white { background: rgba(255, 255, 255, .1); color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .45); }
+    .tscene .trust div { color: rgba(255, 255, 255, .78); }
+    .tscene .trust b { color: #fff; }
+    .tglass { padding: 30px 30px 28px; border-radius: 24px; background: rgba(3, 46, 44, .36); -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18), 0 40px 70px -40px rgba(0, 0, 0, .6); }
+    .tglass h2 { font: 800 clamp(28px, 2.6vw, 42px)/1.05 var(--font-head); letter-spacing: -.035em; }
+    .tglass p { margin: 14px 0 20px; color: rgba(255, 255, 255, .84); }
+    .tprice { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, .2); }
+    .tprice b { font: 800 26px/1 var(--font-head); }
+    .tprice small { opacity: .72; }
+    .tco { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+    .tco svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    .tco path { stroke: rgba(255, 255, 255, .9); stroke-width: 1.5; fill: none; }
+    .co { position: absolute; left: 0; top: 0; padding: 10px 14px; border-radius: 14px; background: #fff; color: var(--fg); font: 600 13px/1.3 var(--font-body); white-space: nowrap; opacity: 0; box-shadow: 0 16px 30px -18px rgba(0, 0, 0, .6); }
+    .co b { display: block; font: 800 15px/1.15 var(--font-head); }
+    .co small { color: var(--accent); }
+    .co::before { content: ""; position: absolute; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(255, 255, 255, .35); }
+    .co.l::before { right: -5px; }
+    .co.r::before { left: -5px; }
+    .tbar { position: absolute; left: var(--pad); right: var(--pad); bottom: 26px; z-index: 4; display: flex; gap: 6px; }
+    .tbar i { flex: 1; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .2); overflow: hidden; }
+    .tbar i::after { content: ""; display: block; height: 100%; background: #fff; transform: scaleX(var(--f, 0)); transform-origin: left; }
+    .thint { position: absolute; left: 50%; bottom: 50px; z-index: 4; display: flex; align-items: center; gap: 10px; transform: translateX(-50%); font: 700 13px/1 var(--font-head); color: rgba(255, 255, 255, .8); transition: opacity .4s; }
+    .thint i { width: 22px; height: 34px; border-radius: 12px; border: 1.5px solid rgba(255, 255, 255, .5); position: relative; }
+    .thint i::after { content: ""; position: absolute; left: 50%; top: 6px; width: 4px; height: 7px; margin-left: -2px; border-radius: 2px; background: #fff; animation: twheel 1.6s ease-in-out infinite; }
+    @keyframes twheel { 60% { transform: translateY(10px); opacity: 0; } 61% { transform: none; opacity: 0; } 100% { opacity: 1; } }
+    .numbers { padding-top: 80px !important; }
+    @media (max-width: 760px) {
+      .tshow { height: 500vh; }
+      .tshow-stick { background: radial-gradient(110% 60% at 50% 32%, #5BE6D6 0%, #15AFA2 40%, #0B716B 76%, #053F3C 100%); }
+      .tshow-word { left: var(--pad); right: auto; top: 86px; font-size: 19vw; -webkit-text-stroke-width: 1.5px; }
+      .tscene, .tscene.thero { left: 14px; right: 14px; top: auto; bottom: 58px; width: auto; transform: translateY(30px); }
+      .tscene.on { transform: none; }
+      .tscene.thero h1 { font-size: clamp(32px, 9.6vw, 46px); }
+      .tscene .hero-lead { margin: 12px 0 18px; font-size: 15px; }
+      .tscene.thero .trust { display: none; }
+      .tglass { padding: 20px 18px; border-radius: 18px; }
+      .tglass h2 { font-size: 24px; }
+      .tglass p { margin: 8px 0 14px; font-size: 14px; }
+      .tprice b { font-size: 20px; }
+      .thint { display: none; }
+      .co { padding: 7px 10px; font-size: 11px; }
+      .co b { font-size: 12px; }
+    }
+
     /* цифры */
     .numbers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 0 var(--pad); }
     .num { padding: 30px 28px; border-radius: 24px; background: #fff; box-shadow: 0 0 0 1px var(--line); }
@@ -203,26 +267,53 @@
 </header>
 
 <main id="top">
-  <section class="hero">
-    <div>
-      <p class="pill" data-r data-now>Стоматология в Алматы</p>
-      <h1 class="lines" data-now><span class="ln"><span>Лечим зубы</span></span><span class="ln"><span><em>без страха</em></span></span><span class="ln"><span>и очередей</span></span></h1>
-      <p class="hero-lead" data-r data-now style="--d:.45s">Современная анестезия, врачи с опытом от 7 лет и приём в удобное время. Запишитесь онлайн — перезвоним за 15 минут.</p>
-      <div class="hero-actions" data-r data-now style="--d:.6s">
-        <a class="btn" href="#book">Записаться на приём</a>
-        <a class="btn white" href="#services">Посмотреть цены</a>
+  <section class="tshow" id="tshow" aria-label="Зуб и имплант в 3D">
+    <div class="tshow-stick">
+      <p class="tshow-word" aria-hidden="true"><span id="tWord">Улыбка</span></p>
+      <canvas id="tooth3d" aria-hidden="true"></canvas>
+      <div class="tco" aria-hidden="true">
+        <svg id="tLines"></svg>
+        <span class="co l" data-part="crown"><b>Коронка из циркония</b><small>от 95 000 ₸, за 5 дней</small></span>
+        <span class="co r" data-part="abut"><b>Абатмент</b><small>титан, держит коронку</small></span>
+        <span class="co l" data-part="screw"><b>Имплант</b><small>вместо корня, гарантия 5 лет</small></span>
       </div>
-      <div class="trust" data-r data-now style="--d:.75s">
-        <div><b>0 ₸</b>консультация</div>
-        <div><b>1 день</b>ждать приёма</div>
+
+      <div class="tscene thero on">
+        <p class="pill">Стоматология в Алматы</p>
+        <h1>Лечим зубы <em>без страха</em> и очередей</h1>
+        <p class="hero-lead">Современная анестезия, врачи с опытом от 7 лет и приём в удобное время. Запишитесь онлайн — перезвоним за 15 минут.</p>
+        <div class="hero-actions">
+          <a class="btn" href="#book">Записаться на приём</a>
+          <a class="btn white" href="#services">Посмотреть цены</a>
+        </div>
+        <div class="trust"><div><b>0 ₸</b>консультация</div><div><b>1 день</b>ждать приёма</div></div>
       </div>
-    </div>
-    <div class="visual" data-r="scale" data-now style="--d:.2s">
-      <div class="blob"><img src="https://images.unsplash.com/photo-1489278353717-f64c6ee8a4d2?auto=format&fit=crop&w=1000&q=80" alt="Улыбающаяся девушка"></div>
-      <div class="float f1"><span class="ico">✓</span><div><b>Без боли</b>современная анестезия</div></div>
-      <div class="float f2"><span class="ico">%</span><div><b>Рассрочка 0%</b>на 6 месяцев</div></div>
-      <div class="float f3"><span class="ico">★</span><div><b>4,9 из 5</b>отзывы пациентов</div></div>
-      <span class="sparkle s1" aria-hidden="true"></span><span class="sparkle s2" aria-hidden="true"></span>
+      <div class="tscene tglass">
+        <p class="pill">Лечение</p>
+        <h2>Каждый зуб — под микроскопом</h2>
+        <p>Видим трещины и кариес, которые не заметны глазу, и сохраняем здоровые ткани. Анестезия действует до того, как врач начнёт.</p>
+        <div class="tprice"><small>лечение кариеса</small><b>от 15 000 ₸</b></div>
+      </div>
+      <div class="tscene tglass">
+        <p class="pill">Имплантация</p>
+        <h2>Внутри — три детали</h2>
+        <p>Титановый имплант заменяет корень, абатмент соединяет, коронка из циркония выглядит как свой зуб.</p>
+        <div class="tprice"><small>консультация хирурга</small><b>0 ₸</b></div>
+      </div>
+      <div class="tscene tglass">
+        <p class="pill">Вместе</p>
+        <h2>Собираем как свой зуб</h2>
+        <p>Имплант приживается за 3 месяца, коронку ставим за один визит. Жуёте и улыбаетесь как раньше.</p>
+        <div class="tprice"><small>имплант под ключ</small><b>от 280 000 ₸</b></div>
+      </div>
+      <div class="tscene tglass">
+        <p class="pill">Гарантия</p>
+        <h2>5 лет гарантии на импланты</h2>
+        <p>Если что-то пойдёт не так, исправим бесплатно. Рассрочка без переплаты на 6 месяцев.</p>
+        <div class="hero-actions"><a class="btn" href="#book">Записаться на консультацию</a></div>
+      </div>
+      <div class="tbar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <p class="thint" id="tHint"><i></i>Листайте — заглянем внутрь</p>
     </div>
   </section>
 
@@ -462,6 +553,224 @@
       el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(el.dataset.go); } });
     });
   })();
+</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+<script type="module">
+  import { createStage, THREE, track, progressOf, sceneAt, smooth, clamp, lerp, damp, small, still, callouts, canvasTexture } from './assets/kit3d.js';
+  import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+  const show = document.getElementById('tshow');
+  const canvas = document.getElementById('tooth3d');
+  const scenes = Array.from(show.querySelectorAll('.tscene'));
+  const word = document.getElementById('tWord');
+  const bars = Array.from(show.querySelectorAll('.tbar i'));
+  const hint = document.getElementById('tHint');
+  const hdr = document.querySelector('.hdr');
+  const WORDS = ['Улыбка', 'Лечение', 'Внутри', 'Вместе', 'Гарантия'];
+  const MARKS = [0, 0.14, 0.34, 0.58, 0.8];
+
+  let cur = -1;
+  const ui = () => {
+    const p = progressOf(show);
+    const i = sceneAt(p, MARKS);
+    if (i !== cur) {
+      cur = i;
+      scenes.forEach((s, k) => s.classList.toggle('on', k === i));
+      word.classList.add('swap');
+      setTimeout(() => { word.textContent = WORDS[i]; word.classList.remove('swap'); }, 260);
+    }
+    bars.forEach((b, k) => b.style.setProperty('--f', clamp((p - MARKS[k]) / ((MARKS[k + 1] ?? 1) - MARKS[k])).toFixed(3)));
+    hint.style.opacity = p > 0.03 ? '0' : '1';
+    const r = show.getBoundingClientRect();
+    hdr.classList.toggle('dark', r.bottom > 70);
+    return p;
+  };
+  window.addEventListener('scroll', ui, { passive: true });
+  ui();
+
+  const st = createStage(canvas, { fov: small ? 40 : 30, exposure: 1.05 });
+  const { scene, camera } = st;
+  const key = new THREE.DirectionalLight(0xffffff, 2.2);
+  key.position.set(-3, 5, 4);
+  scene.add(key);
+  const rim = new THREE.DirectionalLight(0xbffff5, 1.4);
+  rim.position.set(4, 1, -3);
+  scene.add(rim);
+
+  // ---------- геометрия коронки: бочонок с бугорками и фиссурой сверху ----------
+  const crownGeo = () => {
+    const g = new THREE.SphereGeometry(1, 128, 96);
+    const p = g.attributes.position;
+    const v = new THREE.Vector3();
+    const cusps = [[0.44, 0.36], [-0.44, 0.36], [0.44, -0.36], [-0.44, -0.36]];
+    for (let i = 0; i < p.count; i++) {
+      v.fromBufferAttribute(p, i);
+      let { x, y, z } = v;
+      const phi = Math.atan2(z, x);
+      const sq = 1 / Math.pow(Math.pow(Math.abs(Math.cos(phi)), 4) + Math.pow(Math.abs(Math.sin(phi)), 4), 0.25);
+      const bulge = 1 + 0.08 * (1 - y * y);
+      x *= sq * 0.92 * bulge * 1.08;
+      z *= sq * 0.92 * bulge * 0.96;
+      let ny = y * (y > 0 ? 0.62 : 0.78);
+      if (y > 0.1) {
+        let h = 0;
+        cusps.forEach(([cx, cz]) => { h += Math.exp(-((x - cx) ** 2 + (z - cz) ** 2) / 0.06); });
+        const fiss = Math.exp(-(x * x) / 0.01) * 0.7 + Math.exp(-(z * z) / 0.014) * 0.45;
+        ny += (0.17 * h - 0.13 * fiss) * smooth(0.1, 0.7, y);
+      }
+      if (y < 0) {
+        const s = 1 - 0.3 * smooth(0, -1, y);
+        x *= s;
+        z *= s;
+      }
+      p.setXYZ(i, x, ny, z);
+    }
+    g.computeVertexNormals();
+    return g;
+  };
+  const enamel = new THREE.MeshPhysicalMaterial({ color: 0xF5F1E6, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.12, sheen: 0.5, sheenRoughness: 0.4, sheenColor: new THREE.Color(0xffffff) });
+  const dentin = new THREE.MeshPhysicalMaterial({ color: 0xEADFC4, roughness: 0.42, clearcoat: 0.3 });
+  const zirconia = new THREE.MeshPhysicalMaterial({ color: 0xFBFAF6, roughness: 0.14, clearcoat: 1, clearcoatRoughness: 0.06 });
+  const titan = new THREE.MeshStandardMaterial({ color: 0xC4C9D0, metalness: 1, roughness: 0.26 });
+  const titanDark = new THREE.MeshStandardMaterial({ color: 0x9FA6B0, metalness: 1, roughness: 0.32 });
+
+  // натуральный зуб: коронка и два корня
+  const tooth = new THREE.Group();
+  const crownG = crownGeo();
+  tooth.add(new THREE.Mesh(crownG, enamel));
+  const rootG = new THREE.CylinderGeometry(0.36, 0.07, 1.9, 32, 16);
+  rootG.translate(0, -0.95, 0);
+  [-1, 1].forEach((s) => {
+    const r = new THREE.Mesh(rootG, dentin);
+    r.position.set(s * 0.4, -0.4, 0);
+    r.rotation.z = s * 0.13;
+    r.scale.set(1.15, 1, 0.9);
+    tooth.add(r);
+    const tip = new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 12), dentin);
+    tip.position.set(s * 0.4 + s * 0.25, -2.27, 0);
+    tooth.add(tip);
+  });
+  tooth.position.y = 0.65;
+  scene.add(tooth);
+
+  // имплант: коронка, абатмент и винт
+  const implant = new THREE.Group();
+  const iCrown = new THREE.Mesh(crownG, zirconia);
+  const V2 = THREE.Vector2;
+  const abutPts = [[0, 0.62], [0.2, 0.62], [0.24, 0.58], [0.27, 0.15], [0.36, 0.08], [0.38, 0], [0.3, -0.06], [0.22, -0.1], [0.2, -0.42], [0, -0.42]].map(([a, b]) => new V2(a, b));
+  // точки идут снизу вверх, иначе грани токарной фигуры смотрят внутрь
+  const abut = new THREE.Mesh(new THREE.LatheGeometry(abutPts.reverse(), 64), titan);
+  const screwPts = [new V2(0, 0), new V2(0.4, 0), new V2(0.4, -0.08)];
+  for (let i = 0; i <= 240; i++) {
+    const y = -0.1 - i * (1.95 / 240);
+    const t = (-0.1 - y) / 1.95;
+    const core = 0.31 - 0.1 * t * t;
+    const ph = ((-y) / 0.12) % 1;
+    const tri = 1 - Math.abs(ph * 2 - 1);
+    screwPts.push(new V2(core + 0.08 * tri * (1 - smooth(0.86, 1, t)), y));
+  }
+  screwPts.push(new V2(0.12, -2.12), new V2(0, -2.16));
+  const screw = new THREE.Mesh(new THREE.LatheGeometry(screwPts.reverse(), 72), titanDark);
+  implant.add(iCrown, abut, screw);
+  scene.add(implant);
+
+  // разрез десны и кости: модель как на схеме у хирурга
+  const boneTex = canvasTexture(512, 512, (g, w, h) => {
+    g.fillStyle = '#EBDDC4';
+    g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 900; i++) {
+      g.fillStyle = 'rgba(176,146,104,' + (0.15 + Math.random() * 0.3).toFixed(2) + ')';
+      g.beginPath();
+      g.ellipse(Math.random() * w, Math.random() * h, 2 + Math.random() * 7, 2 + Math.random() * 5, Math.random() * 3, 0, Math.PI * 2);
+      g.fill();
+    }
+  });
+  const jaw = new THREE.Group();
+  const bone = new THREE.Mesh(new RoundedBoxGeometry(2.8, 2.2, 1.1, 4, 0.12), new THREE.MeshPhysicalMaterial({ map: boneTex, roughness: 0.85 }));
+  bone.position.set(0, -1.25, -0.55);
+  const gum = new THREE.Mesh(new RoundedBoxGeometry(2.9, 0.42, 1.2, 6, 0.18), new THREE.MeshPhysicalMaterial({ color: 0xE27D86, roughness: 0.35, clearcoat: 0.8, clearcoatRoughness: 0.2 }));
+  gum.position.set(0, 0.0, -0.55);
+  jaw.add(bone, gum);
+  scene.add(jaw);
+
+  // ---------- подписи деталей ----------
+  const coEls = Array.from(show.querySelectorAll('.co'));
+  const W3 = () => new THREE.Vector3();
+  const anchors = {
+    crown: () => iCrown.getWorldPosition(W3()).add(new THREE.Vector3(-0.85, 0.15, 0)),
+    abut: () => abut.getWorldPosition(W3()).add(new THREE.Vector3(0.3, 0.2, 0)),
+    screw: () => screw.getWorldPosition(W3()).add(new THREE.Vector3(-0.35, -0.9, 0))
+  };
+  const drawCo = callouts(st, document.getElementById('tLines'), coEls.map((el) => ({
+    el,
+    anchor: anchors[el.dataset.part],
+    dx: el.classList.contains('l') ? -80 : 80,
+    dy: 0
+  })));
+
+  // ---------- сценарий по прокрутке ----------
+  const TOOTH = [[0, 1], [0.34, 1], [0.41, 0], [1, 0]];
+  const IMPL = [[0, 0], [0.37, 0], [0.45, 1], [1, 1]];
+  const SPLIT = [[0, 1], [0.44, 1], [0.52, 1], [0.66, 0], [1, 0]];
+  const JAW = [[0, 0], [0.55, 0], [0.68, 1], [1, 1]];
+  // угол обзора, высота камеры, дистанция, точка взгляда по высоте, сдвиг кадра
+  const CAM = [
+    [0, [0.35, 0.6, 9.6, -0.2, 0.17]],
+    [0.14, [0.35, 0.6, 9.6, -0.2, 0.17]],
+    [0.26, [0.0, 5.8, 7.0, 0.5, 0.17]],
+    [0.34, [0.1, 3.6, 8.4, 0.2, 0.15]],
+    [0.46, [0.15, 0.8, 13.2, 0.25, 0.12]],
+    [0.6, [0.25, 1.4, 12.6, -0.45, 0.15]],
+    [0.8, [0.55, 1.8, 12.0, -0.5, 0.17]],
+    [1, [0.8, 1.6, 11.8, -0.5, 0.17]]
+  ];
+  let p = 0;
+  let intro = still ? 1 : 0;
+  const shiftView = (sx, sy) => {
+    const W = st.size.w;
+    const H = st.size.h;
+    if (!sx && !sy) { camera.clearViewOffset(); return; }
+    camera.setViewOffset(W * (1 + 2 * Math.abs(sx)), H * (1 + 2 * Math.abs(sy)), sx > 0 ? 0 : 2 * Math.abs(sx) * W, sy > 0 ? 2 * sy * H : 0, W, H);
+  };
+  st.onTick((dt, t) => {
+    p = damp(p, progressOf(show), 6, dt);
+    intro = Math.min(1, intro + dt / 1.6);
+    const narrow = st.size.w < 760;
+    const ti = smooth(0, 1, intro);
+
+    // натуральный зуб вращается и уходит, уступая место импланту
+    const tv = track(TOOTH, p) * ti;
+    tooth.visible = tv > 0.01;
+    tooth.scale.setScalar(Math.max(0.001, tv));
+    tooth.rotation.y = t * 0.35 + p * 5;
+    tooth.rotation.x = Math.sin(t * 0.7) * 0.06;
+    tooth.position.y = 0.65 + Math.sin(t * 1.1) * 0.06 + (1 - ti) * -1.5;
+
+    const iv = track(IMPL, p);
+    implant.visible = iv > 0.01;
+    implant.scale.setScalar(Math.max(0.001, iv));
+    const sp = track(SPLIT, p);
+    iCrown.position.y = 1.0 + sp * 1.05;
+    abut.position.y = 0.42 + sp * 0.4;
+    screw.position.y = 0.0 - sp * 0.5;
+    const c = track(CAM, p);
+    const ang = c[0] + st.pointer.x * 0.1;
+
+    // когда появляется разрез десны и кости, имплант поворачивается к зрителю срезом
+    const jv = track(JAW, p);
+    const spin = 0.4 + t * 0.25 + p * 2.2;
+    implant.rotation.y = lerp(spin, ang + Math.sin(t * 0.5) * 0.12, jv);
+    jaw.visible = jv > 0.01;
+    jaw.position.y = (1 - jv) * -3.2;
+    jaw.scale.setScalar(Math.max(0.001, jv));
+    jaw.rotation.y = ang + Math.sin(t * 0.5) * 0.12;
+    const dist = c[2] * (narrow ? 1.5 : 1);
+    camera.position.set(Math.sin(ang) * dist, c[1] - st.pointer.y * 0.25 + (narrow ? 0.4 : 0), Math.cos(ang) * dist);
+    camera.lookAt(0, c[3], 0);
+    shiftView(narrow ? 0 : c[4], narrow ? 0.18 : 0);
+
+    drawCo(smooth(0.43, 0.47, p) * (1 - smooth(0.54, 0.58, p)));
+  });
 </script>
 </body>
 </html>

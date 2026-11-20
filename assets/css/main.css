@@ -226,8 +226,8 @@ h1, h2, h3, p, dl, dd { margin: 0; }
   left: var(--phone-cx, 72%); top: calc(var(--phone-top, 22vh) + var(--phone-w, 280px) * .16);
   width: clamp(250px, calc(var(--phone-w, 280px) * 1.16), 340px);
   padding: 14px 16px 16px;
-  border-radius: 22px; background: rgba(255, 255, 255, .96);
-  box-shadow: 0 30px 60px -24px rgba(15, 23, 51, .45), 0 0 0 1px rgba(15, 23, 51, .06);
+  border-radius: 22px; background: #fff; color: var(--ink);
+  box-shadow: 0 30px 60px -24px rgba(5, 10, 30, .7), 0 0 0 1px rgba(15, 23, 51, .06);
   opacity: 0; transform: translate(-50%, -26px) scale(.94); transform-origin: 50% 0;
   transition: opacity .35s ease, transform .7s cubic-bezier(.2, 1.4, .3, 1);
   pointer-events: none;
@@ -335,13 +335,18 @@ h1, h2, h3, p, dl, dd { margin: 0; }
 .prices-head p, .process-head p { max-width: 34em; font-size: 18px; color: var(--ink-soft); }
 .works-head p { max-width: 34em; font-size: 18px; opacity: .74; }
 
-.cflow { position: relative; padding: 10px 0 120px; }
+/* карусель целиком помещается в экран: карточка, подпись и кнопки видны одновременно */
+.cflow {
+  --stage-h: clamp(320px, calc(100vh - 360px), 640px);
+  --card-w: min(54vw, 780px, calc((var(--stage-h) - 56px) * 1.6));
+  position: relative; padding: 10px 0 90px;
+}
 .cflow:focus { outline: none; }
-.cflow-stage { position: relative; height: clamp(400px, 58vh, 660px); perspective: 1800px; perspective-origin: 50% 40%; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.cflow-stage { position: relative; height: var(--stage-h); perspective: 1800px; perspective-origin: 50% 40%; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
 .cf-card {
   --d: 0; --ad: 0;
   position: absolute; left: 50%; top: 50%;
-  width: min(54vw, 780px);
+  width: var(--card-w);
   transform: translate(-50%, -54%) translateX(calc(var(--d) * 66%)) translateZ(calc(var(--ad) * -260px)) rotateY(calc(var(--d) * -28deg)) scale(calc(1 - var(--ad) * .06));
   transition: transform .9s var(--ease), opacity .6s, filter .6s;
   filter: brightness(calc(1 - var(--ad) * .16));
@@ -349,8 +354,8 @@ h1, h2, h3, p, dl, dd { margin: 0; }
 }
 .cf-card.is-active { cursor: default; }
 .cflow-glow {
-  position: absolute; left: 50%; top: calc(50% + min(54vw, 780px) * .29); z-index: 0;
-  width: min(64vw, 920px); height: 120px; transform: translate(-50%, -30%);
+  position: absolute; left: 50%; top: calc(50% + var(--card-w) * .29); z-index: 0;
+  width: calc(var(--card-w) * 1.18); height: 120px; transform: translate(-50%, -30%);
   border-radius: 50%; background: radial-gradient(ellipse at center, var(--wac) 0%, transparent 68%);
   opacity: .55; filter: blur(16px); pointer-events: none;
 }
@@ -394,6 +399,17 @@ h1, h2, h3, p, dl, dd { margin: 0; }
 .cf-arrow:hover { background: color-mix(in srgb, currentColor 14%, transparent); transform: scale(1.06); }
 .cf-arrow svg { width: 22px; height: 22px; }
 .cf-count { min-width: 64px; text-align: center; font: 700 16px var(--display); }
+/* на компьютере стрелки стоят по бокам от карточки, рядом с ней, а не внизу */
+@media (min-width: 901px) {
+  .cflow-info { align-items: start; padding-top: 22px; }
+  .cf-name { margin-bottom: 10px; font-size: clamp(32px, 3.6vw, 60px); }
+  .cf-tags { margin-top: 14px; }
+  .cf-count { position: absolute; left: 50%; top: calc(var(--stage-h) - 6px); transform: translateX(-50%); }
+  .cf-arrow { position: absolute; z-index: 40; top: calc(10px + var(--stage-h) / 2 - 40px); width: 64px; height: 64px; background: color-mix(in srgb, currentColor 8%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  #cfPrev { left: calc(50% - var(--card-w) / 2 - 92px); }
+  #cfNext { left: calc(50% + var(--card-w) / 2 + 28px); }
+  .cf-nav { min-height: 58px; }
+}
 
 /* ---------- Робот-помощник ---------- */
 .bot { position: fixed; right: 22px; bottom: 22px; z-index: 70; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: none; transition: opacity .4s; }

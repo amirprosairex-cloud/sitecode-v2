@@ -725,6 +725,10 @@ function boot() {
 
     if (started && enter < 2) enter = Math.min(2, enter + dt / 1.5);
 
+    // после последней остановки логотип уезжает вместе со страницей, а не залезает под подвал
+    const lastSt = stations[stations.length - 1];
+    const lift = B === lastSt && lastSt.f === logo && sy > lastSt.at ? (sy - lastSt.at) * view.H / view.h : 0;
+
     for (let i = 0; i < N; i++) {
       let sc;
       const dl = !same && fb.delayFor ? fb.delayFor(i) : delay[i];
@@ -759,6 +763,7 @@ function boot() {
           sc *= ek;
         }
       }
+      if (lift) P.y += lift;
       S.setScalar(Math.max(sc, 0.0001));
       MAT.compose(P, Q, S);
       mesh.setMatrixAt(i, MAT);

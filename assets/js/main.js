@@ -380,7 +380,7 @@
     const idxEl = $('#cfIndex');
     const stage = $('#cflowStage');
     // цвет текста на кнопке под цвет акцента
-    const ACFG = { '#C9A35E': '#16120F', '#E2A43A': '#2A1B12', '#1A1A22': '#FFD84D' };
+    const ACFG = { '#C9A35E': '#16120F', '#E2A43A': '#2A1B12', '#1A1A22': '#FFD84D', '#5BE6D6': '#053F3C', '#F7B9C9': '#2E1F27', '#2A2610': '#F3E6A6' };
     const touch = window.matchMedia('(hover: none)').matches;
     let cur = 0;
     let timer = 0;
@@ -435,8 +435,18 @@
       if (!touched && inView && !reduce) timer = setInterval(() => go(cur + 1), 5200);
     };
 
-    $('#cfPrev').addEventListener('click', () => { stop(); go(cur - 1); });
-    $('#cfNext').addEventListener('click', () => { stop(); go(cur + 1); });
+    // если карточка ушла за верх экрана, плавно возвращаем всю карусель в кадр
+    const frame = () => {
+      const top = stage.getBoundingClientRect().top;
+      const bottom = $('.cflow-info').getBoundingClientRect().bottom;
+      const head = 78;
+      if (top < head || bottom > window.innerHeight) {
+        const room = window.innerHeight - head - (bottom - top);
+        window.scrollBy({ top: top - head - Math.max(0, room / 2), behavior: 'smooth' });
+      }
+    };
+    $('#cfPrev').addEventListener('click', () => { stop(); go(cur - 1); frame(); });
+    $('#cfNext').addEventListener('click', () => { stop(); go(cur + 1); frame(); });
     cards.forEach((c, i) => c.addEventListener('click', (e) => {
       if (i !== cur) { e.preventDefault(); stop(); go(i); }
     }));

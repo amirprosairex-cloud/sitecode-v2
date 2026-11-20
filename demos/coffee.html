@@ -128,6 +128,64 @@
 
     footer { display: flex; justify-content: space-between; gap: 16px; padding: 30px var(--pad) 100px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
 
+    /* ===== 3D-стакан: подставка в кольце, слои, кольцо текста, смена цвета ===== */
+    .cshow { position: relative; height: 500vh; }
+    .cshow-stick { --cb: #EFE7DA; --cf: #2A1D16; position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--cb); color: var(--cf); transition: background-color .9s cubic-bezier(.2, .8, .2, 1), color .6s; }
+    .cshow-stick::before { content: ""; position: absolute; left: 50%; top: 54%; width: min(90vw, 1100px); aspect-ratio: 1; transform: translate(-30%, -50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0)); pointer-events: none; }
+    .cword { position: absolute; left: 0; right: 0; top: 50%; z-index: 0; margin: 0; text-align: center; white-space: nowrap; font: 400 clamp(120px, 26vw, 460px)/1 var(--font-head); letter-spacing: -.02em; color: transparent; -webkit-text-stroke: 0; transform: translateY(-58%); pointer-events: none; }
+    .cword span { display: inline-block; color: color-mix(in srgb, var(--cf) 9%, transparent); text-shadow: 0 2px 0 rgba(255, 255, 255, .35), 0 -2px 0 rgba(0, 0, 0, .05); transition: transform .9s cubic-bezier(.2, .8, .2, 1), opacity .5s; }
+    .cword span.swap { transform: translateY(26%); opacity: 0; }
+    #cup3d { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; }
+    .cscene { position: absolute; left: var(--pad); top: 52%; z-index: 4; width: min(430px, 34vw); opacity: 0; visibility: hidden; transform: translateY(-50%) translateY(30px); transition: opacity .5s, transform .8s cubic-bezier(.2, .8, .2, 1), visibility 0s .8s; }
+    .cscene.on { opacity: 1; visibility: visible; transform: translateY(-50%); transition: opacity .6s .1s, transform .9s cubic-bezier(.2, .8, .2, 1) .1s, visibility 0s; }
+    .cscene.chero { width: min(560px, 42vw); }
+    .cscene.chero h1 { font: 400 clamp(44px, 5.6vw, 96px)/.98 var(--font-head); letter-spacing: -.015em; }
+    .cscene .hero-lead { margin: 24px 0 30px; color: inherit; opacity: .75; }
+    .cscene .btn.line { color: inherit; box-shadow: inset 0 0 0 1.5px currentColor; }
+    .ccard { padding: 28px 28px 24px; border-radius: 26px; background: color-mix(in srgb, var(--cb) 70%, #fff 30%); box-shadow: 0 30px 60px -36px rgba(0, 0, 0, .45), inset 0 0 0 1px color-mix(in srgb, var(--cf) 10%, transparent); }
+    .ccard .kicker { color: inherit; opacity: .7; }
+    .ccard h2 { font: 400 clamp(30px, 2.8vw, 46px)/1.02 var(--font-head); }
+    .ccard p { margin: 12px 0 18px; opacity: .78; }
+    .cprice { display: flex; align-items: center; gap: 14px; padding-top: 16px; border-top: 1px solid color-mix(in srgb, var(--cf) 14%, transparent); }
+    .cprice span { opacity: .7; font-size: 14px; }
+    .cprice b { margin-left: auto; font-size: 22px; }
+    .cco { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+    .cco svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    .cco path { stroke: currentColor; stroke-width: 1.5; fill: none; opacity: .6; }
+    .co { position: absolute; left: 0; top: 0; padding: 10px 14px; border-radius: 16px; background: #fff; color: #2A1D16; font: 500 13px/1.3 var(--font-body); white-space: nowrap; opacity: 0; box-shadow: 0 16px 30px -18px rgba(0, 0, 0, .5); }
+    .co b { display: block; font: 400 18px/1.1 var(--font-head); }
+    .co small { color: #7A685B; }
+    .co::before { content: ""; position: absolute; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: #E2A43A; box-shadow: 0 0 0 4px rgba(226, 164, 58, .3); }
+    .co.l::before { right: -5px; }
+    .co.r::before { left: -5px; }
+    .cbig { position: absolute; right: var(--pad); bottom: 12vh; z-index: 4; display: flex; align-items: baseline; gap: 12px; margin: 0; opacity: 0; transform: translateY(30px); transition: opacity .6s, transform .9s cubic-bezier(.2, .8, .2, 1); pointer-events: none; }
+    .cbig b { font: 400 clamp(120px, 15vw, 240px)/.8 var(--font-head); }
+    .cbig span { font: 400 clamp(28px, 3vw, 46px)/1 var(--font-head); }
+    .cbig.on { opacity: 1; transform: none; }
+    .cbar { position: absolute; left: var(--pad); right: var(--pad); bottom: 24px; z-index: 4; display: flex; gap: 6px; }
+    .cbar i { flex: 1; height: 3px; border-radius: 3px; background: color-mix(in srgb, currentColor 18%, transparent); overflow: hidden; }
+    .cbar i::after { content: ""; display: block; height: 100%; background: currentColor; transform: scaleX(var(--f, 0)); transform-origin: left; }
+    .chint { position: absolute; left: 50%; bottom: 48px; z-index: 4; display: flex; align-items: center; gap: 10px; transform: translateX(-50%); font-weight: 600; font-size: 14px; opacity: .7; transition: opacity .4s; }
+    .chint i { position: relative; width: 22px; height: 34px; border-radius: 12px; border: 1.5px solid currentColor; }
+    .chint i::after { content: ""; position: absolute; left: 50%; top: 6px; width: 4px; height: 7px; margin-left: -2px; border-radius: 2px; background: #E2A43A; animation: cwheel 1.6s ease-in-out infinite; }
+    @keyframes cwheel { 60% { transform: translateY(10px); opacity: 0; } 61% { transform: none; opacity: 0; } 100% { opacity: 1; } }
+    @media (max-width: 760px) {
+      .cshow { height: 440vh; }
+      .cword { top: 32%; font-size: 34vw; }
+      .cscene, .cscene.chero { left: 14px; right: 14px; top: auto; bottom: 56px; width: auto; transform: translateY(30px); }
+      .cscene.on { transform: none; }
+      .cscene.chero h1 { font-size: clamp(34px, 10vw, 48px); }
+      .cscene .hero-lead { margin: 12px 0 18px; font-size: 15px; }
+      .ccard { padding: 20px 18px 18px; }
+      .ccard h2 { font-size: 26px; }
+      .ccard p { font-size: 14px; margin: 8px 0 12px; }
+      .cbig { right: 16px; top: 96px; bottom: auto; }
+      .cbig b { font-size: 26vw; }
+      .chint { display: none; }
+      .co { padding: 7px 10px; font-size: 11px; }
+      .co b { font-size: 14px; }
+    }
+
     /* меню: фон под вкладку */
     .menu { background: var(--tab-bg, var(--bg)); transition: background-color .9s cubic-bezier(.2, .8, .2, 1); }
 
@@ -220,30 +278,46 @@
 </header>
 
 <main id="top">
-  <section class="hero">
-    <div>
-      <h1 class="lines" data-now><span class="ln"><span>Кофе, ради</span></span><span class="ln"><span>которого</span></span><span class="ln"><span>сворачивают</span></span><span class="ln"><span>с дороги</span></span></h1>
-      <p class="hero-lead" data-r data-now style="--d:.45s">Обжариваем зерно сами, печём круассаны каждое утро. Закажите на сайте — заберёте горячим, без очереди.</p>
-      <div class="hero-actions" data-r data-now style="--d:.6s">
-        <a class="btn" href="#menu">Заказать навынос</a>
-        <a class="btn line" href="#visit">Как добраться</a>
+  <section class="cshow" id="cshow" aria-label="Стакан кофе в 3D: слои, обжарка, 5 минут">
+    <div class="cshow-stick" id="cstick">
+      <p class="cword" aria-hidden="true"><span id="cWord">DALA</span></p>
+      <canvas id="cup3d" aria-hidden="true"></canvas>
+      <div class="cco" aria-hidden="true">
+        <svg id="cLines"></svg>
+        <span class="co r" data-part="foam"><b>Бархатная пена</b><small>1 см, рисуем сердце</small></span>
+        <span class="co r" data-part="milk"><b>Молоко 3,2%</b><small>взбиваем до 65°</small></span>
+        <span class="co r" data-part="shot"><b>Двойной эспрессо</b><small>Бразилия и Эфиопия</small></span>
       </div>
-      <div class="hero-meta" data-r data-now style="--d:.75s">
-        <p><b>7:30</b>открываемся</p>
-        <p><b>5 мин</b>готовим заказ</p>
-        <p><b>100%</b>арабика</p>
+
+      <div class="cscene chero on">
+        <h1>Кофе, ради которого сворачивают с дороги</h1>
+        <p class="hero-lead">Обжариваем зерно сами, печём круассаны каждое утро. Закажите на сайте — заберёте горячим, без очереди.</p>
+        <div class="hero-actions">
+          <a class="btn" href="#menu">Заказать навынос</a>
+          <a class="btn line" href="#visit">Как добраться</a>
+        </div>
       </div>
-    </div>
-    <div class="cup" data-r="scale" data-now style="--d:.2s">
-      <svg class="ring" viewBox="0 0 500 500" aria-hidden="true">
-        <defs><path id="circle" d="M250,250 m-226,0 a226,226 0 1,1 452,0 a226,226 0 1,1 -452,0"/></defs>
-        <text><textPath href="#circle">свежая обжарка • заказ навынос • завтраки весь день • свежая обжарка • заказ навынос •</textPath></text>
-      </svg>
-      <div class="photo"><img src="https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=1100&q=80" alt="Бариста рисует латте-арт"></div>
-      <div class="steam" aria-hidden="true"><i></i><i></i><i></i></div>
-      <span class="bean b1" data-speed="-.15" aria-hidden="true"></span>
-      <span class="bean b2" data-speed=".12" aria-hidden="true"></span>
-      <span class="bean b3" data-speed="-.08" aria-hidden="true"></span>
+      <div class="cscene ccard">
+        <p class="kicker">Капучино DALA</p>
+        <h2>Три слоя. Ничего лишнего.</h2>
+        <p>Эспрессо, молоко и пена в правильной пропорции. Без сиропов, если не попросите.</p>
+        <div class="cprice"><span>300 мл</span><b>1 400 ₸</b><button class="add" type="button" data-add="Капучино" data-price="1400" aria-label="Добавить капучино">+</button></div>
+      </div>
+      <div class="cscene ccard">
+        <p class="kicker">Своя обжарка</p>
+        <h2>Свежее зерно каждую неделю</h2>
+        <p>Жарим маленькими партиями прямо в кофейне. Пачку для дома можно забрать вместе с заказом.</p>
+        <div class="cprice"><span>зерно 250 г</span><b>6 500 ₸</b><button class="add" type="button" data-add="Зерно DALA 250 г" data-price="6500" aria-label="Добавить пачку зерна">+</button></div>
+      </div>
+      <div class="cscene ccard">
+        <p class="kicker">Заказ навынос</p>
+        <h2>Готово за 5 минут</h2>
+        <p>Оформите заказ на сайте, пока едете. Напишем на стакане ваше имя и не заставим ждать.</p>
+        <div class="hero-actions"><a class="btn" href="#menu">Открыть меню</a></div>
+      </div>
+      <p class="cbig" aria-hidden="true"><b>5</b><span>минут</span></p>
+      <div class="cbar" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <p class="chint" id="cHint"><i></i>Листайте — разрежем стакан</p>
     </div>
   </section>
 
@@ -253,84 +327,6 @@
       <span>эспрессо</span><i></i><span>капучино</span><i></i><span>раф</span><i></i><span>флэт уайт</span><i></i><span>колд брю</span><i></i><span>круассаны</span><i></i>
     </div>
   </div>
-
-  <section class="flavors" id="flavors" aria-label="Вкусы недели">
-    <div class="fl-stage">
-      <p class="fl-kicker">Вкусы недели<span>Листайте вниз</span></p>
-      <div class="fl-words back" aria-hidden="true">
-        <span class="fl-word">Карамель</span>
-        <span class="fl-word">Ваниль</span>
-        <span class="fl-word" style="--fs:1.5">Лёд</span>
-        <span class="fl-word">Корица</span>
-      </div>
-      <div class="fl-cups">
-        <div class="fl-cup"><img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=700&q=80" alt="Карамельный раф в кружке" loading="lazy"></div>
-        <div class="fl-cup"><img src="https://images.unsplash.com/photo-1512568400610-62da28bc8a13?auto=format&fit=crop&w=700&q=80" alt="Ванильный латте с рисунком на пенке" loading="lazy"></div>
-        <div class="fl-cup"><img src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=700&q=80" alt="Айс латте со льдом" loading="lazy"></div>
-        <div class="fl-cup"><img src="https://images.unsplash.com/photo-1485808191679-5f86510681a2?auto=format&fit=crop&w=700&q=80" alt="Капучино с корицей" loading="lazy"></div>
-      </div>
-      <div class="fl-words front" aria-hidden="true">
-        <span class="fl-word">Карамель</span>
-        <span class="fl-word">Ваниль</span>
-        <span class="fl-word" style="--fs:1.5">Лёд</span>
-        <span class="fl-word">Корица</span>
-      </div>
-      <div class="fl-floats" aria-hidden="true">
-        <span class="fl-float" data-f="0" data-k="1.5" data-rot="40" style="--x:15%;--y:20%"><i class="ing drop"></i></span>
-        <span class="fl-float" data-f="0" data-k=".7" data-rot="-30" style="--x:76%;--y:24%"><i class="ing bean" style="--r:-30deg"></i></span>
-        <span class="fl-float" data-f="0" data-k="1.1" data-rot="30" style="--x:68%;--y:72%"><i class="ing drop" style="--s:.6"></i></span>
-        <span class="fl-float" data-f="0" data-k=".5" data-rot="50" style="--x:27%;--y:68%"><i class="ing bean" style="--r:40deg;--s:.7"></i></span>
-        <span class="fl-float" data-f="0" data-k="1.8" data-rot="-20" style="--x:86%;--y:52%"><i class="ing bean" style="--r:10deg;--s:.5"></i></span>
-
-        <span class="fl-float" data-f="1" data-k="1.4" data-rot="35" style="--x:18%;--y:24%"><svg class="ing flower" viewBox="0 0 60 60"><g fill="#FFF8E6"><ellipse cx="30" cy="15" rx="9" ry="15"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(72 30 30)"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(144 30 30)"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(216 30 30)"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(288 30 30)"/></g><circle cx="30" cy="30" r="6" fill="#F0B93A"/></svg></span>
-        <span class="fl-float" data-f="1" data-k=".8" data-rot="-25" style="--x:77%;--y:16%"><i class="ing pod" style="--r:28deg"></i></span>
-        <span class="fl-float" data-f="1" data-k="1.2" data-rot="20" style="--x:72%;--y:66%"><svg class="ing flower" viewBox="0 0 60 60" style="--s:.6"><g fill="#FFF8E6"><ellipse cx="30" cy="15" rx="9" ry="15"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(72 30 30)"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(144 30 30)"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(216 30 30)"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(288 30 30)"/></g><circle cx="30" cy="30" r="6" fill="#F0B93A"/></svg></span>
-        <span class="fl-float" data-f="1" data-k=".55" data-rot="40" style="--x:24%;--y:64%"><i class="ing foam"></i></span>
-        <span class="fl-float" data-f="1" data-k="1.7" data-rot="-15" style="--x:88%;--y:46%"><i class="ing foam" style="--s:.55"></i></span>
-
-        <span class="fl-float" data-f="2" data-k="1.5" data-rot="45" style="--x:16%;--y:18%"><i class="ing cube" style="--r:14deg"></i></span>
-        <span class="fl-float" data-f="2" data-k=".75" data-rot="-35" style="--x:76%;--y:22%"><i class="ing cube" style="--r:-20deg;--s:.75"></i></span>
-        <span class="fl-float" data-f="2" data-k="1.1" data-rot="30" style="--x:70%;--y:70%"><i class="ing cube" style="--r:30deg;--s:.9"></i></span>
-        <span class="fl-float" data-f="2" data-k=".5" data-rot="-40" style="--x:25%;--y:66%"><i class="ing cube" style="--r:-8deg;--s:.6"></i></span>
-        <span class="fl-float" data-f="2" data-k="1.9" data-rot="25" style="--x:88%;--y:50%"><i class="ing cube" style="--r:22deg;--s:.45"></i></span>
-
-        <span class="fl-float" data-f="3" data-k="1.4" data-rot="30" style="--x:21%;--y:21%"><i class="ing stick" style="--r:-35deg"></i></span>
-        <span class="fl-float" data-f="3" data-k=".8" data-rot="-45" style="--x:76%;--y:20%"><i class="ing star"></i></span>
-        <span class="fl-float" data-f="3" data-k="1.15" data-rot="25" style="--x:70%;--y:64%"><i class="ing stick" style="--r:55deg;--s:.7"></i></span>
-        <span class="fl-float" data-f="3" data-k=".55" data-rot="60" style="--x:24%;--y:66%"><i class="ing star" style="--s:.65"></i></span>
-        <span class="fl-float" data-f="3" data-k="1.8" data-rot="-30" style="--x:88%;--y:48%"><i class="ing bean" style="--r:20deg;--s:.55"></i></span>
-      </div>
-      <div class="fl-info">
-        <article class="fl-item" data-bg="#E7B46A" data-fg="#3A1F0E">
-          <h3>Карамельный раф</h3>
-          <p>Сливки, домашняя солёная карамель и двойной эспрессо. 350 мл</p>
-          <div class="buy"><span class="price">1 900 ₸</span><button class="add" type="button" data-add="Карамельный раф" data-price="1900" aria-label="Добавить карамельный раф">+</button></div>
-        </article>
-        <article class="fl-item" data-bg="#F3E2A9" data-fg="#45330F">
-          <h3>Ванильный латте</h3>
-          <p>Мадагаскарская ваниль, бархатное молоко и наш эспрессо. 350 мл</p>
-          <div class="buy"><span class="price">1 700 ₸</span><button class="add" type="button" data-add="Ванильный латте" data-price="1700" aria-label="Добавить ванильный латте">+</button></div>
-        </article>
-        <article class="fl-item" data-bg="#CFE3EC" data-fg="#0F3440">
-          <h3>Айс латте</h3>
-          <p>Много льда, холодное молоко и двойной шот. 400 мл</p>
-          <div class="buy"><span class="price">1 600 ₸</span><button class="add" type="button" data-add="Айс латте" data-price="1600" aria-label="Добавить айс латте">+</button></div>
-        </article>
-        <article class="fl-item" data-bg="#9C4424" data-fg="#FCEADB">
-          <h3>Пряный капучино</h3>
-          <p>Корица, бадьян и немного мёда поверх пенки. 300 мл</p>
-          <div class="buy"><span class="price">1 600 ₸</span><button class="add" type="button" data-add="Пряный капучино" data-price="1600" aria-label="Добавить пряный капучино">+</button></div>
-        </article>
-      </div>
-      <nav class="fl-nav" aria-label="Вкусы недели">
-        <button type="button">Карамель</button>
-        <button type="button">Ваниль</button>
-        <button type="button">Лёд</button>
-        <button type="button">Корица</button>
-      </nav>
-    </div>
-  </section>
-
   <section class="menu" id="menu" data-tabs>
     <div class="menu-head">
       <div>
@@ -619,6 +615,247 @@
       if (document.fonts) document.fonts.ready.then(measure);
     }
   })();
+</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+<script type="module">
+  import { createStage, THREE, track, progressOf, sceneAt, smooth, clamp, lerp, damp, small, still, callouts, canvasTexture, blobShadow } from './assets/kit3d.js';
+
+  const show = document.getElementById('cshow');
+  const stick = document.getElementById('cstick');
+  const canvas = document.getElementById('cup3d');
+  const scenes = Array.from(show.querySelectorAll('.cscene'));
+  const word = document.getElementById('cWord');
+  const big = show.querySelector('.cbig');
+  const bars = Array.from(show.querySelectorAll('.cbar i'));
+  const hint = document.getElementById('cHint');
+  const MARKS = [0, 0.18, 0.46, 0.72];
+  const WORDS = ['DALA', 'Слои', 'Обжарка', 'Навынос'];
+  // фон и текст каждой сцены: сливки → карамель → эспрессо → зелёный DALA
+  const COLORS = [['#EFE7DA', '#2A1D16'], ['#E6B56E', '#2E1A0C'], ['#2A1D16', '#F3EADC'], ['#3F5A3C', '#F6F0E6']];
+
+  let cur = -1;
+  const ui = () => {
+    const p = progressOf(show);
+    const i = sceneAt(p, MARKS);
+    if (i !== cur) {
+      cur = i;
+      scenes.forEach((s, k) => s.classList.toggle('on', k === i));
+      word.classList.add('swap');
+      setTimeout(() => { word.textContent = WORDS[i]; word.classList.remove('swap'); }, 260);
+      stick.style.setProperty('--cb', COLORS[i][0]);
+      stick.style.setProperty('--cf', COLORS[i][1]);
+      big.classList.toggle('on', i === 3);
+    }
+    bars.forEach((b, k) => b.style.setProperty('--f', clamp((p - MARKS[k]) / ((MARKS[k + 1] ?? 1) - MARKS[k])).toFixed(3)));
+    hint.style.opacity = p > 0.03 ? '0' : '.7';
+  };
+  window.addEventListener('scroll', ui, { passive: true });
+  ui();
+
+  const st = createStage(canvas, { fov: small ? 38 : 28, exposure: 1.05 });
+  const { scene, camera } = st;
+  const key = new THREE.DirectionalLight(0xfff4e6, 2.2);
+  key.position.set(-3, 5, 4);
+  scene.add(key);
+
+  // ---------- бумажный стакан из трёх колец, внутри напиток слоями ----------
+  const V2 = THREE.Vector2;
+  const R0 = 0.6;
+  const R1 = 0.84;
+  const HT = 2.2;
+  const radiusAt = (y) => R0 + (R1 - R0) * (y / HT);
+  const paper = new THREE.MeshPhysicalMaterial({ color: 0xFBF8F2, roughness: 0.62, clearcoat: 0.15 });
+  const band = (y0, y1, r = 0) => new THREE.LatheGeometry([new V2(radiusAt(y0) + r, y0), new V2(radiusAt(y1) + r, y1)], 96, 0, Math.PI * 2);
+  const sleeveTex = canvasTexture(1024, 256, (g, w, h) => {
+    g.fillStyle = '#B98B5E';
+    g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 2600; i++) {
+      g.fillStyle = 'rgba(70,40,20,' + (Math.random() * 0.12).toFixed(2) + ')';
+      g.fillRect(Math.random() * w, Math.random() * h, 2, 2);
+    }
+    g.fillStyle = '#2A1D16';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    for (let k = 0; k < 2; k++) {
+      const cx = w * (0.25 + k * 0.5);
+      g.font = '400 118px "Yeseva One", Georgia, serif';
+      g.fillText('DALA', cx, h / 2 + 6);
+      g.save();
+      g.translate(cx - 180, h / 2);
+      g.rotate(0.4);
+      g.beginPath();
+      g.ellipse(0, 0, 22, 32, 0, 0, Math.PI * 2);
+      g.fill();
+      g.strokeStyle = '#E2A43A';
+      g.lineWidth = 5;
+      g.beginPath();
+      g.moveTo(-4, -26);
+      g.quadraticCurveTo(10, 0, -4, 26);
+      g.stroke();
+      g.restore();
+    }
+  });
+  sleeveTex.wrapS = THREE.RepeatWrapping;
+  const sleeveMat = new THREE.MeshPhysicalMaterial({ map: sleeveTex, roughness: 0.85 });
+  const drink = (c, r = 0.35) => new THREE.MeshPhysicalMaterial({ color: c, roughness: r, clearcoat: 0.3 });
+
+  const cup = new THREE.Group();
+  const segs = [];
+  const LAYERS = [[0.02, 0.78, 0x2E1A0E], [0.78, 1.56, 0xB68558], [1.56, 2.1, 0xF2E3C6]];
+  LAYERS.forEach(([y0, y1, col], i) => {
+    const g = new THREE.Group();
+    g.add(new THREE.Mesh(band(y0, y1), paper));
+    const inner = new THREE.Mesh(new THREE.CylinderGeometry(radiusAt(y1) * 0.97, radiusAt(y0) * 0.97, y1 - y0, 64, 1, false), drink(col, i === 2 ? 0.75 : 0.25));
+    inner.position.y = (y0 + y1) / 2;
+    g.add(inner);
+    if (i === 0) {
+      const bottom = new THREE.Mesh(new THREE.CircleGeometry(R0, 64), paper);
+      bottom.rotation.x = Math.PI / 2;
+      g.add(bottom);
+    }
+    if (i === 1) g.add(new THREE.Mesh(band(0.88, 1.5, 0.014), sleeveMat));
+    if (i === 2) {
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(R1 + 0.01, 0.035, 12, 96), paper);
+      rim.rotation.x = Math.PI / 2;
+      rim.position.y = HT;
+      const lidPts = [[R1 + 0.06, HT - 0.02], [R1 + 0.07, HT + 0.06], [R1 - 0.02, HT + 0.12], [0.78, HT + 0.2], [0.5, HT + 0.24], [0.1, HT + 0.25], [0, HT + 0.25]].map(([a, b]) => new V2(a, b));
+      const lid = new THREE.Mesh(new THREE.LatheGeometry(lidPts, 96), new THREE.MeshPhysicalMaterial({ color: 0xFFFFFF, roughness: 0.3, clearcoat: 0.6 }));
+      const hole = new THREE.Mesh(new THREE.CapsuleGeometry(0.06, 0.16, 4, 12), drink(0x1b120c, 0.6));
+      hole.rotation.z = Math.PI / 2;
+      hole.position.set(0.52, HT + 0.215, 0);
+      g.add(rim, lid, hole);
+    }
+    segs.push({ g, base: 0, i });
+    cup.add(g);
+  });
+  cup.position.y = -1.15;
+  scene.add(cup);
+
+  // подставка и светящееся кольцо-портал за стаканом
+  const stand = new THREE.Group();
+  const plinth = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.6, 0.22, 96), new THREE.MeshPhysicalMaterial({ color: 0xF6EFE4, roughness: 0.35, clearcoat: 0.8 }));
+  plinth.position.y = -1.27;
+  const edge = new THREE.Mesh(new THREE.TorusGeometry(1.52, 0.02, 8, 120), new THREE.MeshBasicMaterial({ color: 0xE2A43A }));
+  edge.rotation.x = Math.PI / 2;
+  edge.position.y = -1.16;
+  const portal = new THREE.Mesh(new THREE.TorusGeometry(2.25, 0.045, 16, 160), new THREE.MeshPhysicalMaterial({ color: 0xE2A43A, emissive: 0xE2A43A, emissiveIntensity: 0.6, metalness: 0.6, roughness: 0.25 }));
+  portal.position.set(0, 0.1, -1.4);
+  stand.add(plinth, edge, portal);
+  scene.add(stand);
+  const shadow = blobShadow(1, 0.35);
+  shadow.position.y = -1.155;
+  shadow.scale.setScalar(1.25);
+  scene.add(shadow);
+
+  // кольцо текста вокруг стакана
+  const ringTex = canvasTexture(2048, 128, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    g.fillStyle = '#E2A43A';
+    g.font = '700 74px "Golos Text", Arial, sans-serif';
+    g.textBaseline = 'middle';
+    const s = 'СВЕЖАЯ ОБЖАРКА  •  DALA COFFEE  •  ЗАКАЗ НАВЫНОС  •  ';
+    let x = 0;
+    while (x < w) { g.fillText(s, x, h / 2 + 4); x += g.measureText(s).width; }
+  });
+  ringTex.wrapS = THREE.RepeatWrapping;
+  const ring = new THREE.Mesh(new THREE.CylinderGeometry(1.7, 1.7, 0.34, 128, 1, true), new THREE.MeshBasicMaterial({ map: ringTex, transparent: true, side: THREE.DoubleSide, depthWrite: false, toneMapped: false }));
+  ring.rotation.set(0.22, 0, -0.14);
+  scene.add(ring);
+
+  // зёрна летают вокруг
+  const beanGeo = (() => {
+    const g = new THREE.SphereGeometry(1, 32, 24);
+    const p = g.attributes.position;
+    for (let i = 0; i < p.count; i++) {
+      let x = p.getX(i);
+      let y = p.getY(i);
+      const z = p.getZ(i);
+      if (y > 0) y -= 0.32 * Math.exp(-(x * x) / 0.02) * y;
+      p.setXYZ(i, x * 0.62, y * 0.42, z * 0.88);
+    }
+    g.computeVertexNormals();
+    return g;
+  })();
+  const beanMat = new THREE.MeshPhysicalMaterial({ color: 0x4A2A16, roughness: 0.38, clearcoat: 0.7, clearcoatRoughness: 0.3 });
+  const beans = Array.from({ length: 16 }, (_, i) => {
+    const m = new THREE.Mesh(beanGeo, beanMat);
+    const s = 0.13 + Math.random() * 0.1;
+    m.scale.setScalar(s);
+    scene.add(m);
+    return { m, a: (i / 16) * Math.PI * 2, r: 2.0 + Math.random() * 1.4, y: -0.8 + Math.random() * 2.6, sp: 0.15 + Math.random() * 0.25, rx: Math.random() * 3, ry: Math.random() * 3 };
+  });
+
+  // ---------- подписи слоёв ----------
+  const coEls = Array.from(show.querySelectorAll('.co'));
+  const segMid = (i) => () => {
+    const v = new THREE.Vector3(radiusAt((LAYERS[i][0] + LAYERS[i][1]) / 2) * 0.9, (LAYERS[i][0] + LAYERS[i][1]) / 2, 0);
+    return segs[i].g.localToWorld(v);
+  };
+  const drawCo = callouts(st, document.getElementById('cLines'), coEls.map((el) => ({
+    el,
+    anchor: segMid(el.dataset.part === 'foam' ? 2 : el.dataset.part === 'milk' ? 1 : 0),
+    dx: 90,
+    dy: 0
+  })));
+
+  // ---------- сценарий ----------
+  const SPLIT = [[0, 0], [0.16, 0], [0.26, 1], [0.4, 1], [0.48, 0], [1, 0]];
+  const RING = [[0, 0], [0.42, 0], [0.5, 1], [0.68, 1], [0.74, 0], [1, 0]];
+  // угол, высота, дистанция, взгляд по высоте, сдвиг кадра
+  const CAM = [
+    [0, [0.4, 0.9, 8.6, 0.0, 0.16]],
+    [0.18, [0.4, 0.9, 8.6, 0.0, 0.16]],
+    [0.3, [0.15, 3.4, 10.6, 0.65, 0.12]],
+    [0.4, [0.1, 3.0, 10.6, 0.65, 0.12]],
+    [0.46, [0.0, 1.6, 9.2, 0.0, 0.14]],
+    [0.6, [-0.4, 2.0, 8.4, 0.0, 0.14]],
+    [0.74, [-0.2, 0.4, 4.4, 0.25, 0.1]],
+    [1, [-0.1, 0.5, 4.8, 0.25, 0.1]]
+  ];
+  let p = 0;
+  let intro = still ? 1 : 0;
+  const shiftView = (sx, sy) => {
+    const W = st.size.w;
+    const H = st.size.h;
+    if (!sx && !sy) { camera.clearViewOffset(); return; }
+    camera.setViewOffset(W * (1 + 2 * Math.abs(sx)), H * (1 + 2 * Math.abs(sy)), sx > 0 ? 0 : 2 * Math.abs(sx) * W, sy > 0 ? 2 * sy * H : 0, W, H);
+  };
+  st.onTick((dt, t) => {
+    p = damp(p, progressOf(show), 6, dt);
+    intro = Math.min(1, intro + dt / 1.6);
+    const narrow = st.size.w < 760;
+    const ti = smooth(0, 1, intro);
+
+    // стакан опускается на подставку и медленно вращается
+    const sp = track(SPLIT, p);
+    segs.forEach((s) => { s.g.position.y = s.i * sp * 0.7; });
+    cup.position.y = -1.15 + (1 - ti) * 2.4 + Math.sin(t * 1.1) * 0.03;
+    cup.rotation.y = t * 0.3 + p * 4.5;
+    cup.rotation.z = Math.sin(t * 0.7) * 0.03;
+    portal.rotation.z = t * 0.2;
+    portal.scale.setScalar(1 + Math.sin(t * 1.4) * 0.015);
+
+    const rv = track(RING, p);
+    ring.visible = rv > 0.01;
+    ring.scale.set(rv, 1, rv);
+    ring.material.opacity = rv;
+    ring.rotation.y = -t * 0.6;
+
+    beans.forEach((b) => {
+      const a = b.a + t * b.sp * (1 + rv * 2) + p * 3;
+      b.m.position.set(Math.cos(a) * b.r, b.y + Math.sin(t * 0.9 + b.a) * 0.15, Math.sin(a) * b.r - 0.4);
+      b.m.rotation.set(b.rx + t * 0.6, b.ry + t * 0.4, 0);
+    });
+
+    const c = track(CAM, p);
+    const ang = c[0] + st.pointer.x * 0.1;
+    const dist = c[2] * (narrow ? 1.6 : 1);
+    camera.position.set(Math.sin(ang) * dist, c[1] - st.pointer.y * 0.2 + (narrow ? 0.3 : 0), Math.cos(ang) * dist);
+    camera.lookAt(0, c[3], 0);
+    shiftView(narrow ? 0 : c[4], narrow ? 0.17 : 0);
+
+    drawCo(smooth(0.22, 0.27, p) * (1 - smooth(0.4, 0.45, p)));
+  });
 </script>
 </body>
 </html>

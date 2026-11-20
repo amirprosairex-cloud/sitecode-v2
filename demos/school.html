@@ -4,13 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Bilim Center — учебный центр (демо)</title>
-  <meta name="description" content="Демо-сайт учебного центра от SiteCode: курсы, расписание, преподаватели и запись на пробный урок.">
+  <meta name="description" content="Демо-сайт учебного центра от SiteCode: 3D-робот встречает и ведёт по сайту, курсы, расписание со свободными местами и запись на пробный урок.">
   <meta name="robots" content="noindex">
   <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Nunito:wght@700;800;900&display=swap">
   <link rel="stylesheet" href="assets/demo.css">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js">
+  <link rel="preload" href="assets/models/robot.glb" as="fetch" crossorigin>
   <style>
     :root {
       --bg: #FFFAEF; --fg: #1A1A22; --muted: #66667A; --accent: #1A1A22; --accent-fg: #FFF;
@@ -40,9 +42,25 @@
     .nav a:hover { text-decoration: underline; text-decoration-thickness: 3px; text-decoration-color: var(--sun); }
     .hdr .btn { min-height: 48px; padding: 0 20px; font-size: 15px; }
 
+    /* ===== 3D-робот: живёт поверх страницы и ходит за вами по разделам ===== */
+    #robot3d { position: fixed; inset: 0; z-index: 40; width: 100vw; height: 100vh; pointer-events: none; opacity: 0; transition: opacity .8s; }
+    #robot3d.on { opacity: 1; }
+    .say {
+      position: fixed; left: 0; top: 0; z-index: 46; width: max-content; max-width: 250px; padding: 12px 16px;
+      border: 2.5px solid var(--fg); border-radius: 18px 18px 18px 4px; background: #fff; box-shadow: 4px 4px 0 var(--fg);
+      font: 800 16px/1.25 var(--font-head); pointer-events: none; opacity: 0; transform-origin: 0 100%;
+      transition: opacity .25s, scale .35s cubic-bezier(.2, 1.5, .4, 1);
+    }
+    .say.on { opacity: 1; }
+    .say.left { border-radius: 18px 18px 4px 18px; transform-origin: 100% 100%; }
+    .say.pop { scale: .6; }
+    .robot-spot { position: relative; pointer-events: none; }
+    .robot-hit { position: fixed; left: 0; top: 0; z-index: 41; width: 10px; height: 10px; border: 0; padding: 0; background: none; cursor: pointer; border-radius: 40%; }
+    .robot-hit:focus-visible { outline: 3px solid var(--coral); outline-offset: 4px; }
+
     /* первый экран */
-    .hero { position: relative; display: grid; grid-template-columns: 1.05fr .95fr; align-items: center; gap: clamp(30px, 5vw, 80px); min-height: 100vh; min-height: 100svh; padding: 120px var(--pad) 70px; overflow: hidden; }
-    .hero h1 { font: 900 clamp(46px, 6.4vw, 104px)/.98 var(--font-head); letter-spacing: -.035em; }
+    .hero { position: relative; display: grid; grid-template-columns: 1.05fr .95fr; align-items: center; gap: clamp(20px, 4vw, 60px); min-height: 100vh; min-height: 100svh; padding: 110px var(--pad) 60px; overflow: hidden; isolation: isolate; }
+    .hero h1 { font: 900 clamp(46px, 6.4vw, 108px)/.96 var(--font-head); letter-spacing: -.035em; }
     .hero .lead { margin: 26px 0 34px; }
     .subjects { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 34px; }
     .subjects span { padding: 10px 16px; border: 2px solid var(--fg); border-radius: 999px; font-weight: 600; font-size: 15px; background: #fff; }
@@ -50,57 +68,29 @@
     .subjects span:nth-child(2) { background: var(--mint); }
     .subjects span:nth-child(3) { background: var(--lilac); }
     .subjects span:nth-child(4) { background: var(--coral); }
-    .photo { position: relative; }
-    .photo .frame { position: relative; aspect-ratio: 1 / 1.05; overflow: hidden; border: 3px solid var(--fg); border-radius: 36px; box-shadow: 14px 14px 0 var(--sun); }
-    .photo .frame img { width: 100%; height: 100%; object-fit: cover; }
-    .sticker { position: absolute; display: grid; place-items: center; animation: float 5s ease-in-out infinite; }
-    .sticker svg { width: 100%; height: 100%; }
-    .st1 { left: -40px; top: 8%; width: 90px; height: 90px; }
-    .st2 { right: -26px; bottom: 18%; width: 74px; height: 74px; animation-delay: -1.7s; }
-    .st3 { right: 18%; bottom: -30px; width: 64px; height: 64px; animation-delay: -3.3s; }
-    button.tvbot { padding: 0; border: 0; background: none; color: inherit; text-align: left; }
-    @keyframes float { 50% { transform: translateY(-14px) rotate(8deg); } }
+    .hero-stage { position: relative; display: grid; place-items: end center; height: min(78vh, 700px); }
+    .hero-disc { position: absolute; left: 50%; top: 48%; z-index: -1; width: min(44vw, 620px); aspect-ratio: 1; border: 3px solid var(--fg); border-radius: 50%; background: radial-gradient(circle at 35% 30%, #C8EBFF, var(--sky) 52%, #5FB4EE); transform: translate(-50%, -50%); box-shadow: 14px 14px 0 var(--fg); }
+    .hero-disc::after { content: ""; position: absolute; inset: 9%; border: 2.5px dashed rgba(26, 26, 34, .35); border-radius: 50%; animation: spin 40s linear infinite; }
+    .hero-stage .robot-spot { width: 72%; height: 84%; margin-bottom: 4%; }
+    .hint { position: absolute; left: 50%; top: 2%; display: flex; align-items: center; gap: 8px; transform: translateX(-50%); padding: 8px 14px; border: 2px solid var(--fg); border-radius: 999px; background: #fff; font: 800 14px/1 var(--font-head); white-space: nowrap; }
+    .hint i { width: 10px; height: 10px; border-radius: 50%; background: var(--coral); animation: blink 1.4s ease-in-out infinite; }
+    @keyframes blink { 50% { opacity: .2; } }
     .doodle { position: absolute; z-index: -1; opacity: .9; }
-    .d1 { right: 4%; top: 12%; width: 160px; }
+    .d1 { left: 46%; top: 14%; width: 160px; }
     .d1 path { stroke-dasharray: 600; stroke-dashoffset: 600; animation: draw 3s ease forwards .8s; }
     @keyframes draw { to { stroke-dashoffset: 0; } }
 
-    /* Билим-бот: телевизор с лицом, которое смотрит на курсор */
-    .tvbot { position: absolute; z-index: 3; width: clamp(150px, 15vw, 230px); cursor: pointer; -webkit-tap-highlight-color: transparent; }
-    .tvbot svg { display: block; width: 100%; height: auto; overflow: visible; }
-    .tvbot .tv-body { animation: hop 3.2s cubic-bezier(.5, 0, .5, 1) infinite; transform-box: view-box; transform-origin: 120px 250px; }
-    .tvbot.jump .tv-body { animation: jump .6s cubic-bezier(.2, 1.4, .4, 1); }
-    .tvbot .tv-ant { transform-box: view-box; transform-origin: 120px 64px; animation: wob 2.6s ease-in-out infinite; }
-    .tvbot .tv-arm { transform-box: view-box; transform-origin: 28px 142px; animation: wave 1.6s ease-in-out infinite; }
-    .tvbot .tv-eyes rect { transform-box: fill-box; transform-origin: center; transition: transform .12s; }
-    .tvbot.blink .tv-eyes rect { transform: scaleY(.12); }
-    .tvbot.happy .tv-eyes rect { transform: scaleY(.4) translateY(-6px); }
-    .tvbot .tv-grin { opacity: 0; transition: opacity .2s; }
-    .tvbot.happy .tv-grin { opacity: 1; }
-    .tvbot.happy .tv-smile { opacity: 0; }
-    .tvbot .tv-shadow { transform-box: fill-box; transform-origin: center; animation: shadow 3.2s cubic-bezier(.5, 0, .5, 1) infinite; }
-    @keyframes hop { 0%, 60%, 100% { transform: none; } 70% { transform: translateY(-14px) rotate(-2deg); } 80% { transform: translateY(0) scale(1.03, .97); } }
-    @keyframes jump { 40% { transform: translateY(-34px) rotate(6deg); } 70% { transform: translateY(0) scale(1.06, .94); } }
-    @keyframes wob { 50% { transform: rotate(7deg); } }
-    @keyframes wave { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-26deg); } }
-    @keyframes shadow { 70% { transform: scaleX(.8); opacity: .6; } }
-    .tv-say {
-      position: absolute; left: 62%; bottom: 92%; width: max-content; max-width: 230px; padding: 12px 16px;
-      border: 2.5px solid var(--fg); border-radius: 18px 18px 18px 4px; background: #fff; box-shadow: 4px 4px 0 var(--fg);
-      font: 800 16px/1.25 var(--font-head); transform-origin: 0 100%; transition: transform .35s cubic-bezier(.2, 1.5, .4, 1), opacity .2s;
-    }
-    .tv-say.swap { transform: scale(.6); opacity: 0; }
-    .hero .tvbot { left: -64px; bottom: -58px; }
-    .form-wrap { position: relative; }
-    .form-wrap form { position: relative; z-index: 1; }
-    .tvbot.peek { right: 34px; top: -96px; z-index: 0; width: 130px; }
-    .tvbot.peek .tv-body, .tvbot.peek .tv-shadow { animation: none; }
-    .tvbot.peek .tv-say { left: auto; right: 92%; bottom: 52%; border-radius: 18px 18px 4px 18px; transform-origin: 100% 100%; font-size: 14px; }
-    @media (prefers-reduced-motion: reduce) { .tvbot * { animation: none !important; } }
+    /* бегущая строка предметов */
+    .band { position: relative; z-index: 2; padding: 18px 0; border-block: 3px solid var(--fg); background: var(--fg); color: #fff; --gap: 26px; --dur: 28s; transform: rotate(-1.2deg); margin: 0 -2%; }
+    .band span { font: 900 clamp(24px, 3vw, 40px)/1 var(--font-head); }
+    .band i { width: 26px; height: 26px; border-radius: 8px; background: var(--sun); transform: rotate(14deg); }
+    .band i:nth-of-type(3n+2) { background: var(--mint); border-radius: 50%; }
+    .band i:nth-of-type(3n) { background: var(--coral); }
 
     /* курсы */
-    .courses { padding: 140px var(--pad) 110px; }
-    .courses-head { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 24px; margin-bottom: 54px; }
+    .courses { position: relative; padding: 150px var(--pad) 110px; }
+    .courses-head { display: grid; grid-template-columns: 1fr minmax(0, 26em) 170px; align-items: end; gap: 30px; margin-bottom: 54px; }
+    .courses-head .robot-spot { width: 170px; height: 220px; }
     .course-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
     .course { position: relative; display: flex; flex-direction: column; min-height: 400px; padding: 28px 24px 24px; border: 3px solid var(--fg); border-radius: 30px; background: var(--c, #fff); box-shadow: 6px 6px 0 var(--fg); transition: transform .4s cubic-bezier(.2, 1.4, .4, 1), box-shadow .4s; }
     .course:hover { transform: translate(-4px, -6px) rotate(-1.5deg); box-shadow: 10px 12px 0 var(--fg); }
@@ -116,8 +106,9 @@
     .course button:hover { transform: rotate(-10deg) scale(1.08); }
 
     /* расписание */
-    .schedule { padding: 110px var(--pad); background: var(--fg); color: #fff; }
+    .schedule { position: relative; padding: 110px var(--pad); background: var(--fg); color: #fff; }
     .schedule .lead { color: rgba(255, 255, 255, .7); margin-top: 18px; }
+    .schedule .robot-spot { position: absolute; right: var(--pad); top: 34px; width: 150px; height: 190px; }
     .days { display: flex; flex-wrap: wrap; gap: 8px; margin: 40px 0 26px; }
     .days button { min-width: 64px; min-height: 52px; padding: 0 16px; border: 2px solid rgba(255, 255, 255, .25); border-radius: 16px; background: none; color: #fff; font: 800 16px/1 var(--font-head); cursor: pointer; transition: background-color .3s, color .3s, border-color .3s; }
     .days button[aria-selected="true"] { background: var(--sun); border-color: var(--sun); color: var(--fg); }
@@ -134,7 +125,8 @@
     .lesson button { min-height: 44px; padding: 0 18px; border: 0; border-radius: 12px; background: #fff; color: var(--fg); font: 800 14px/1 var(--font-head); cursor: pointer; }
 
     /* преподаватели */
-    .teachers { padding: 130px var(--pad); }
+    .teachers { position: relative; padding: 130px var(--pad); }
+    .teachers .robot-spot { position: absolute; right: var(--pad); top: 90px; width: 150px; height: 190px; }
     .t-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin-top: 54px; }
     .flip { perspective: 1200px; aspect-ratio: 3 / 4; }
     .flip-in { position: relative; width: 100%; height: 100%; transition: transform .8s cubic-bezier(.2, .8, .2, 1); transform-style: preserve-3d; }
@@ -162,20 +154,29 @@
     .trial .lead { color: var(--fg); margin: 20px 0; }
     .trial ul { display: grid; gap: 12px; font-weight: 600; }
     .trial li::before { content: "✓"; display: inline-grid; place-items: center; width: 26px; height: 26px; margin-right: 10px; border-radius: 8px; background: var(--fg); color: var(--sun); font-size: 14px; }
+    .trial .robot-spot { width: 210px; height: 270px; margin-top: 26px; }
     .trial form { padding: 28px; border: 3px solid var(--fg); border-radius: 26px; background: #fff; --accent: #1A1A22; }
 
     footer { display: flex; justify-content: space-between; gap: 16px; padding: 28px var(--pad) 100px; border-top: 2px solid var(--line); font-size: 14px; color: var(--muted); }
+    footer a { color: inherit; }
 
     @media (max-width: 1060px) {
       .nav { display: none; }
       .hdr .btn { margin-left: auto; }
       .hero, .trial { grid-template-columns: 1fr; }
-      .photo { max-width: 520px; margin: 30px 18px 0 0; }
+      .hero { padding-top: 96px; gap: 10px; }
+      .hero-stage { order: -1; height: 52vh; }
+      .hero-disc { width: min(78vw, 440px); }
+      .courses-head { grid-template-columns: 1fr 130px; }
+      .courses-head .lead { grid-column: 1 / -1; grid-row: 2; }
+      .courses-head .robot-spot { width: 130px; height: 170px; grid-column: 2; grid-row: 1; }
       .course-grid, .t-grid { grid-template-columns: 1fr 1fr; }
       .lesson { grid-template-columns: 90px 1fr auto; }
       .lesson .who, .lesson .seats { grid-column: 2; }
       .lesson button { grid-column: 3; grid-row: 1 / span 3; }
       .stats { grid-template-columns: 1fr; }
+      .schedule .robot-spot, .teachers .robot-spot { width: 110px; height: 140px; top: 40px; }
+      .trial .robot-spot { width: 150px; height: 190px; }
     }
     @media (max-width: 600px) {
       .course-grid { grid-template-columns: 1fr; }
@@ -187,10 +188,7 @@
       .lesson { grid-template-columns: 1fr auto; padding: 16px; }
       .lesson time, .lesson h4, .lesson .who, .lesson .seats { grid-column: 1; }
       .lesson button { grid-column: 2; grid-row: 1 / span 4; }
-      .st1 { left: -16px; } .st2 { right: -12px; }
-      .hero .tvbot { left: -10px; bottom: -70px; width: 128px; }
-      .hero .tv-say { font-size: 14px; max-width: 190px; }
-      .tvbot.peek { width: 104px; top: -78px; right: 20px; }
+      .say { max-width: 190px; font-size: 14px; }
       footer { flex-direction: column; }
     }
   </style>
@@ -210,6 +208,10 @@
   <a class="btn" href="#trial">Пробный урок</a>
 </header>
 
+<canvas id="robot3d" aria-hidden="true"></canvas>
+<p class="say" id="say" aria-live="polite"></p>
+<button class="robot-hit" id="robotHit" type="button" aria-label="Билим-бот: нажмите, и он расскажет о центре"></button>
+
 <main id="top">
   <section class="hero">
     <svg class="doodle d1" viewBox="0 0 160 80" fill="none" aria-hidden="true"><path d="M4 60 C 30 10, 50 10, 60 40 S 90 70, 100 30 S 140 0, 156 30" stroke="#FF7A59" stroke-width="5" stroke-linecap="round"/></svg>
@@ -222,51 +224,25 @@
       </div>
       <div class="subjects" data-r data-now style="--d:.75s"><span>Английский</span><span>Математика</span><span>IELTS</span><span>Подготовка к школе</span></div>
     </div>
-    <div class="photo" data-r="scale" data-now style="--d:.2s">
-      <div class="frame"><img src="https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=1000&q=80" alt="Дети рисуют и занимаются на уроке"></div>
-      <button class="tvbot" id="tvbot" type="button" data-eyes="16" aria-label="Билим-бот: нажмите, и он расскажет о центре">
-        <span class="tv-say" id="tvSay" aria-live="polite">Привет! Я Билим-бот 👋</span>
-        <svg viewBox="0 0 240 280" aria-hidden="true">
-          <ellipse class="tv-shadow" cx="120" cy="266" rx="72" ry="9" fill="#1A1A22" opacity=".16"/>
-          <g class="tv-body">
-            <g class="tv-ant">
-              <path d="M102 64 L76 20 M140 64 L166 24" stroke="#1A1A22" stroke-width="5" stroke-linecap="round"/>
-              <circle cx="75" cy="17" r="11" fill="#FF7A59" stroke="#1A1A22" stroke-width="4"/>
-              <circle cx="167" cy="21" r="8" fill="#8CD0FF" stroke="#1A1A22" stroke-width="4"/>
-            </g>
-            <path d="M94 214 v32 M146 214 v32" stroke="#1A1A22" stroke-width="7" stroke-linecap="round"/>
-            <ellipse cx="88" cy="250" rx="18" ry="9" fill="#1A1A22"/>
-            <ellipse cx="152" cy="250" rx="18" ry="9" fill="#1A1A22"/>
-            <g class="tv-arm">
-              <path d="M28 142 C 8 130 4 106 12 86" stroke="#1A1A22" stroke-width="7" fill="none" stroke-linecap="round"/>
-              <circle cx="13" cy="80" r="12" fill="#fff" stroke="#1A1A22" stroke-width="4"/>
-            </g>
-            <path d="M212 146 C 230 158 232 176 222 190" stroke="#1A1A22" stroke-width="7" fill="none" stroke-linecap="round"/>
-            <circle cx="220" cy="195" r="12" fill="#fff" stroke="#1A1A22" stroke-width="4"/>
-            <rect x="24" y="62" width="192" height="156" rx="30" fill="#FFCC33" stroke="#1A1A22" stroke-width="5"/>
-            <rect x="42" y="80" width="130" height="120" rx="22" fill="#1A1A22"/>
-            <path d="M56 93 h34" stroke="#fff" stroke-opacity=".2" stroke-width="6" stroke-linecap="round"/>
-            <circle cx="194" cy="102" r="9" fill="#fff" stroke="#1A1A22" stroke-width="4"/>
-            <circle cx="194" cy="132" r="9" fill="#FF7A59" stroke="#1A1A22" stroke-width="4"/>
-            <path d="M184 162 h20 M184 172 h20 M184 182 h20" stroke="#1A1A22" stroke-width="4" stroke-linecap="round"/>
-            <g class="pupil">
-              <g class="tv-eyes"><rect x="74" y="114" width="18" height="30" rx="9" fill="#5CD6A6"/><rect x="122" y="114" width="18" height="30" rx="9" fill="#5CD6A6"/></g>
-              <path class="tv-smile" d="M94 160 Q107 172 120 160" stroke="#5CD6A6" stroke-width="5" fill="none" stroke-linecap="round"/>
-              <path class="tv-grin" d="M90 156 Q107 188 124 156 Z" fill="#5CD6A6"/>
-            </g>
-          </g>
-        </svg>
-      </button>
-      <span class="sticker st1" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M50 4l12 30 32 2-25 20 9 32-28-18-28 18 9-32L6 36l32-2z" fill="#8CD0FF" stroke="#1A1A22" stroke-width="4" stroke-linejoin="round"/></svg></span>
-      <span class="sticker st2" aria-hidden="true"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="#5CD6A6" stroke="#1A1A22" stroke-width="4"/><path d="M30 52l14 14 26-30" fill="none" stroke="#1A1A22" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-      <span class="sticker st3" aria-hidden="true"><svg viewBox="0 0 100 100"><rect x="8" y="8" width="84" height="84" rx="22" fill="#FF7A59" stroke="#1A1A22" stroke-width="4"/><text x="50" y="66" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="46" fill="#1A1A22">A+</text></svg></span>
+    <div class="hero-stage">
+      <div class="hero-disc" aria-hidden="true"></div>
+      <div class="robot-spot" data-spot="hero" data-say="Привет! Я Билим-бот 👋|Первый урок — бесплатно!|В группе не больше 8 человек|Листай вниз — покажу всё сам"></div>
+      <p class="hint"><i></i>Нажмите на робота</p>
     </div>
   </section>
+
+  <div class="band d-marquee" aria-hidden="true">
+    <div class="d-marquee-track">
+      <span>Английский</span><i></i><span>Математика</span><i></i><span>IELTS 7.0</span><i></i><span>Подготовка к школе</span><i></i><span>Олимпиады</span><i></i>
+      <span>Английский</span><i></i><span>Математика</span><i></i><span>IELTS 7.0</span><i></i><span>Подготовка к школе</span><i></i><span>Олимпиады</span><i></i>
+    </div>
+  </div>
 
   <section class="courses" id="courses">
     <div class="courses-head">
       <h2 class="h2 lines"><span class="ln"><span>Курсы</span></span></h2>
       <p class="lead" data-r>Подберём группу по уровню после бесплатного тестирования.</p>
+      <div class="robot-spot" data-spot="courses" data-move="ThumbsUp" data-say="Выбирай курс — подберём группу по уровню"></div>
     </div>
     <div class="course-grid">
       <article class="course" style="--c:var(--sky)" data-r><span class="emoji">💬</span><h3>Английский для детей</h3><div class="meta"><span>7–12 лет</span><span>2 раза в неделю</span></div><p>Говорим с первого урока: игры, песни, мини-проекты.</p><div class="bottom"><p class="price">28 000 ₸<small>в месяц</small></p><button type="button" data-open="book" data-preset='{"course":"Английский для детей"}' aria-label="Записаться на английский для детей">→</button></div></article>
@@ -277,6 +253,7 @@
   </section>
 
   <section class="schedule" id="schedule">
+    <div class="robot-spot" data-spot="schedule" data-move="Sitting" data-say="Тут видно свободные места на неделю"></div>
     <h2 class="h2 lines"><span class="ln"><span>Расписание</span></span></h2>
     <p class="lead" data-r>Выберите день — покажем занятия и свободные места.</p>
     <div class="days" role="tablist" id="days" data-r></div>
@@ -284,6 +261,7 @@
   </section>
 
   <section class="teachers" id="teachers">
+    <div class="robot-spot" data-spot="teachers" data-move="Wave" data-say="Наведи на карточку — учитель расскажет о себе"></div>
     <h2 class="h2 lines"><span class="ln"><span>Преподаватели</span></span></h2>
     <p class="tip" data-r>Наведите или нажмите на карточку, чтобы узнать больше.</p>
     <div class="t-grid">
@@ -300,7 +278,7 @@
     <div class="stat" data-r style="--d:.2s"><b><span data-count="4">0</span> года</b>работаем в Алматы</div>
   </section>
 
-  <section class="trial" id="trial" data-r="scale">
+  <section class="trial" id="trial">
     <div>
       <h2 class="h2">Первый урок — бесплатно</h2>
       <p class="lead">Познакомитесь с преподавателем, узнаете уровень и решите, подходит ли вам.</p>
@@ -309,29 +287,7 @@
         <li>Тест уровня и рекомендации</li>
         <li>Ни к чему не обязывает</li>
       </ul>
-    </div>
-    <div class="form-wrap">
-    <div class="tvbot peek" id="peekBot" data-eyes="14" aria-hidden="true">
-      <span class="tv-say" id="peekSay">Я всё передам администратору</span>
-      <svg viewBox="0 0 240 280">
-        <g class="tv-body">
-          <g class="tv-ant">
-            <path d="M102 64 L76 20 M140 64 L166 24" stroke="#1A1A22" stroke-width="5" stroke-linecap="round"/>
-            <circle cx="75" cy="17" r="11" fill="#8CD0FF" stroke="#1A1A22" stroke-width="4"/>
-            <circle cx="167" cy="21" r="8" fill="#FF7A59" stroke="#1A1A22" stroke-width="4"/>
-          </g>
-          <rect x="24" y="62" width="192" height="156" rx="30" fill="#FFFFFF" stroke="#1A1A22" stroke-width="5"/>
-          <rect x="42" y="80" width="130" height="120" rx="22" fill="#1A1A22"/>
-          <path d="M56 93 h34" stroke="#fff" stroke-opacity=".2" stroke-width="6" stroke-linecap="round"/>
-          <circle cx="194" cy="102" r="9" fill="#FFCC33" stroke="#1A1A22" stroke-width="4"/>
-          <circle cx="194" cy="132" r="9" fill="#5CD6A6" stroke="#1A1A22" stroke-width="4"/>
-          <g class="pupil">
-            <g class="tv-eyes"><rect x="74" y="114" width="18" height="30" rx="9" fill="#FFCC33"/><rect x="122" y="114" width="18" height="30" rx="9" fill="#FFCC33"/></g>
-            <path class="tv-smile" d="M94 160 Q107 172 120 160" stroke="#FFCC33" stroke-width="5" fill="none" stroke-linecap="round"/>
-            <path class="tv-grin" d="M90 156 Q107 188 124 156 Z" fill="#FFCC33"/>
-          </g>
-        </g>
-      </svg>
+      <div class="robot-spot" data-spot="trial" data-say="Заполни форму — я передам администратору"></div>
     </div>
     <form class="d-form" data-wa-form="Запись на пробный урок" novalidate>
       <fieldset class="d-field" data-label="Курс">
@@ -364,12 +320,12 @@
       </div>
       <button class="d-submit" type="submit" style="--btn-radius:16px">Записаться бесплатно</button>
     </form>
-    </div>
   </section>
 </main>
 
 <footer>
   <p>© 2026 Bilim Center · Алматы, мкр. Самал-2, 58</p>
+  <p>3D-робот: Tomás Laulhé и Don McCurdy, CC0</p>
   <p>Демо-сайт. Сделано в SiteCode</p>
 </footer>
 
@@ -392,7 +348,7 @@
       <fieldset class="d-field" data-label="Занятие">
         <legend>Удобное время</legend>
         <div class="d-chips">
-          <label class="d-chip"><input type="radio" name="slot" value="Утро" ><span>Утро</span></label>
+          <label class="d-chip"><input type="radio" name="slot" value="Утро"><span>Утро</span></label>
           <label class="d-chip"><input type="radio" name="slot" value="После школы" checked><span>После школы</span></label>
           <label class="d-chip"><input type="radio" name="slot" value="Вечер"><span>Вечер</span></label>
         </div>
@@ -418,6 +374,7 @@
 
 <script src="assets/demo.js"></script>
 <script>
+  // расписание и карточки преподавателей
   (() => {
     const { $, $$, openModal } = window.Demo;
     const DAYS = [['Пн', 'Понедельник'], ['Вт', 'Вторник'], ['Ср', 'Среда'], ['Чт', 'Четверг'], ['Пт', 'Пятница'], ['Сб', 'Суббота']];
@@ -463,52 +420,330 @@
       daysBox.appendChild(b);
       if (i === today) setTimeout(() => show(s), 0);
     });
-    // Билим-бот: болтает по нажатию, радуется при наведении
-    const bot = $('#tvbot');
-    const say = $('#tvSay');
-    const lines = ['Привет! Я Билим-бот 👋', 'Первый урок — бесплатно!', 'В группе не больше 8 человек', 'Нажми ещё, я много знаю 🙂', 'Запишись — перезвоним за 15 минут'];
-    let li = 0;
-    const speak = (el, text) => {
-      if (el.textContent === text) return;
-      el.classList.add('swap');
-      setTimeout(() => { el.textContent = text; el.classList.remove('swap'); }, 180);
-    };
-    const cheer = (b, ms) => {
-      b.classList.add('happy');
-      clearTimeout(b.cheerT);
-      b.cheerT = setTimeout(() => b.classList.remove('happy'), ms);
-    };
-    if (bot) {
-      bot.addEventListener('click', () => {
-        li = (li + 1) % lines.length;
-        speak(say, lines[li]);
-        bot.classList.remove('jump');
-        void bot.offsetWidth;
-        bot.classList.add('jump');
-        cheer(bot, 1000);
-      });
-      bot.addEventListener('animationend', (e) => { if (e.animationName === 'jump') bot.classList.remove('jump'); });
-      bot.addEventListener('pointerenter', () => bot.classList.add('happy'));
-      bot.addEventListener('pointerleave', () => bot.classList.remove('happy'));
-    }
-    // второй бот выглядывает из-за формы и подсказывает по полям
-    const peek = $('#peekBot');
-    const peekSay = $('#peekSay');
-    if (peek) {
-      const hints = { tName: 'Как к вам обращаться?', tPhone: 'Номер, чтобы перезвонить' };
-      $$('.form-wrap input').forEach((inp) => {
-        inp.addEventListener('focus', () => { if (hints[inp.id]) speak(peekSay, hints[inp.id]); });
-        inp.addEventListener('change', () => { if (inp.type === 'radio') { speak(peekSay, 'Отличный выбор!'); cheer(peek, 900); } });
-      });
-      window.addEventListener('demo:sent', () => { speak(peekSay, 'Ура! Ждём вас на уроке 🎉'); cheer(peek, 4000); });
-    }
-
-    // карточки преподавателей переворачиваются по нажатию на телефоне
     $$('.flip').forEach((f) => {
       f.addEventListener('click', () => f.classList.toggle('turned'));
       f.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); f.classList.toggle('turned'); } });
     });
   })();
+</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+<script type="module">
+  import { createStage, loadModel, THREE, clamp, lerp, damp, small, still, blobShadow, canvasTexture } from './assets/kit3d.js';
+  import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+  const canvas = document.getElementById('robot3d');
+  const sayEl = document.getElementById('say');
+  const hit = document.getElementById('robotHit');
+  const spots = Array.from(document.querySelectorAll('[data-spot]'));
+  const heroSpot = spots.find((s) => s.dataset.spot === 'hero');
+
+  const st = createStage(canvas, { fov: 22, exposure: 1.05, maxDpr: 1.5 });
+  const { scene, camera } = st;
+  const sun = new THREE.DirectionalLight(0xffffff, 1.6);
+  sun.position.set(-0.5, 1, 1.2);
+  scene.add(sun);
+
+  // камера: плоскость z=0 совпадает с пикселями экрана
+  const fitCamera = () => {
+    const H = st.size.h;
+    const dist = H / 2 / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    camera.position.set(0, 0, dist);
+    camera.near = 10;
+    camera.far = dist * 3;
+    camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
+  };
+  st.onResize(fitCamera);
+  const toWorld = (x, y) => [x - st.size.w / 2, st.size.h / 2 - y];
+
+  // ---------- летающие предметы вокруг робота на первом экране ----------
+  const mat = (c, r = 0.45) => new THREE.MeshPhysicalMaterial({ color: c, roughness: r, clearcoat: 0.6, clearcoatRoughness: 0.3 });
+  const props = new THREE.Group();
+  scene.add(props);
+  const pencil = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 1.5, 6), mat(0xFF7A59));
+  const wood = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.32, 6), mat(0xF2D3A2, 0.8));
+  wood.position.y = 0.91;
+  const lead = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.12, 12), mat(0x2A2A30, 0.4));
+  lead.position.y = 1.02;
+  const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.125, 0.125, 0.14, 16), new THREE.MeshStandardMaterial({ color: 0xc9cdd3, metalness: 1, roughness: 0.25 }));
+  ring.position.y = -0.82;
+  const eraser = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.18, 16), mat(0xFF9EB5, 0.7));
+  eraser.position.y = -0.98;
+  pencil.add(body, wood, lead, ring, eraser);
+  const book = new THREE.Group();
+  const cover = new THREE.Mesh(new RoundedBoxGeometry(1.1, 1.45, 0.28, 4, 0.05), mat(0x8CD0FF));
+  const pages = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.36, 0.22), mat(0xFFFDF5, 0.9));
+  pages.position.x = 0.07;
+  book.add(cover, pages);
+  const letterTex = (ch, bg) => canvasTexture(256, 256, (g, w, h) => {
+    g.fillStyle = bg;
+    g.fillRect(0, 0, w, h);
+    g.fillStyle = '#1A1A22';
+    g.font = '900 170px Nunito, Arial, sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillText(ch, w / 2, h / 2 + 8);
+  });
+  const block = (ch, bg) => {
+    const m = new THREE.MeshPhysicalMaterial({ map: letterTex(ch, bg), roughness: 0.5, clearcoat: 0.4 });
+    return new THREE.Mesh(new RoundedBoxGeometry(0.8, 0.8, 0.8, 4, 0.08), m);
+  };
+  const apple = new THREE.Group();
+  const fruit = new THREE.Mesh(new THREE.SphereGeometry(0.42, 32, 24), mat(0xE8414B, 0.3));
+  fruit.scale.set(1, 0.92, 1);
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, 0.22, 8), mat(0x6B4430, 0.8));
+  stem.position.y = 0.46;
+  const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 8), mat(0x5CD6A6, 0.5));
+  leaf.scale.set(1.4, 0.25, 0.7);
+  leaf.position.set(0.14, 0.5, 0);
+  apple.add(fruit, stem, leaf);
+  // позиция относительно места робота: доли его высоты, размер, скорость вращения
+  const floaters = [
+    { o: pencil, x: -0.6, y: 0.82, s: 0.12, r: [0.5, 0.2, 0.9], rot: 0.5 },
+    { o: book, x: 0.5, y: 0.9, s: 0.11, r: [0.3, -0.6, -0.25], rot: -0.35 },
+    { o: block('А', '#FFCC33'), x: -0.66, y: 0.36, s: 0.1, r: [0.4, 0.5, 0.1], rot: 0.6 },
+    { o: block('Б', '#5CD6A6'), x: 0.54, y: 0.5, s: 0.09, r: [-0.3, 0.8, 0.2], rot: -0.5 },
+    { o: block('В', '#C7B6FF'), x: -0.46, y: 0.08, s: 0.08, r: [0.2, -0.4, 0.3], rot: 0.45 },
+    { o: apple, x: 0.46, y: 0.12, s: 0.11, r: [0, 0, 0.2], rot: 0.7 }
+  ];
+  floaters.forEach((f, i) => { f.o.rotation.set(f.r[0], f.r[1], f.r[2]); f.ph = i * 1.3; props.add(f.o); });
+
+  // ---------- робот ----------
+  const gltf = await loadModel('assets/models/robot.glb');
+  const robot = gltf.scene;
+  robot.traverse((o) => {
+    if (!o.isMesh) return;
+    o.frustumCulled = false;
+    const m = o.material;
+    if (m && m.name === 'Main') m.color.set('#FFC21A');
+  });
+  const holder = new THREE.Group();
+  holder.add(robot);
+  scene.add(holder);
+  const shadow = blobShadow(1, 0.32);
+  shadow.scale.set(1.6, 0.9, 1);
+  shadow.rotation.x = 0;
+  scene.add(shadow);
+  canvas.classList.add('on');
+
+  const mixer = new THREE.AnimationMixer(robot);
+  const clips = {};
+  gltf.animations.forEach((c) => { clips[c.name] = c; });
+  const actions = {};
+  Object.keys(clips).forEach((n) => {
+    const a = mixer.clipAction(clips[n]);
+    if (['Jump', 'Yes', 'No', 'Wave', 'Punch', 'ThumbsUp', 'Sitting', 'Standing', 'WalkJump'].includes(n)) {
+      a.clampWhenFinished = true;
+      a.loop = THREE.LoopOnce;
+    }
+    actions[n] = a;
+  });
+  let base = actions.Idle;
+  base.play();
+  let emote = null;
+  const fadeBase = (name, d = 0.35) => {
+    const next = actions[name];
+    if (!next || next === base) return;
+    next.reset().setEffectiveWeight(1).fadeIn(d).play();
+    base.fadeOut(d);
+    base = next;
+  };
+  const playEmote = (name, back = 'Idle') => {
+    const a = actions[name];
+    if (!a) return;
+    if (emote) emote.fadeOut(0.15);
+    emote = a;
+    a.reset().setEffectiveWeight(1).fadeIn(0.2).play();
+    const done = (e) => {
+      if (e.action !== a) return;
+      mixer.removeEventListener('finished', done);
+      if (name === 'Sitting') return;
+      a.fadeOut(0.3);
+      if (emote === a) emote = null;
+      fadeBase(back);
+    };
+    mixer.addEventListener('finished', done);
+  };
+
+  const face = robot.getObjectByName('Head_4');
+  const head = robot.getObjectByName('Head');
+  const surprised = face && face.morphTargetDictionary ? face.morphTargetDictionary.Surprised : undefined;
+  let surpriseT = 0;
+
+  // ---------- реплики ----------
+  let sayTimer = 0;
+  let sayIndex = 0;
+  const speak = (text, ms = 3600) => {
+    sayEl.classList.add('pop');
+    sayEl.textContent = text;
+    sayEl.classList.add('on');
+    requestAnimationFrame(() => sayEl.classList.remove('pop'));
+    clearTimeout(sayTimer);
+    sayTimer = setTimeout(() => sayEl.classList.remove('on'), ms);
+  };
+
+  // ---------- выбор места: робот идёт к ближайшему к центру экрана ----------
+  let active = null;
+  const pos = { x: 0, y: 0, h: 0, off: 0, offY: 0, yaw: 0 };
+  let started = false;
+  const pick = () => {
+    const vh = window.innerHeight;
+    let best = null;
+    let bd = Infinity;
+    spots.forEach((s) => {
+      const r = s.getBoundingClientRect();
+      if (r.bottom < 60 || r.top > vh - 20 || r.width === 0) return;
+      const d = Math.abs(r.top + r.height / 2 - vh * 0.5);
+      if (d < bd) { bd = d; best = s; }
+    });
+    return best;
+  };
+  const rectOf = (s) => {
+    const r = s.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.bottom, h: r.height };
+  };
+
+  const onArrive = (s) => {
+    const move = s.dataset.move;
+    if (move === 'Sitting') { fadeBase('Idle', 0.2); playEmote('Sitting'); }
+    else if (move) playEmote(move);
+    else if (s === heroSpot) playEmote('Wave');
+    const lines = (s.dataset.say || '').split('|');
+    if (lines[0]) speak(lines[0]);
+  };
+
+  // ---------- клик по роботу: прыжок и новая фраза ----------
+  const poke = () => {
+    if (!active) return;
+    playEmote(Math.random() < 0.5 ? 'Jump' : 'Yes');
+    surpriseT = 1;
+    const lines = (active.dataset.say || '').split('|');
+    sayIndex = (sayIndex + 1) % lines.length;
+    speak(lines[sayIndex] || lines[0]);
+  };
+  hit.addEventListener('click', poke);
+  hit.addEventListener('pointerenter', () => { if (!emote) playEmote('ThumbsUp'); surpriseT = 0.6; });
+
+  // форма: робот кивает, радуется отправке
+  const hints = { tName: 'Как к вам обращаться?', tPhone: 'Номер — чтобы перезвонить' };
+  document.querySelectorAll('.trial input').forEach((inp) => {
+    inp.addEventListener('focus', () => { if (hints[inp.id]) { speak(hints[inp.id]); playEmote('Yes'); } });
+    inp.addEventListener('change', () => { if (inp.type === 'radio') { speak('Отличный выбор!'); playEmote('ThumbsUp'); } });
+  });
+  window.addEventListener('demo:sent', () => {
+    speak('Ура! Ждём вас на уроке 🎉', 5000);
+    fadeBase('Dance', 0.3);
+    setTimeout(() => fadeBase('Idle', 0.5), 5200);
+  });
+
+  const look = new THREE.Vector2();
+  const hitBox = { x: 0, y: 0, w: 0, h: 0 };
+  const headBase = new THREE.Quaternion();
+  const headLook = new THREE.Quaternion();
+  const lookEuler = new THREE.Euler();
+  let headSaved = false;
+  st.onTick((dt, t) => {
+    // поворот головы добавляется поверх анимации и не накапливается от кадра к кадру
+    if (head && headSaved) head.quaternion.copy(headBase);
+    mixer.update(dt);
+    if (head) { headBase.copy(head.quaternion); headSaved = true; }
+    const next = pick();
+    if (next !== active) {
+      const prev = active;
+      active = next;
+      if (active) {
+        const r = rectOf(active);
+        if (!started) {
+          // появление: робот выходит из-за края экрана
+          pos.x = r.x; pos.y = r.y; pos.h = r.h;
+          pos.off = still ? 0 : -r.x - 200;
+          pos.offY = 0;
+          started = true;
+        } else {
+          pos.off = pos.x - r.x;
+          pos.offY = pos.y - r.y;
+        }
+        if (Math.abs(pos.off) > 30 || !prev) fadeBase(Math.abs(pos.off) > st.size.w * 0.35 ? 'Running' : 'Walking', 0.25);
+        if (prev && prev.dataset.move === 'Sitting' && emote === actions.Sitting) { emote.fadeOut(0.3); emote = null; }
+        active.arrived = false;
+      }
+    }
+
+    // предметы на первом экране держатся вокруг места робота в hero
+    const hr = heroSpot.getBoundingClientRect();
+    const hs = hr.height;
+    floaters.forEach((f, i) => {
+      const [wx, wy] = toWorld(hr.left + hr.width / 2 + f.x * hs, hr.bottom - f.y * hs - Math.sin(t * 1.1 + f.ph) * hs * 0.025);
+      f.o.position.set(wx, wy, 60);
+      f.o.scale.setScalar(f.s * hs);
+      f.o.rotation.y += f.rot * dt;
+      f.o.rotation.x = f.r[0] + Math.sin(t * 0.8 + f.ph) * 0.2;
+    });
+    props.visible = hr.bottom > 0 && hr.top < st.size.h;
+
+    if (!active) {
+      holder.visible = false;
+      shadow.visible = false;
+      sayEl.classList.remove('on');
+      hit.style.display = 'none';
+      return;
+    }
+    holder.visible = true;
+    shadow.visible = true;
+    hit.style.display = 'block';
+    const r = rectOf(active);
+    const moving = Math.abs(pos.off) > 2;
+    pos.off = damp(pos.off, 0, Math.abs(pos.off) > st.size.w * 0.35 ? 2.2 : 2.8, dt);
+    pos.offY = damp(pos.offY, 0, 4, dt);
+    pos.h = damp(pos.h, r.h, 3.5, dt);
+    pos.x = r.x + pos.off;
+    pos.y = r.y + pos.offY;
+    if (!moving && !active.arrived) {
+      active.arrived = true;
+      fadeBase('Idle', 0.35);
+      onArrive(active);
+    }
+    // поворот: на ходу боком по направлению, на месте — к зрителю и чуть к тексту
+    const towards = pos.off < -2 ? Math.PI / 2 : pos.off > 2 ? -Math.PI / 2 : (active === heroSpot ? -0.35 : -0.25);
+    pos.yaw = damp(pos.yaw, towards, 6, dt);
+
+    const scale = pos.h / 5.6;
+    const [wx, wy] = toWorld(pos.x, pos.y);
+    holder.position.set(wx, wy, 0);
+    holder.scale.setScalar(scale);
+    holder.rotation.y = pos.yaw;
+    shadow.position.set(wx, wy + 2, -scale * 0.6);
+    shadow.scale.set(scale * 1.7, scale * 0.6, 1);
+
+    // голова смотрит на курсор
+    if (head && !moving) {
+      look.x = damp(look.x, clamp((st.pointer.cx - pos.x) / 600, -1, 1), 5, dt);
+      look.y = damp(look.y, clamp((st.pointer.cy - (pos.y - pos.h * 0.8)) / 500, -1, 1), 5, dt);
+      lookEuler.set(look.y * 0.35, look.x * 0.6, 0);
+      headLook.setFromEuler(lookEuler);
+      head.quaternion.multiply(headLook);
+    }
+    if (face && surprised !== undefined) {
+      surpriseT = Math.max(0, surpriseT - dt * 0.8);
+      face.morphTargetInfluences[surprised] = surpriseT;
+    }
+
+    // зона нажатия и облачко над головой
+    hitBox.w = pos.h * 0.62;
+    hitBox.h = pos.h * 0.95;
+    hit.style.transform = 'translate(' + (pos.x - hitBox.w / 2).toFixed(0) + 'px,' + (pos.y - hitBox.h).toFixed(0) + 'px)';
+    hit.style.width = hitBox.w.toFixed(0) + 'px';
+    hit.style.height = hitBox.h.toFixed(0) + 'px';
+    // облачко сбоку от головы: справа, а если не помещается — слева
+    const bw = sayEl.offsetWidth;
+    let bx = pos.x + pos.h * 0.3;
+    const left = bx + bw > st.size.w - 12;
+    if (left) bx = pos.x - pos.h * 0.3 - bw;
+    sayEl.classList.toggle('left', left);
+    const by = pos.y - pos.h * 0.98 - sayEl.offsetHeight * 0.5;
+    sayEl.style.transform = 'translate(' + Math.max(10, bx).toFixed(0) + 'px,' + Math.max(84, by).toFixed(0) + 'px)';
+  });
 </script>
 </body>
 </html>

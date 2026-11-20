@@ -57,6 +57,49 @@
     .hero-bottom { position: absolute; left: var(--pad); right: var(--pad); bottom: 34px; display: flex; justify-content: space-between; align-items: end; gap: 20px; }
     .hero-bottom p { max-width: 24em; color: var(--muted); }
 
+    /* ===== портрет из светящихся частиц: собирается, рассыпается вихрем, меняет услугу ===== */
+    .hdr.dark { color: #FBEFF2; }
+    .hdr.dark .btn { background: #FBEFF2; color: #2E1F27; }
+    .hdr.dark.scrolled { background: rgba(29, 18, 24, .55); box-shadow: none; }
+    .pshow { position: relative; height: 460vh; }
+    .pshow-stick { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; color: #FBEFF2; background: radial-gradient(70% 80% at 68% 45%, #4A2433 0%, #2A1520 45%, #160B11 100%); }
+    .pword { position: absolute; right: 4vw; bottom: -6vh; margin: 0; font: italic 600 clamp(160px, 26vw, 460px)/.8 var(--font-head); color: transparent; -webkit-text-stroke: 1px rgba(255, 210, 222, .18); pointer-events: none; }
+    #dust3d { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+    .pscene { position: absolute; left: var(--pad); top: 52%; z-index: 3; width: min(460px, 36vw); opacity: 0; visibility: hidden; transform: translateY(-50%) translateY(30px); transition: opacity .5s, transform .8s cubic-bezier(.2, .8, .2, 1), visibility 0s .8s; }
+    .pscene.on { opacity: 1; visibility: visible; transform: translateY(-50%); transition: opacity .6s .1s, transform .9s cubic-bezier(.2, .8, .2, 1) .1s, visibility 0s; }
+    .pscene .sub { color: #F2A9BC; }
+    .pscene i { font-style: italic; color: #F7B9C9; }
+    .phero { width: min(600px, 44vw); }
+    .phero h1 { font: 500 clamp(52px, 6.4vw, 112px)/.92 var(--font-head); letter-spacing: -.03em; }
+    .plead { max-width: 26em; margin: 24px 0 30px; color: rgba(251, 239, 242, .75); font-size: 18px; }
+    .pactions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .pscene .btn { background: #FBEFF2; color: #2E1F27; }
+    .pscene .btn:hover { background: #F7B9C9; }
+    .pscene .btn.soft { background: transparent; color: #FBEFF2; box-shadow: inset 0 0 0 1px rgba(251, 239, 242, .45); }
+    .pcard { padding: 30px; border-radius: 28px; background: rgba(46, 22, 32, .45); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: inset 0 0 0 1px rgba(255, 220, 230, .14); }
+    .pcard h2 { font: 500 clamp(36px, 3.4vw, 56px)/.98 var(--font-head); }
+    .pcard p { margin: 14px 0 20px; color: rgba(251, 239, 242, .76); }
+    .pprice { display: flex; align-items: center; gap: 14px; padding-top: 16px; border-top: 1px solid rgba(255, 220, 230, .16); }
+    .pprice span { font-size: 14px; opacity: .7; }
+    .pprice b { margin-left: auto; font: 600 26px/1 var(--font-head); }
+    .pprice .btn { min-height: 46px; padding: 0 20px; }
+    .pbar { position: absolute; left: var(--pad); right: var(--pad); bottom: 26px; z-index: 3; display: flex; gap: 6px; }
+    .pbar i { flex: 1; height: 2px; background: rgba(255, 220, 230, .16); overflow: hidden; }
+    .pbar i::after { content: ""; display: block; height: 100%; background: #F7B9C9; transform: scaleX(var(--f, 0)); transform-origin: left; }
+    .phint { position: absolute; right: var(--pad); top: 110px; z-index: 3; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: rgba(251, 239, 242, .55); transition: opacity .4s; }
+    @media (max-width: 760px) {
+      .pshow { height: 420vh; }
+      .pscene, .phero { left: 16px; right: 16px; top: auto; bottom: 54px; width: auto; transform: translateY(30px); }
+      .pscene.on { transform: none; }
+      .phero h1 { font-size: clamp(40px, 11vw, 56px); }
+      .plead { margin: 14px 0 18px; font-size: 15px; }
+      .pcard { padding: 20px 18px; }
+      .pcard h2 { font-size: 32px; }
+      .pcard p { font-size: 14px; margin: 8px 0 14px; }
+      .phint { display: none; }
+      .pword { font-size: 46vw; bottom: auto; top: 90px; right: -4vw; }
+    }
+
     /* услуги: фон перетекает в оттенок услуги под курсором */
     .services { padding: 140px var(--pad) 120px; background: var(--tone, var(--bg)); transition: background-color 1s cubic-bezier(.2, .8, .2, 1); }
     .svc { transition: transform .9s cubic-bezier(.2, .8, .2, 1) var(--d, 0s), opacity .9s cubic-bezier(.2, .8, .2, 1) var(--d, 0s), box-shadow .6s; }
@@ -164,22 +207,41 @@
 </header>
 
 <main id="top">
-  <section class="hero">
-    <h1 class="lines" data-now><span class="ln"><span>Красота,</span></span><span class="ln"><span>в которой</span></span><span class="sr"> вам спокойно</span></h1>
-    <div class="arch" data-r="scale" data-now style="--d:.15s">
-      <div class="frame zoom-in" data-now><img src="https://images.unsplash.com/photo-1546877625-cb8c71916608?auto=format&fit=crop&w=1000&q=80" alt="Улыбающаяся девушка с укладкой"></div>
-      <svg class="seal" viewBox="0 0 120 120" aria-hidden="true"><defs><path id="sealPath" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0"/></defs><circle cx="60" cy="60" r="58"/><text><textPath href="#sealPath">онлайн-запись • 24/7 • онлайн-запись • 24/7 •</textPath></text></svg>
-      <span class="chip-float cf1">Окрашивание</span>
-      <span class="chip-float cf2">Маникюр</span>
-      <span class="chip-float cf3">Брови и ресницы</span>
-    </div>
-    <p class="h1 lines right" data-now style="--d:.2s" aria-hidden="true"><span class="ln"><span>вам</span></span><span class="ln"><span><i>спокойно</i></span></span></p>
-    <div class="hero-bottom" data-r data-now style="--d:.7s">
-      <p>Салон в Алматы: волосы, ногти, брови и уход за лицом. Подберём время и мастера за минуту.</p>
-      <button class="btn" type="button" data-open="book">Выбрать время</button>
+  <section class="pshow" id="pshow" aria-label="Портрет из светящихся частиц">
+    <div class="pshow-stick">
+      <p class="pword" aria-hidden="true">Aru</p>
+      <canvas id="dust3d" aria-hidden="true"></canvas>
+      <div class="pscene phero on">
+        <p class="sub">Салон красоты в Алматы</p>
+        <h1>Красота, в которой <i>вам спокойно</i></h1>
+        <p class="plead">Волосы, ногти, брови и уход за лицом. Подберём время и мастера за минуту.</p>
+        <div class="pactions">
+          <button class="btn" type="button" data-open="book">Выбрать время</button>
+          <a class="btn soft" href="#services">Услуги и цены</a>
+        </div>
+      </div>
+      <div class="pscene pcard">
+        <p class="sub">Окрашивание</p>
+        <h2>Тот самый <i>оттенок</i></h2>
+        <p>AirTouch и балаяж с мягкими переходами, без жёстких полос. Колорист подберёт цвет под тон кожи.</p>
+        <div class="pprice"><span>3–5 часов</span><b>от 18 000 ₸</b><button class="btn" type="button" data-open="book" data-preset='{"service":"Окрашивание"}'>Записаться</button></div>
+      </div>
+      <div class="pscene pcard">
+        <p class="sub">Маникюр</p>
+        <h2>Руки, которые <i>хочется</i> показывать</h2>
+        <p>Покрытие гель-лак держится три недели. Стерильные инструменты из крафт-пакета при вас.</p>
+        <div class="pprice"><span>1,5 часа</span><b>7 000 ₸</b><button class="btn" type="button" data-open="book" data-preset='{"service":"Маникюр"}'>Записаться</button></div>
+      </div>
+      <div class="pscene pcard">
+        <p class="sub">Уход за лицом</p>
+        <h2>Кожа, которая <i>светится</i></h2>
+        <p>Чистка, маска и массаж за час. Подбираем уход под ваш тип кожи и сезон.</p>
+        <div class="pprice"><span>1 час</span><b>12 000 ₸</b><button class="btn" type="button" data-open="book" data-preset='{"service":"Уход за лицом"}'>Записаться</button></div>
+      </div>
+      <div class="pbar" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <p class="phint" id="pHint">Проведите курсором по портрету</p>
     </div>
   </section>
-
   <section class="services" id="services">
     <div class="services-head">
       <div>
@@ -399,6 +461,187 @@
       hero.addEventListener('pointerleave', () => floaters.forEach((el) => { el.style.setProperty('--px', '0px'); el.style.setProperty('--py', '0px'); }));
     }
   })();
+</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+<script type="module">
+  import { createStage, THREE, progressOf, sceneAt, clamp, smooth, damp, ease, small, still } from './assets/kit3d.js';
+
+  const show = document.getElementById('pshow');
+  const canvas = document.getElementById('dust3d');
+  const scenes = Array.from(show.querySelectorAll('.pscene'));
+  const bars = Array.from(show.querySelectorAll('.pbar i'));
+  const hint = document.getElementById('pHint');
+  const hdr = document.querySelector('.hdr');
+  const MARKS = [0, 0.25, 0.5, 0.75];
+
+  let cur = -1;
+  const ui = () => {
+    const p = progressOf(show);
+    const i = sceneAt(p, MARKS);
+    if (i !== cur) { cur = i; scenes.forEach((s, k) => s.classList.toggle('on', k === i)); }
+    bars.forEach((b, k) => b.style.setProperty('--f', clamp((p - MARKS[k]) / ((MARKS[k + 1] ?? 1) - MARKS[k])).toFixed(3)));
+    hint.style.opacity = p > 0.03 ? '0' : '1';
+    hdr.classList.toggle('dark', show.getBoundingClientRect().bottom > 70);
+  };
+  window.addEventListener('scroll', ui, { passive: true });
+  ui();
+
+  // ---------- точки из фотографии: контуры и светлые места становятся частицами ----------
+  const PHOTOS = ['1546877625-cb8c71916608', '1560869713-bf165a9cfac1', '1632345031435-8727f6897d53', '1570172619644-dfd03ed5d881'];
+  const N = small ? 9000 : 20000;
+  const W = 180;
+  const H = 225;
+  const loadImg = (id) => new Promise((res, rej) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => res(img);
+    img.onerror = rej;
+    img.src = 'https://images.unsplash.com/photo-' + id + '?auto=format&fit=crop&w=' + W * 2 + '&h=' + H * 2 + '&q=70';
+  });
+  const sample = (img) => {
+    const c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    const g = c.getContext('2d', { willReadFrequently: true });
+    g.drawImage(img, 0, 0, W, H);
+    const d = g.getImageData(0, 0, W, H).data;
+    const L = new Float32Array(W * H);
+    for (let i = 0; i < W * H; i++) L[i] = (d[i * 4] * 0.3 + d[i * 4 + 1] * 0.59 + d[i * 4 + 2] * 0.11) / 255;
+    // вес точки: контур (оператор Собеля) плюс немного яркости, по краям кадра слабее
+    const wgt = new Float32Array(W * H);
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        const i = y * W + x;
+        const gx = L[i - W + 1] + 2 * L[i + 1] + L[i + W + 1] - L[i - W - 1] - 2 * L[i - 1] - L[i + W - 1];
+        const gy = L[i + W - 1] + 2 * L[i + W] + L[i + W + 1] - L[i - W - 1] - 2 * L[i - W] - L[i - W + 1];
+        const e = Math.min(1, Math.hypot(gx, gy) * 1.6);
+        const cx = (x / W - 0.5) * 2;
+        const cy = (y / H - 0.5) * 2;
+        const fall = Math.max(0, 1 - (cx * cx * 0.9 + cy * cy * 0.6));
+        const w = (Math.pow(e, 0.8) * 0.5 + Math.pow(L[i], 1.6) * 0.55) * fall;
+        wgt[i] = w;
+      }
+    }
+    const out = new Float32Array(N * 4);
+    for (let k = 0; k < N; k++) {
+      let i = 0;
+      // быстрый выбор по весу: случайная выборка с отбрасыванием
+      for (let tries = 0; tries < 40; tries++) {
+        i = (Math.random() * W * H) | 0;
+        if (Math.random() * 0.6 < wgt[i]) break;
+      }
+      const x = i % W;
+      const y = (i / W) | 0;
+      const jx = x + Math.random() - 0.5;
+      const jy = y + Math.random() - 0.5;
+      out[k * 4] = (jx / W - 0.5) * 3.2;
+      out[k * 4 + 1] = (0.5 - jy / H) * 4.0;
+      out[k * 4 + 2] = (L[i] - 0.5) * 0.6 + (Math.random() - 0.5) * 0.08;
+      out[k * 4 + 3] = Math.min(1, L[i] * 0.6 + wgt[i] * 1.2);
+    }
+    return out;
+  };
+
+  const st = createStage(canvas, { fov: 30, exposure: 1 });
+  const { scene, camera } = st;
+  let targets;
+  try {
+    const imgs = await Promise.all(PHOTOS.map(loadImg));
+    targets = imgs.map(sample);
+  } catch (e) {
+    targets = null;
+  }
+  if (targets) {
+    const geo = new THREE.BufferGeometry();
+    const seeds = new Float32Array(N);
+    for (let i = 0; i < N; i++) seeds[i] = Math.random();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 3), 3));
+    targets.forEach((tg, k) => geo.setAttribute('aT' + k, new THREE.BufferAttribute(tg, 4)));
+    geo.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1));
+    const mat = new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        uT: { value: 0 }, uS: { value: 0 }, uIntro: { value: still ? 1 : 0 },
+        uMouse: { value: new THREE.Vector3(99, 99, 0) }, uPx: { value: Math.min(window.devicePixelRatio || 1, 1.6) * (small ? 30 : 30) },
+        uA: { value: new THREE.Color('#B4476A') }, uB: { value: new THREE.Color('#FFE6D2') }
+      },
+      vertexShader: `
+        attribute vec4 aT0; attribute vec4 aT1; attribute vec4 aT2; attribute vec4 aT3; attribute float aSeed;
+        uniform float uT; uniform float uS; uniform float uIntro; uniform vec3 uMouse; uniform float uPx;
+        varying float vL; varying float vA;
+        vec3 h3(float n) { return fract(sin(vec3(n, n + 1.7, n + 3.1)) * vec3(43758.5453, 22578.1459, 19642.3490)) - .5; }
+        void main() {
+          vec4 t = aT0;
+          t = mix(t, aT1, clamp(uS, 0., 1.));
+          t = mix(t, aT2, clamp(uS - 1., 0., 1.));
+          t = mix(t, aT3, clamp(uS - 2., 0., 1.));
+          vec3 p = t.xyz;
+          vec3 r = h3(aSeed * 91.7);
+          // между услугами частицы закручиваются вихрем
+          float f = fract(uS);
+          float m = sin(f * 3.14159) * step(.001, f) * step(f, .999);
+          float a = uT * .6 + aSeed * 6.283;
+          p += vec3(cos(a) * (1.2 + r.x), sin(a * 1.3) * (.8 + r.y), r.z * 2.) * m * .9;
+          // появление: частицы слетаются из облака
+          vec3 cloud = normalize(r + .001) * (3.5 + r.x * 4.);
+          p = mix(cloud, p, uIntro);
+          p.z += sin(uT * 1.4 + aSeed * 30.) * .02;
+          // курсор раздвигает частицы
+          vec2 d = p.xy - uMouse.xy;
+          float dl = length(d);
+          p.xy += normalize(d + 1e-4) * smoothstep(.75, 0., dl) * .38;
+          vec4 mv = modelViewMatrix * vec4(p, 1.);
+          gl_PointSize = uPx * (.55 + t.w * .9) / -mv.z;
+          gl_Position = projectionMatrix * mv;
+          vL = t.w;
+          vA = .5 + .9 * t.w;
+        }`,
+      fragmentShader: `
+        uniform vec3 uA; uniform vec3 uB;
+        varying float vL; varying float vA;
+        void main() {
+          vec2 c = gl_PointCoord - .5;
+          float d = length(c);
+          float s = smoothstep(.5, .0, d);
+          gl_FragColor = vec4(mix(uA, uB, vL) * s * vA, s * vA);
+        }`
+    });
+    const pts = new THREE.Points(geo, mat);
+    pts.frustumCulled = false;
+    scene.add(pts);
+
+    const ray = new THREE.Raycaster();
+    const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+    const ndc = new THREE.Vector2();
+    const hit = new THREE.Vector3();
+    let s = 0;
+    st.onTick((dt, t) => {
+      const narrow = st.size.w < 760;
+      mat.uniforms.uT.value = t;
+      mat.uniforms.uIntro.value = Math.min(1, mat.uniforms.uIntro.value + dt / 2.6);
+      // сцена с паузами: портрет держится, затем быстро перетекает в следующий
+      const p = progressOf(show) * 4;
+      const k = Math.min(3, Math.floor(p));
+      const fr = p - k;
+      const target = k + smooth(0.55, 0.95, fr);
+      s = damp(s, Math.min(3, target), 5, dt);
+      mat.uniforms.uS.value = s;
+      pts.position.x = narrow ? 0 : 1.25;
+      pts.position.y = narrow ? 1.25 : 0;
+      pts.rotation.y = st.pointer.x * 0.18;
+      pts.rotation.x = st.pointer.y * 0.08;
+      camera.position.set(0, 0, narrow ? 12.5 : 7.4);
+      camera.lookAt(0, 0, 0);
+      // курсор в координатах частиц
+      ndc.set(st.pointer.cx / st.size.w * 2 - 1, -(st.pointer.cy / st.size.h) * 2 + 1);
+      ray.setFromCamera(ndc, camera);
+      if (ray.ray.intersectPlane(plane, hit)) {
+        mat.uniforms.uMouse.value.set(hit.x - pts.position.x, hit.y - pts.position.y, 0);
+      }
+    });
+  }
 </script>
 </body>
 </html>
