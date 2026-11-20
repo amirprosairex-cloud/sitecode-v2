@@ -41,6 +41,11 @@
     .hero-bg img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; transform: scale(1.08); }
     .hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(ellipse at 70% 60%, rgba(9, 9, 10, 0) 0%, rgba(9, 9, 10, .55) 55%, rgba(9, 9, 10, .95) 100%), linear-gradient(90deg, rgba(9, 9, 10, .9), rgba(9, 9, 10, 0) 60%); }
     .hero h1 { max-width: 12ch; font: 400 clamp(46px, 7.6vw, 128px)/.92 var(--font-head); text-transform: uppercase; }
+    /* жидкий хром: капли металла, которые сливаются и тянутся за курсором */
+    .chrome { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 1.6s ease .3s; }
+    .chrome.on { opacity: 1; }
+    .chrome-hint { position: absolute; right: var(--pad); top: 112px; display: flex; align-items: center; gap: 10px; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .chrome-hint i { width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #8c8c95 45%, #2a2a2e 75%); box-shadow: 0 0 18px rgba(255, 77, 26, .45); }
     .shine { background: linear-gradient(110deg, #9a9aa3 0%, #fff 18%, #9a9aa3 30%, #6d6d75 50%, #fff 64%, #9a9aa3 78%); background-size: 260% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 5s cubic-bezier(.6, 0, .4, 1) infinite; }
     @keyframes shine { 0% { background-position: 100% 0; } 60%, 100% { background-position: -40% 0; } }
     .hero p { max-width: 32em; margin: 26px 0 34px; font-size: clamp(17px, 1.4vw, 20px); color: rgba(242, 242, 243, .78); }
@@ -117,6 +122,7 @@
       .nav { display: none; }
       .hdr .btn { margin-left: auto; }
       .speed { display: none; }
+      .chrome-hint { display: none; }
       .packs-grid { grid-template-columns: 1fr; }
       .ba-sec { grid-template-columns: 1fr; }
       .proc { grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -147,6 +153,8 @@
 <main id="top">
   <section class="hero">
     <div class="hero-bg"><img data-speed=".12" src="https://images.unsplash.com/photo-1567808291548-fc3ee04dbcf0?auto=format&fit=crop&w=2000&q=80" alt="Чёрный автомобиль в боксе"></div>
+    <canvas class="chrome" id="chrome" aria-hidden="true"></canvas>
+    <p class="chrome-hint" data-r="fade" data-now style="--d:1.2s"><i></i>Поводите курсором</p>
     <p class="tag" data-r data-now>Детейлинг-центр · Алматы</p>
     <h1 class="lines" data-now><span class="ln"><span class="shine">Блеск, который</span></span><span class="ln"><span class="shine">видно</span></span><span class="ln"><span class="shine">с парковки</span></span></h1>
     <p data-r data-now style="--d:.5s">Мойка, полировка, керамика и химчистка салона. Отдаёте машину утром — забираете как из салона вечером.</p>
@@ -296,5 +304,125 @@
 </div>
 
 <script src="assets/demo.js"></script>
+<script>
+  // Жидкий хром на WebGL: метаболы с отражением «студии» и оранжевой контровой подсветкой
+  (() => {
+    const cv = document.getElementById('chrome');
+    const hero = cv && cv.parentElement;
+    if (!cv) return;
+    const gl = cv.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: false });
+    if (!gl) { cv.remove(); return; }
+    const N = 9;
+    const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+    const FS = [
+      'precision highp float;',
+      'uniform float T;uniform float K;uniform vec3 B[' + N + '];',
+      'vec3 env(vec3 r){',
+      '  float y=r.y,x=r.x;',
+      '  vec3 sky=mix(vec3(.3,.32,.38),vec3(.78,.8,.86),smoothstep(-.12,.8,y));',
+      '  vec3 ground=mix(vec3(.015,.015,.02),vec3(.08,.08,.09),smoothstep(-1.,-.2,y));',
+      '  vec3 c=mix(ground,sky,smoothstep(-.2,-.13,y));',
+      '  c+=vec3(1.)*smoothstep(.55,.72,y)*.55;',
+      '  c+=vec3(1.,.32,.09)*smoothstep(.4,.92,x)*1.1;',
+      '  c+=vec3(.45,.55,.85)*smoothstep(-.45,-.92,x)*.45;',
+      '  return c;',
+      '}',
+      'void main(){',
+      '  vec2 p=gl_FragCoord.xy;float f=0.;vec2 g=vec2(0.);',
+      '  for(int i=0;i<' + N + ';i++){vec2 d=p-B[i].xy;float r2=B[i].z*B[i].z;float q=dot(d,d)+1.;f+=r2/q;g+=-2.*r2*d/(q*q);}',
+      '  float a=clamp((f-1.)/max(length(g),1e-4)+.5,0.,1.);',
+      '  if(a<=0.){gl_FragColor=vec4(0.);return;}',
+      '  vec2 gh=g/(f*f);',
+      '  vec3 n=normalize(vec3(-gh*K+.008*vec2(sin(p.y*.03+T*1.3),cos(p.x*.028-T)),1.));',
+      '  vec3 r=reflect(vec3(0.,0.,-1.),n);',
+      '  float s=sin(T*.3)*.35;r.xy=mat2(cos(s),-sin(s),sin(s),cos(s))*r.xy;',
+      '  vec3 col=env(r)+pow(1.-n.z,3.)*.35;',
+      '  gl_FragColor=vec4(col*a,a);',
+      '}'
+    ].join('\n');
+    const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; };
+    const prog = gl.createProgram();
+    const fsh = sh(gl.FRAGMENT_SHADER, FS);
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS));
+    gl.attachShader(prog, fsh);
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { console.warn('chrome:', gl.getShaderInfoLog(fsh)); cv.remove(); return; }
+    gl.useProgram(prog);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, 'p');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const uT = gl.getUniformLocation(prog, 'T');
+    const uK = gl.getUniformLocation(prog, 'K');
+    const uB = gl.getUniformLocation(prog, 'B');
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // капли кружат вокруг точки в правой верхней части экрана
+    const drops = Array.from({ length: N - 1 }, (_, i) => ({
+      a: i * 0.8 + Math.random(), sp: 0.15 + Math.random() * 0.25, rx: 60 + Math.random() * 190, ry: 40 + Math.random() * 120,
+      r: 26 + Math.random() * 36, w: 0.6 + Math.random() * 0.8
+    }));
+    const data = new Float32Array(N * 3);
+    let W = 0, H = 0, S = 1, live = true;
+    let mx = -9999, my = -9999, inside = false, cx = 0, cy = 0, cr = 0;
+    const size = () => {
+      const r = hero.getBoundingClientRect();
+      S = Math.min(window.devicePixelRatio || 1, 1.5) * 0.75;
+      W = r.width; H = r.height;
+      cv.width = Math.round(W * S);
+      cv.height = Math.round(H * S);
+      gl.viewport(0, 0, cv.width, cv.height);
+      gl.uniform1f(uK, 70 * S * Math.min(1, W / 1200 + 0.3));
+    };
+    hero.addEventListener('pointermove', (e) => {
+      const r = hero.getBoundingClientRect();
+      mx = e.clientX - r.left; my = e.clientY - r.top; inside = true;
+    });
+    hero.addEventListener('pointerleave', () => { inside = false; });
+    const t0 = performance.now();
+    const draw = () => {
+      const t = still ? 6 : (performance.now() - t0) / 1000;
+      const k = Math.min(1, W / 1300);
+      const ox = W * (W < 760 ? 0.7 : 0.73);
+      const oy = H * (W < 760 ? 0.2 : 0.4);
+      drops.forEach((d, i) => {
+        const x = ox + Math.cos(d.a + t * d.sp) * d.rx * k + Math.sin(t * d.w + i) * 18 * k;
+        const y = oy + Math.sin(d.a * 1.3 + t * d.sp * 1.4) * d.ry * k;
+        const r = d.r * (0.62 + 0.38 * k) * (0.85 + 0.15 * Math.sin(t * d.w * 1.7 + i));
+        data[i * 3] = x * S;
+        data[i * 3 + 1] = (H - y) * S;
+        data[i * 3 + 2] = r * S;
+      });
+      // капля под курсором: догоняет мышь и сливается с остальными
+      const tx = inside ? mx : ox;
+      const ty = inside ? my : oy;
+      cx += (tx - cx) * 0.09;
+      cy += (ty - cy) * 0.09;
+      cr += ((inside ? 30 : 0) - cr) * 0.08;
+      const j = (N - 1) * 3;
+      data[j] = cx * S; data[j + 1] = (H - cy) * S; data[j + 2] = cr * S;
+      gl.uniform3fv(uB, data);
+      gl.uniform1f(uT, t);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    };
+    const loop = () => {
+      if (!live) return;
+      draw();
+      if (!still) requestAnimationFrame(loop);
+    };
+    size();
+    cx = W * 0.73; cy = H * 0.4;
+    new IntersectionObserver((es) => {
+      const was = live;
+      live = es[0].isIntersecting;
+      if (live && !was) requestAnimationFrame(loop);
+    }).observe(hero);
+    window.addEventListener('resize', () => { size(); draw(); });
+    requestAnimationFrame(() => { loop(); cv.classList.add('on'); });
+  })();
+</script>
 </body>
 </html>

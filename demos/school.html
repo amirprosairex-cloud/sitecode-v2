@@ -57,13 +57,46 @@
     .sticker svg { width: 100%; height: 100%; }
     .st1 { left: -40px; top: 8%; width: 90px; height: 90px; }
     .st2 { right: -26px; bottom: 18%; width: 74px; height: 74px; animation-delay: -1.7s; }
-    .st3 { left: 18%; bottom: -30px; width: 64px; height: 64px; animation-delay: -3.3s; }
+    .st3 { right: 18%; bottom: -30px; width: 64px; height: 64px; animation-delay: -3.3s; }
+    button.tvbot { padding: 0; border: 0; background: none; color: inherit; text-align: left; }
     @keyframes float { 50% { transform: translateY(-14px) rotate(8deg); } }
-    .bubble { position: absolute; right: -10px; top: -22px; padding: 14px 18px; border: 2.5px solid var(--fg); border-radius: 20px 20px 20px 4px; background: #fff; font: 800 16px/1.2 var(--font-head); box-shadow: 4px 4px 0 var(--fg); animation: float 6s ease-in-out infinite; }
     .doodle { position: absolute; z-index: -1; opacity: .9; }
     .d1 { right: 4%; top: 12%; width: 160px; }
     .d1 path { stroke-dasharray: 600; stroke-dashoffset: 600; animation: draw 3s ease forwards .8s; }
     @keyframes draw { to { stroke-dashoffset: 0; } }
+
+    /* Билим-бот: телевизор с лицом, которое смотрит на курсор */
+    .tvbot { position: absolute; z-index: 3; width: clamp(150px, 15vw, 230px); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .tvbot svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .tvbot .tv-body { animation: hop 3.2s cubic-bezier(.5, 0, .5, 1) infinite; transform-box: view-box; transform-origin: 120px 250px; }
+    .tvbot.jump .tv-body { animation: jump .6s cubic-bezier(.2, 1.4, .4, 1); }
+    .tvbot .tv-ant { transform-box: view-box; transform-origin: 120px 64px; animation: wob 2.6s ease-in-out infinite; }
+    .tvbot .tv-arm { transform-box: view-box; transform-origin: 28px 142px; animation: wave 1.6s ease-in-out infinite; }
+    .tvbot .tv-eyes rect { transform-box: fill-box; transform-origin: center; transition: transform .12s; }
+    .tvbot.blink .tv-eyes rect { transform: scaleY(.12); }
+    .tvbot.happy .tv-eyes rect { transform: scaleY(.4) translateY(-6px); }
+    .tvbot .tv-grin { opacity: 0; transition: opacity .2s; }
+    .tvbot.happy .tv-grin { opacity: 1; }
+    .tvbot.happy .tv-smile { opacity: 0; }
+    .tvbot .tv-shadow { transform-box: fill-box; transform-origin: center; animation: shadow 3.2s cubic-bezier(.5, 0, .5, 1) infinite; }
+    @keyframes hop { 0%, 60%, 100% { transform: none; } 70% { transform: translateY(-14px) rotate(-2deg); } 80% { transform: translateY(0) scale(1.03, .97); } }
+    @keyframes jump { 40% { transform: translateY(-34px) rotate(6deg); } 70% { transform: translateY(0) scale(1.06, .94); } }
+    @keyframes wob { 50% { transform: rotate(7deg); } }
+    @keyframes wave { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-26deg); } }
+    @keyframes shadow { 70% { transform: scaleX(.8); opacity: .6; } }
+    .tv-say {
+      position: absolute; left: 62%; bottom: 92%; width: max-content; max-width: 230px; padding: 12px 16px;
+      border: 2.5px solid var(--fg); border-radius: 18px 18px 18px 4px; background: #fff; box-shadow: 4px 4px 0 var(--fg);
+      font: 800 16px/1.25 var(--font-head); transform-origin: 0 100%; transition: transform .35s cubic-bezier(.2, 1.5, .4, 1), opacity .2s;
+    }
+    .tv-say.swap { transform: scale(.6); opacity: 0; }
+    .hero .tvbot { left: -64px; bottom: -58px; }
+    .form-wrap { position: relative; }
+    .form-wrap form { position: relative; z-index: 1; }
+    .tvbot.peek { right: 34px; top: -96px; z-index: 0; width: 130px; }
+    .tvbot.peek .tv-body, .tvbot.peek .tv-shadow { animation: none; }
+    .tvbot.peek .tv-say { left: auto; right: 92%; bottom: 52%; border-radius: 18px 18px 4px 18px; transform-origin: 100% 100%; font-size: 14px; }
+    @media (prefers-reduced-motion: reduce) { .tvbot * { animation: none !important; } }
 
     /* курсы */
     .courses { padding: 140px var(--pad) 110px; }
@@ -155,6 +188,9 @@
       .lesson time, .lesson h4, .lesson .who, .lesson .seats { grid-column: 1; }
       .lesson button { grid-column: 2; grid-row: 1 / span 4; }
       .st1 { left: -16px; } .st2 { right: -12px; }
+      .hero .tvbot { left: -10px; bottom: -70px; width: 128px; }
+      .hero .tv-say { font-size: 14px; max-width: 190px; }
+      .tvbot.peek { width: 104px; top: -78px; right: 20px; }
       footer { flex-direction: column; }
     }
   </style>
@@ -187,8 +223,40 @@
       <div class="subjects" data-r data-now style="--d:.75s"><span>Английский</span><span>Математика</span><span>IELTS</span><span>Подготовка к школе</span></div>
     </div>
     <div class="photo" data-r="scale" data-now style="--d:.2s">
-      <div class="frame"><img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1000&q=80" alt="Учитель и дети на уроке"></div>
-      <div class="bubble">Hello! 👋</div>
+      <div class="frame"><img src="https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=1000&q=80" alt="Дети рисуют и занимаются на уроке"></div>
+      <button class="tvbot" id="tvbot" type="button" data-eyes="16" aria-label="Билим-бот: нажмите, и он расскажет о центре">
+        <span class="tv-say" id="tvSay" aria-live="polite">Привет! Я Билим-бот 👋</span>
+        <svg viewBox="0 0 240 280" aria-hidden="true">
+          <ellipse class="tv-shadow" cx="120" cy="266" rx="72" ry="9" fill="#1A1A22" opacity=".16"/>
+          <g class="tv-body">
+            <g class="tv-ant">
+              <path d="M102 64 L76 20 M140 64 L166 24" stroke="#1A1A22" stroke-width="5" stroke-linecap="round"/>
+              <circle cx="75" cy="17" r="11" fill="#FF7A59" stroke="#1A1A22" stroke-width="4"/>
+              <circle cx="167" cy="21" r="8" fill="#8CD0FF" stroke="#1A1A22" stroke-width="4"/>
+            </g>
+            <path d="M94 214 v32 M146 214 v32" stroke="#1A1A22" stroke-width="7" stroke-linecap="round"/>
+            <ellipse cx="88" cy="250" rx="18" ry="9" fill="#1A1A22"/>
+            <ellipse cx="152" cy="250" rx="18" ry="9" fill="#1A1A22"/>
+            <g class="tv-arm">
+              <path d="M28 142 C 8 130 4 106 12 86" stroke="#1A1A22" stroke-width="7" fill="none" stroke-linecap="round"/>
+              <circle cx="13" cy="80" r="12" fill="#fff" stroke="#1A1A22" stroke-width="4"/>
+            </g>
+            <path d="M212 146 C 230 158 232 176 222 190" stroke="#1A1A22" stroke-width="7" fill="none" stroke-linecap="round"/>
+            <circle cx="220" cy="195" r="12" fill="#fff" stroke="#1A1A22" stroke-width="4"/>
+            <rect x="24" y="62" width="192" height="156" rx="30" fill="#FFCC33" stroke="#1A1A22" stroke-width="5"/>
+            <rect x="42" y="80" width="130" height="120" rx="22" fill="#1A1A22"/>
+            <path d="M56 93 h34" stroke="#fff" stroke-opacity=".2" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="194" cy="102" r="9" fill="#fff" stroke="#1A1A22" stroke-width="4"/>
+            <circle cx="194" cy="132" r="9" fill="#FF7A59" stroke="#1A1A22" stroke-width="4"/>
+            <path d="M184 162 h20 M184 172 h20 M184 182 h20" stroke="#1A1A22" stroke-width="4" stroke-linecap="round"/>
+            <g class="pupil">
+              <g class="tv-eyes"><rect x="74" y="114" width="18" height="30" rx="9" fill="#5CD6A6"/><rect x="122" y="114" width="18" height="30" rx="9" fill="#5CD6A6"/></g>
+              <path class="tv-smile" d="M94 160 Q107 172 120 160" stroke="#5CD6A6" stroke-width="5" fill="none" stroke-linecap="round"/>
+              <path class="tv-grin" d="M90 156 Q107 188 124 156 Z" fill="#5CD6A6"/>
+            </g>
+          </g>
+        </svg>
+      </button>
       <span class="sticker st1" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M50 4l12 30 32 2-25 20 9 32-28-18-28 18 9-32L6 36l32-2z" fill="#8CD0FF" stroke="#1A1A22" stroke-width="4" stroke-linejoin="round"/></svg></span>
       <span class="sticker st2" aria-hidden="true"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="#5CD6A6" stroke="#1A1A22" stroke-width="4"/><path d="M30 52l14 14 26-30" fill="none" stroke="#1A1A22" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <span class="sticker st3" aria-hidden="true"><svg viewBox="0 0 100 100"><rect x="8" y="8" width="84" height="84" rx="22" fill="#FF7A59" stroke="#1A1A22" stroke-width="4"/><text x="50" y="66" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="46" fill="#1A1A22">A+</text></svg></span>
@@ -242,6 +310,29 @@
         <li>Ни к чему не обязывает</li>
       </ul>
     </div>
+    <div class="form-wrap">
+    <div class="tvbot peek" id="peekBot" data-eyes="14" aria-hidden="true">
+      <span class="tv-say" id="peekSay">Я всё передам администратору</span>
+      <svg viewBox="0 0 240 280">
+        <g class="tv-body">
+          <g class="tv-ant">
+            <path d="M102 64 L76 20 M140 64 L166 24" stroke="#1A1A22" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="75" cy="17" r="11" fill="#8CD0FF" stroke="#1A1A22" stroke-width="4"/>
+            <circle cx="167" cy="21" r="8" fill="#FF7A59" stroke="#1A1A22" stroke-width="4"/>
+          </g>
+          <rect x="24" y="62" width="192" height="156" rx="30" fill="#FFFFFF" stroke="#1A1A22" stroke-width="5"/>
+          <rect x="42" y="80" width="130" height="120" rx="22" fill="#1A1A22"/>
+          <path d="M56 93 h34" stroke="#fff" stroke-opacity=".2" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="194" cy="102" r="9" fill="#FFCC33" stroke="#1A1A22" stroke-width="4"/>
+          <circle cx="194" cy="132" r="9" fill="#5CD6A6" stroke="#1A1A22" stroke-width="4"/>
+          <g class="pupil">
+            <g class="tv-eyes"><rect x="74" y="114" width="18" height="30" rx="9" fill="#FFCC33"/><rect x="122" y="114" width="18" height="30" rx="9" fill="#FFCC33"/></g>
+            <path class="tv-smile" d="M94 160 Q107 172 120 160" stroke="#FFCC33" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <path class="tv-grin" d="M90 156 Q107 188 124 156 Z" fill="#FFCC33"/>
+          </g>
+        </g>
+      </svg>
+    </div>
     <form class="d-form" data-wa-form="Запись на пробный урок" novalidate>
       <fieldset class="d-field" data-label="Курс">
         <legend>Курс</legend>
@@ -273,6 +364,7 @@
       </div>
       <button class="d-submit" type="submit" style="--btn-radius:16px">Записаться бесплатно</button>
     </form>
+    </div>
   </section>
 </main>
 
@@ -371,6 +463,46 @@
       daysBox.appendChild(b);
       if (i === today) setTimeout(() => show(s), 0);
     });
+    // Билим-бот: болтает по нажатию, радуется при наведении
+    const bot = $('#tvbot');
+    const say = $('#tvSay');
+    const lines = ['Привет! Я Билим-бот 👋', 'Первый урок — бесплатно!', 'В группе не больше 8 человек', 'Нажми ещё, я много знаю 🙂', 'Запишись — перезвоним за 15 минут'];
+    let li = 0;
+    const speak = (el, text) => {
+      if (el.textContent === text) return;
+      el.classList.add('swap');
+      setTimeout(() => { el.textContent = text; el.classList.remove('swap'); }, 180);
+    };
+    const cheer = (b, ms) => {
+      b.classList.add('happy');
+      clearTimeout(b.cheerT);
+      b.cheerT = setTimeout(() => b.classList.remove('happy'), ms);
+    };
+    if (bot) {
+      bot.addEventListener('click', () => {
+        li = (li + 1) % lines.length;
+        speak(say, lines[li]);
+        bot.classList.remove('jump');
+        void bot.offsetWidth;
+        bot.classList.add('jump');
+        cheer(bot, 1000);
+      });
+      bot.addEventListener('animationend', (e) => { if (e.animationName === 'jump') bot.classList.remove('jump'); });
+      bot.addEventListener('pointerenter', () => bot.classList.add('happy'));
+      bot.addEventListener('pointerleave', () => bot.classList.remove('happy'));
+    }
+    // второй бот выглядывает из-за формы и подсказывает по полям
+    const peek = $('#peekBot');
+    const peekSay = $('#peekSay');
+    if (peek) {
+      const hints = { tName: 'Как к вам обращаться?', tPhone: 'Номер, чтобы перезвонить' };
+      $$('.form-wrap input').forEach((inp) => {
+        inp.addEventListener('focus', () => { if (hints[inp.id]) speak(peekSay, hints[inp.id]); });
+        inp.addEventListener('change', () => { if (inp.type === 'radio') { speak(peekSay, 'Отличный выбор!'); cheer(peek, 900); } });
+      });
+      window.addEventListener('demo:sent', () => { speak(peekSay, 'Ура! Ждём вас на уроке 🎉'); cheer(peek, 4000); });
+    }
+
     // карточки преподавателей переворачиваются по нажатию на телефоне
     $$('.flip').forEach((f) => {
       f.addEventListener('click', () => f.classList.toggle('turned'));

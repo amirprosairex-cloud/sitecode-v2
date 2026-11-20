@@ -112,6 +112,8 @@
     const panels = $$('[data-panel]', wrap);
     btns.forEach((b) => b.addEventListener('click', () => {
       btns.forEach((x) => x.setAttribute('aria-selected', String(x === b)));
+      // фон раздела подстраивается под вкладку
+      if (b.dataset.bg) wrap.style.setProperty('--tab-bg', b.dataset.bg);
       panels.forEach((p) => {
         const on = p.dataset.panel === b.dataset.tab;
         p.hidden = !on;
@@ -182,6 +184,96 @@
     });
     window.addEventListener('scroll', () => { if (on) { on = false; fl.classList.remove('on'); } }, { passive: true });
   }
+
+  /* ---------- Глаза, которые следят за курсором и за полем ввода ---------- */
+  const eyeWraps = $$('[data-eyes]');
+  if (eyeWraps.length) {
+    let px = window.innerWidth / 2;
+    let py = window.innerHeight / 3;
+    window.addEventListener('pointermove', (e) => { px = e.clientX; py = e.clientY; }, { passive: true });
+    document.addEventListener('focusin', (e) => {
+      if (!e.target.matches || !e.target.matches('input, textarea, select')) return;
+      const r = e.target.getBoundingClientRect();
+      px = r.left + Math.min(r.width, 90);
+      py = r.top + r.height / 2;
+    });
+    const eyes = eyeWraps.map((wrap) => ({ wrap, pupils: $$('.pupil', wrap), max: Number(wrap.dataset.eyes || 6), x: 0, y: 0 }));
+    const look = () => {
+      const vh = window.innerHeight;
+      eyes.forEach((o) => {
+        const r = o.wrap.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > vh) return;
+        const dx = px - (r.left + r.width / 2);
+        const dy = py - (r.top + r.height * 0.4);
+        const d = Math.hypot(dx, dy) || 1;
+        const k = Math.min(1, d / 260);
+        o.x += (dx / d * o.max * k - o.x) * 0.14;
+        o.y += (dy / d * o.max * 0.75 * k - o.y) * 0.14;
+        const t = 'translate(' + o.x.toFixed(2) + ' ' + o.y.toFixed(2) + ')';
+        o.pupils.forEach((p) => p.setAttribute('transform', t));
+      });
+      requestAnimationFrame(look);
+    };
+    if (!reduce) requestAnimationFrame(look);
+    eyeWraps.forEach((wrap) => {
+      const blink = () => {
+        wrap.classList.add('blink');
+        setTimeout(() => wrap.classList.remove('blink'), 160);
+        setTimeout(blink, 2200 + Math.random() * 3800);
+      };
+      setTimeout(blink, 1200 + Math.random() * 1500);
+    });
+  }
+
+  /* ---------- Карусель на подставке (фон меняется под товар) ---------- */
+  $$('[data-cfl]').forEach((box) => {
+    const items = $$('.cfl-item', box);
+    const n = items.length;
+    if (!n) return;
+    const tint = box.closest('[data-cfl-tint]') || box;
+    let cur = 0;
+    const render = () => {
+      items.forEach((it, i) => {
+        let d = i - cur;
+        if (d > n / 2) d -= n;
+        if (d < -n / 2) d += n;
+        const ad = Math.abs(d);
+        it.style.setProperty('--d', d);
+        it.style.setProperty('--ad', ad);
+        it.style.zIndex = String(20 - ad);
+        it.style.opacity = ad > 2 ? '0' : String(1 - ad * 0.25);
+        it.style.pointerEvents = ad > 2 ? 'none' : 'auto';
+        it.classList.toggle('on', d === 0);
+      });
+      if (items[cur].dataset.bg) tint.style.backgroundColor = items[cur].dataset.bg;
+      if (items[cur].dataset.fg) tint.style.color = items[cur].dataset.fg;
+      box.dispatchEvent(new CustomEvent('cfl:change', { detail: { index: cur, item: items[cur] } }));
+    };
+    const go = (i) => { cur = (i + n) % n; render(); };
+    const prev = $('[data-cfl-prev]', tint);
+    const next = $('[data-cfl-next]', tint);
+    let timer = 0;
+    const stop = () => clearInterval(timer);
+    const play = () => { stop(); if (!reduce) timer = setInterval(() => go(cur + 1), Number(box.dataset.cfl) || 4200); };
+    if (prev) prev.addEventListener('click', () => { stop(); go(cur - 1); });
+    if (next) next.addEventListener('click', () => { stop(); go(cur + 1); });
+    items.forEach((it, i) => it.addEventListener('click', (e) => { if (i !== cur) { e.preventDefault(); stop(); go(i); } }));
+    let sx = 0;
+    let down = false;
+    box.addEventListener('pointerdown', (e) => { down = true; sx = e.clientX; });
+    window.addEventListener('pointerup', (e) => {
+      if (!down) return;
+      down = false;
+      const dx = e.clientX - sx;
+      if (Math.abs(dx) > 50) { stop(); go(cur + (dx < 0 ? 1 : -1)); }
+    });
+    box.addEventListener('pointerenter', stop);
+    box.addEventListener('pointerleave', play);
+    new IntersectionObserver((es) => { if (es[0].isIntersecting) play(); else stop(); }, { threshold: 0.3 }).observe(box);
+    render();
+    box.goTo = go;
+    box.current = () => cur;
+  });
 
   /* ---------- Наклон карточек за мышью ---------- */
   if (fine && !reduce) {

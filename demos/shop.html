@@ -55,6 +55,28 @@
     .perks div:last-child { border-right: 0; }
     .perks svg { width: 26px; height: 26px; flex: none; color: var(--accent); }
 
+    /* витрина-карусель: фон подстраивается под цвет сумки */
+    .showcase { position: relative; overflow: hidden; padding: 96px var(--pad) 80px; background-color: #E3CF6E; transition: background-color 1s cubic-bezier(.2, .8, .2, 1), color .6s; }
+    .showcase::before { content: ""; position: absolute; inset: 0; background: radial-gradient(60% 55% at 50% 52%, rgba(255, 255, 255, .42), rgba(255, 255, 255, 0) 70%); pointer-events: none; }
+    .sc-head { position: relative; z-index: 3; display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 20px; }
+    .sc-head h2 { font: 400 clamp(36px, 4.4vw, 64px)/1 var(--font-head); }
+    .sc-head p { max-width: 22em; opacity: .75; }
+    .sc-word { position: absolute; left: 0; right: 0; top: 50%; z-index: 0; text-align: center; white-space: nowrap; font: 400 clamp(110px, 25vw, 420px)/1 var(--font-head); letter-spacing: -.03em; opacity: .2; transform: translateY(-58%); pointer-events: none; }
+    .sc-word span { display: inline-block; transition: transform .8s cubic-bezier(.2, .8, .2, 1), opacity .5s; }
+    .sc-word span.swap { opacity: 0; transform: translateY(30%); }
+    .showcase .cfl { z-index: 2; margin-top: 10px; --cfl-h: 560px; --cfl-w: clamp(220px, 22vw, 320px); }
+    .showcase .cfl-item { aspect-ratio: 4 / 5; }
+    .showcase .cfl-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; box-shadow: 0 40px 60px -30px rgba(0, 0, 0, .55); -webkit-box-reflect: below 10px linear-gradient(transparent 72%, rgba(255, 255, 255, .22)); }
+    .showcase .cfl-pedestal { bottom: 2%; }
+    .sc-info { position: relative; z-index: 3; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+    .sc-name { font: 400 clamp(24px, 2.2vw, 34px)/1.15 var(--font-head); transition: opacity .3s; }
+    .sc-name.swap { opacity: 0; }
+    .sc-price { margin-top: 6px; font-weight: 700; font-size: 18px; }
+    .sc-actions { display: flex; align-items: center; gap: 10px; }
+    .sc-arrow { display: grid; place-items: center; width: 54px; height: 54px; border: 1px solid currentColor; border-radius: 50%; background: none; color: inherit; font-size: 20px; cursor: pointer; transition: background-color .3s, color .3s; }
+    .sc-arrow:hover { background: var(--fg); color: #fff; border-color: var(--fg); }
+    .sc-actions .btn { min-width: 210px; }
+
     /* каталог */
     .catalog { padding: 110px var(--pad); }
     .cat-head { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 24px; margin-bottom: 40px; }
@@ -123,6 +145,11 @@
       .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 12px; }
       .prod .add { opacity: 1; transform: none; min-height: 40px; font-size: 11px; }
       .story { grid-template-columns: 1fr; }
+      .showcase { padding: 70px var(--pad) 60px; }
+      .showcase .cfl { --cfl-h: 430px; --cfl-w: 56vw; }
+      .sc-word { font-size: 30vw; }
+      .sc-actions { width: 100%; }
+      .sc-actions .btn { flex: 1; min-width: 0; }
     }
     @media (max-width: 520px) {
       .logo { font-size: 22px; letter-spacing: .24em; }
@@ -170,6 +197,33 @@
     <div data-r><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>Доставка по Казахстану за 1–3 дня</div>
     <div data-r style="--d:.1s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12a8 8 0 1 1 3 6.2M4 19v-5h5"/></svg>Обмен и возврат в течение 14 дней</div>
     <div data-r style="--d:.2s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>Оплата картой или при получении</div>
+  </section>
+
+  <section class="showcase" id="showcase" data-cfl-tint aria-label="Сумки сезона">
+    <div class="sc-head">
+      <h2 class="lines"><span class="ln"><span>Сумки сезона</span></span></h2>
+      <p data-r>Листайте витрину: фон подстроится под цвет кожи.</p>
+    </div>
+    <div class="sc-word" aria-hidden="true"><span id="scWord">Лимон</span></div>
+    <div class="cfl" data-cfl="4200">
+      <div class="cfl-pedestal"></div>
+      <figure class="cfl-item" data-pid="3" data-word="Лимон" data-bg="#E3CF6E" data-fg="#2A2610"><img src="https://images.unsplash.com/photo-1640901555383-7335ec5a6476?auto=format&fit=crop&w=700&q=80" alt="Сумка «Лимон»" loading="lazy"></figure>
+      <figure class="cfl-item" data-pid="1" data-word="Сирень" data-bg="#C6B9D2" data-fg="#231A2A"><img src="https://images.unsplash.com/photo-1605733513597-a8f8341084e6?auto=format&fit=crop&w=700&q=80" alt="Сумка-портфель «Сирень»" loading="lazy"></figure>
+      <figure class="cfl-item" data-pid="8" data-word="Агат" data-bg="#2E2F33" data-fg="#F1EEE9"><img src="https://images.unsplash.com/photo-1618274181513-c5b7e595a2e7?auto=format&fit=crop&w=700&q=80" alt="Сумка «Агат» из чёрной кожи" loading="lazy"></figure>
+      <figure class="cfl-item" data-pid="5" data-word="Туман" data-bg="#BCC4CA" data-fg="#1A2026"><img src="https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&w=700&q=80" alt="Кросс-боди «Туман»" loading="lazy"></figure>
+      <figure class="cfl-item" data-pid="10" data-word="Молоко" data-bg="#EDE4D6" data-fg="#1E1A16"><img src="https://images.unsplash.com/photo-1615206928955-ce0ffbb7ca5a?auto=format&fit=crop&w=700&q=80" alt="Сумка «Молоко»" loading="lazy"></figure>
+    </div>
+    <div class="sc-info">
+      <div>
+        <p class="sc-name" id="scName">Сумка «Лимон»</p>
+        <p class="sc-price" id="scPrice">21 000 ₸</p>
+      </div>
+      <div class="sc-actions">
+        <button class="sc-arrow" type="button" data-cfl-prev aria-label="Предыдущая сумка">←</button>
+        <button class="sc-arrow" type="button" data-cfl-next aria-label="Следующая сумка">→</button>
+        <button class="btn" type="button" id="scAdd">В корзину</button>
+      </div>
+    </div>
   </section>
 
   <section class="catalog" id="catalog">
@@ -253,14 +307,14 @@
     const { $, $$, money, openModal } = window.Demo;
     const U = (id, w) => 'https://images.unsplash.com/photo-' + id + '?auto=format&fit=crop&w=' + (w || 700) + '&q=80';
     const PRODUCTS = [
-      { id: 1, cat: 'Сумки', name: 'Сумка-портфель «Графит»', price: 24900, img: '1605733513597-a8f8341084e6', badge: 'Хит' },
+      { id: 1, cat: 'Сумки', name: 'Сумка-портфель «Сирень»', price: 24900, img: '1605733513597-a8f8341084e6', badge: 'Хит' },
       { id: 2, cat: 'Одежда', name: 'Свитер «Карамель»', price: 19900, img: '1773747310662-e7cc9e681226', badge: 'Новинка' },
       { id: 3, cat: 'Сумки', name: 'Сумка «Лимон»', price: 21000, old: 26000, img: '1640901555383-7335ec5a6476', badge: '−20%' },
       { id: 4, cat: 'Одежда', name: 'Кардиган «Пудра»', price: 22000, img: '1758981400298-78cd18eb6793' },
       { id: 5, cat: 'Сумки', name: 'Кросс-боди «Туман»', price: 18500, img: '1559563458-527698bf5295' },
       { id: 6, cat: 'Аксессуары', name: 'Часы «Золото»', price: 27000, img: '1589557313308-3b0dde4a7103' },
       { id: 7, cat: 'Одежда', name: 'Свитер «Облако»', price: 17500, img: '1621198059871-0d5f9b449233' },
-      { id: 8, cat: 'Сумки', name: 'Дорожная сумка «Коньяк»', price: 39000, img: '1618274181513-c5b7e595a2e7', badge: 'Кожа' },
+      { id: 8, cat: 'Сумки', name: 'Сумка «Агат»', price: 39000, img: '1618274181513-c5b7e595a2e7', badge: 'Кожа' },
       { id: 9, cat: 'Одежда', name: 'Свитер «Ромашки»', price: 18900, img: '1760127537832-0bae1e09bfbb' },
       { id: 10, cat: 'Сумки', name: 'Сумка «Молоко»', price: 32000, img: '1615206928955-ce0ffbb7ca5a' },
       { id: 11, cat: 'Одежда', name: 'Блуза «Зефир»', price: 15900, img: '1777462985111-9da64fb2e6e6' },
@@ -382,6 +436,39 @@
       return rows;
     };
     window.addEventListener('demo:sent', () => { cart.clear(); $('#cartCount').textContent = '0'; });
+
+    // витрина-карусель: подпись, цена и большое слово меняются вместе с сумкой
+    const cfl = $('#showcase .cfl');
+    if (cfl) {
+      const word = $('#scWord');
+      const name = $('#scName');
+      const price = $('#scPrice');
+      let curItem = null;
+      const show = (item) => {
+        if (!item || item === curItem) return;
+        const first = !curItem;
+        curItem = item;
+        const p = PRODUCTS.find((x) => x.id === Number(item.dataset.pid));
+        if (!p) return;
+        const apply = () => {
+          word.textContent = item.dataset.word;
+          name.textContent = p.name;
+          price.textContent = money(p.price);
+          word.classList.remove('swap');
+          name.classList.remove('swap');
+        };
+        if (first) { apply(); return; }
+        word.classList.add('swap');
+        name.classList.add('swap');
+        setTimeout(apply, 280);
+      };
+      cfl.addEventListener('cfl:change', (e) => show(e.detail.item));
+      show($('.cfl-item.on', cfl));
+      $('#scAdd').addEventListener('click', () => {
+        const p = curItem && PRODUCTS.find((x) => x.id === Number(curItem.dataset.pid));
+        if (p) add(p, $('img', curItem));
+      });
+    }
     render();
     cartBtn.classList.remove('bump');
   })();

@@ -128,6 +128,52 @@
 
     footer { display: flex; justify-content: space-between; gap: 16px; padding: 30px var(--pad) 100px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
 
+    /* меню: фон под вкладку */
+    .menu { background: var(--tab-bg, var(--bg)); transition: background-color .9s cubic-bezier(.2, .8, .2, 1); }
+
+    /* вкусы недели: стакан падает сквозь слово */
+    .flavors { position: relative; height: 400vh; background: var(--fl-bg, #E7B46A); color: var(--fl-fg, #3A1F0E); }
+    .fl-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+    .fl-kicker { position: absolute; left: var(--pad); top: 104px; z-index: 6; font-weight: 600; }
+    .fl-kicker span { display: block; margin-top: 4px; font-weight: 400; opacity: .7; }
+    .fl-words { position: absolute; inset: 0; pointer-events: none; }
+    /* слово разрезано по линии: верх позади стакана, низ перед ним */
+    .fl-words.back { z-index: 1; clip-path: inset(0 0 46% 0); }
+    .fl-words.front { z-index: 3; clip-path: inset(54% 0 0 0); }
+    .fl-word {
+      position: absolute; left: 0; right: 0; top: 50%; margin-top: -.42em; text-align: center; white-space: nowrap;
+      font: 400 calc(clamp(80px, 16.5vw, 300px) * var(--fs, 1))/.84 var(--font-head); letter-spacing: -.02em;
+      opacity: 0; will-change: transform, opacity;
+    }
+    .fl-cups { position: absolute; left: 50%; top: 50%; z-index: 2; width: clamp(190px, 21vw, 330px); aspect-ratio: 3 / 4.3; transform: translate(-50%, -50%); }
+    .fl-cup { position: absolute; inset: 0; overflow: hidden; border-radius: 999px; box-shadow: 0 50px 80px -34px rgba(30, 12, 0, .55); transform: translate3d(0, -130vh, 0); will-change: transform; }
+    .fl-cup img { width: 100%; height: 100%; object-fit: cover; }
+    .fl-floats { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+    .fl-float { position: absolute; left: var(--x); top: var(--y); opacity: 0; will-change: transform, opacity; }
+    .ing { display: block; position: relative; transform: rotate(var(--r, 0deg)) scale(var(--s, 1)); filter: drop-shadow(0 18px 18px rgba(30, 12, 0, .22)); }
+    .ing.bean { width: 46px; height: 64px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #7A4E34, #2A1D16 70%); }
+    .ing.bean::after { content: ""; position: absolute; left: 47%; top: 12%; bottom: 12%; width: 3px; border-radius: 3px; background: rgba(239, 231, 218, .45); transform: rotate(8deg); }
+    .ing.drop { width: 50px; height: 50px; border-radius: 0 50% 50% 50%; background: radial-gradient(circle at 38% 38%, #FFE6BC, #DB8D2E 52%, #93500F); --r: 45deg; }
+    .ing.cube { width: 74px; height: 74px; border-radius: 15px; background: linear-gradient(140deg, rgba(255, 255, 255, .96), rgba(214, 238, 246, .6) 45%, rgba(160, 205, 222, .45)); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .8), inset -10px -12px 20px rgba(110, 165, 188, .35); }
+    .ing.cube::after { content: ""; position: absolute; left: 16%; top: 14%; width: 30%; height: 14%; border-radius: 8px; background: #fff; opacity: .9; transform: rotate(-12deg); }
+    .ing.stick { width: 26px; height: 156px; border-radius: 13px; background: repeating-linear-gradient(0deg, transparent 0 17px, rgba(0, 0, 0, .14) 17px 19px), linear-gradient(90deg, #5E2610, #A85A31 35%, #CC7C4E 52%, #8A4421 72%, #5E2610); }
+    .ing.star { width: 70px; height: 70px; background: radial-gradient(circle, #E3A06A 0 14%, #9A4A22 15% 34%, #6C2D10 70%); clip-path: polygon(50% 0%, 58.4% 29.7%, 85.4% 14.6%, 70.3% 41.6%, 100% 50%, 70.3% 58.4%, 85.4% 85.4%, 58.4% 70.3%, 50% 100%, 41.6% 70.3%, 14.6% 85.4%, 29.7% 58.4%, 0% 50%, 29.7% 41.6%, 14.6% 14.6%, 41.6% 29.7%); }
+    .ing.pod { width: 13px; height: 180px; border-radius: 8px; background: linear-gradient(90deg, #1E120A, #4A2C18 50%, #1E120A); }
+    .ing.flower { width: 76px; height: 76px; }
+    .ing.foam { width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #F1E4C6 72%); }
+    .fl-info { position: absolute; left: var(--pad); bottom: clamp(96px, 12vh, 150px); z-index: 6; width: min(380px, 34vw); }
+    .fl-item { position: absolute; left: 0; bottom: 0; width: 100%; opacity: 0; transform: translateY(24px); transition: opacity .5s, transform .7s cubic-bezier(.2, .8, .2, 1); pointer-events: none; }
+    .fl-item.on { opacity: 1; transform: none; pointer-events: auto; }
+    .fl-item h3 { font: 400 clamp(30px, 2.8vw, 46px)/1 var(--font-head); }
+    .fl-item p { margin: 12px 0 18px; opacity: .8; }
+    .fl-item .buy { display: flex; align-items: center; gap: 16px; }
+    .fl-item .price { font-weight: 700; font-size: 22px; }
+    .fl-item .add { width: 54px; height: 54px; background: var(--fl-fg); color: var(--fl-bg); }
+    .fl-nav { position: absolute; right: var(--pad); bottom: clamp(96px, 12vh, 150px); z-index: 6; display: grid; justify-items: end; gap: 4px; }
+    .fl-nav button { padding: 6px 0; border: 0; background: none; color: inherit; font: 400 clamp(20px, 1.7vw, 28px)/1.1 var(--font-head); opacity: .4; cursor: pointer; transition: opacity .3s, transform .4s cubic-bezier(.2, .8, .2, 1); }
+    .fl-nav button[aria-current="true"] { opacity: 1; transform: translateX(-10px); }
+    .fl-nav button:hover { opacity: .85; }
+
     @media (max-width: 1000px) {
       .nav { display: none; }
       .hero, .about, .visit { grid-template-columns: 1fr; }
@@ -137,6 +183,12 @@
       .gram-grid { grid-template-columns: repeat(3, 1fr); }
       .gram-grid a:nth-child(4) { grid-row: auto; grid-column: auto; aspect-ratio: 1; }
       .cart-pill { margin-left: auto; }
+      .fl-word { font-size: calc(19vw * var(--fs, 1)); }
+      .fl-cups { width: 38vw; }
+      .fl-info { right: var(--pad); width: auto; bottom: 92px; }
+      .fl-nav { top: 104px; bottom: auto; }
+      .fl-nav button { font-size: 18px; }
+      .ing { scale: .62; }
     }
     @media (max-width: 560px) {
       .item h3 { font-size: 21px; }
@@ -202,6 +254,83 @@
     </div>
   </div>
 
+  <section class="flavors" id="flavors" aria-label="Вкусы недели">
+    <div class="fl-stage">
+      <p class="fl-kicker">Вкусы недели<span>Листайте вниз</span></p>
+      <div class="fl-words back" aria-hidden="true">
+        <span class="fl-word">Карамель</span>
+        <span class="fl-word">Ваниль</span>
+        <span class="fl-word" style="--fs:1.5">Лёд</span>
+        <span class="fl-word">Корица</span>
+      </div>
+      <div class="fl-cups">
+        <div class="fl-cup"><img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=700&q=80" alt="Карамельный раф в кружке" loading="lazy"></div>
+        <div class="fl-cup"><img src="https://images.unsplash.com/photo-1512568400610-62da28bc8a13?auto=format&fit=crop&w=700&q=80" alt="Ванильный латте с рисунком на пенке" loading="lazy"></div>
+        <div class="fl-cup"><img src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=700&q=80" alt="Айс латте со льдом" loading="lazy"></div>
+        <div class="fl-cup"><img src="https://images.unsplash.com/photo-1485808191679-5f86510681a2?auto=format&fit=crop&w=700&q=80" alt="Капучино с корицей" loading="lazy"></div>
+      </div>
+      <div class="fl-words front" aria-hidden="true">
+        <span class="fl-word">Карамель</span>
+        <span class="fl-word">Ваниль</span>
+        <span class="fl-word" style="--fs:1.5">Лёд</span>
+        <span class="fl-word">Корица</span>
+      </div>
+      <div class="fl-floats" aria-hidden="true">
+        <span class="fl-float" data-f="0" data-k="1.5" data-rot="40" style="--x:15%;--y:20%"><i class="ing drop"></i></span>
+        <span class="fl-float" data-f="0" data-k=".7" data-rot="-30" style="--x:76%;--y:24%"><i class="ing bean" style="--r:-30deg"></i></span>
+        <span class="fl-float" data-f="0" data-k="1.1" data-rot="30" style="--x:68%;--y:72%"><i class="ing drop" style="--s:.6"></i></span>
+        <span class="fl-float" data-f="0" data-k=".5" data-rot="50" style="--x:27%;--y:68%"><i class="ing bean" style="--r:40deg;--s:.7"></i></span>
+        <span class="fl-float" data-f="0" data-k="1.8" data-rot="-20" style="--x:86%;--y:52%"><i class="ing bean" style="--r:10deg;--s:.5"></i></span>
+
+        <span class="fl-float" data-f="1" data-k="1.4" data-rot="35" style="--x:18%;--y:24%"><svg class="ing flower" viewBox="0 0 60 60"><g fill="#FFF8E6"><ellipse cx="30" cy="15" rx="9" ry="15"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(72 30 30)"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(144 30 30)"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(216 30 30)"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(288 30 30)"/></g><circle cx="30" cy="30" r="6" fill="#F0B93A"/></svg></span>
+        <span class="fl-float" data-f="1" data-k=".8" data-rot="-25" style="--x:77%;--y:16%"><i class="ing pod" style="--r:28deg"></i></span>
+        <span class="fl-float" data-f="1" data-k="1.2" data-rot="20" style="--x:72%;--y:66%"><svg class="ing flower" viewBox="0 0 60 60" style="--s:.6"><g fill="#FFF8E6"><ellipse cx="30" cy="15" rx="9" ry="15"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(72 30 30)"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(144 30 30)"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(216 30 30)"/><ellipse cx="30" cy="15" rx="9" ry="15" transform="rotate(288 30 30)"/></g><circle cx="30" cy="30" r="6" fill="#F0B93A"/></svg></span>
+        <span class="fl-float" data-f="1" data-k=".55" data-rot="40" style="--x:24%;--y:64%"><i class="ing foam"></i></span>
+        <span class="fl-float" data-f="1" data-k="1.7" data-rot="-15" style="--x:88%;--y:46%"><i class="ing foam" style="--s:.55"></i></span>
+
+        <span class="fl-float" data-f="2" data-k="1.5" data-rot="45" style="--x:16%;--y:18%"><i class="ing cube" style="--r:14deg"></i></span>
+        <span class="fl-float" data-f="2" data-k=".75" data-rot="-35" style="--x:76%;--y:22%"><i class="ing cube" style="--r:-20deg;--s:.75"></i></span>
+        <span class="fl-float" data-f="2" data-k="1.1" data-rot="30" style="--x:70%;--y:70%"><i class="ing cube" style="--r:30deg;--s:.9"></i></span>
+        <span class="fl-float" data-f="2" data-k=".5" data-rot="-40" style="--x:25%;--y:66%"><i class="ing cube" style="--r:-8deg;--s:.6"></i></span>
+        <span class="fl-float" data-f="2" data-k="1.9" data-rot="25" style="--x:88%;--y:50%"><i class="ing cube" style="--r:22deg;--s:.45"></i></span>
+
+        <span class="fl-float" data-f="3" data-k="1.4" data-rot="30" style="--x:21%;--y:21%"><i class="ing stick" style="--r:-35deg"></i></span>
+        <span class="fl-float" data-f="3" data-k=".8" data-rot="-45" style="--x:76%;--y:20%"><i class="ing star"></i></span>
+        <span class="fl-float" data-f="3" data-k="1.15" data-rot="25" style="--x:70%;--y:64%"><i class="ing stick" style="--r:55deg;--s:.7"></i></span>
+        <span class="fl-float" data-f="3" data-k=".55" data-rot="60" style="--x:24%;--y:66%"><i class="ing star" style="--s:.65"></i></span>
+        <span class="fl-float" data-f="3" data-k="1.8" data-rot="-30" style="--x:88%;--y:48%"><i class="ing bean" style="--r:20deg;--s:.55"></i></span>
+      </div>
+      <div class="fl-info">
+        <article class="fl-item" data-bg="#E7B46A" data-fg="#3A1F0E">
+          <h3>Карамельный раф</h3>
+          <p>Сливки, домашняя солёная карамель и двойной эспрессо. 350 мл</p>
+          <div class="buy"><span class="price">1 900 ₸</span><button class="add" type="button" data-add="Карамельный раф" data-price="1900" aria-label="Добавить карамельный раф">+</button></div>
+        </article>
+        <article class="fl-item" data-bg="#F3E2A9" data-fg="#45330F">
+          <h3>Ванильный латте</h3>
+          <p>Мадагаскарская ваниль, бархатное молоко и наш эспрессо. 350 мл</p>
+          <div class="buy"><span class="price">1 700 ₸</span><button class="add" type="button" data-add="Ванильный латте" data-price="1700" aria-label="Добавить ванильный латте">+</button></div>
+        </article>
+        <article class="fl-item" data-bg="#CFE3EC" data-fg="#0F3440">
+          <h3>Айс латте</h3>
+          <p>Много льда, холодное молоко и двойной шот. 400 мл</p>
+          <div class="buy"><span class="price">1 600 ₸</span><button class="add" type="button" data-add="Айс латте" data-price="1600" aria-label="Добавить айс латте">+</button></div>
+        </article>
+        <article class="fl-item" data-bg="#9C4424" data-fg="#FCEADB">
+          <h3>Пряный капучино</h3>
+          <p>Корица, бадьян и немного мёда поверх пенки. 300 мл</p>
+          <div class="buy"><span class="price">1 600 ₸</span><button class="add" type="button" data-add="Пряный капучино" data-price="1600" aria-label="Добавить пряный капучино">+</button></div>
+        </article>
+      </div>
+      <nav class="fl-nav" aria-label="Вкусы недели">
+        <button type="button">Карамель</button>
+        <button type="button">Ваниль</button>
+        <button type="button">Лёд</button>
+        <button type="button">Корица</button>
+      </nav>
+    </div>
+  </section>
+
   <section class="menu" id="menu" data-tabs>
     <div class="menu-head">
       <div>
@@ -209,9 +338,9 @@
         <h2 class="title lines"><span class="ln"><span>Выберите и заберите</span></span></h2>
       </div>
       <div class="tabs" role="tablist" data-r>
-        <button type="button" role="tab" data-tab="hot" aria-selected="true">Кофе</button>
-        <button type="button" role="tab" data-tab="cold" aria-selected="false">Холодные</button>
-        <button type="button" role="tab" data-tab="bake" aria-selected="false">Выпечка</button>
+        <button type="button" role="tab" data-tab="hot" data-bg="#EFE7DA" aria-selected="true">Кофе</button>
+        <button type="button" role="tab" data-tab="cold" data-bg="#D9E7EE" aria-selected="false">Холодные</button>
+        <button type="button" role="tab" data-tab="bake" data-bg="#F4E2BE" aria-selected="false">Выпечка</button>
       </div>
     </div>
 
@@ -400,6 +529,95 @@
     const key = d === 0 ? '0' : d === 6 ? '6' : '1';
     const row = document.querySelector('#hours [data-day="' + key + '"]');
     if (row) { row.classList.add('now'); row.querySelector('span').textContent += ' · сегодня'; }
+
+    // Вкусы недели: стакан падает сквозь слово, фон перекрашивается под вкус
+    const sec = $('#flavors');
+    if (sec) {
+      const cups = $$('.fl-cup', sec);
+      const back = $$('.fl-words.back .fl-word', sec);
+      const front = $$('.fl-words.front .fl-word', sec);
+      const items = $$('.fl-item', sec);
+      const nav = $$('.fl-nav button', sec);
+      const floats = $$('.fl-float', sec).map((el) => ({ el, f: Number(el.dataset.f), k: Number(el.dataset.k), r: Number(el.dataset.rot) }));
+      const n = cups.length;
+      const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+      const cols = items.map((it) => [rgb(it.dataset.bg), rgb(it.dataset.fg)]);
+      const mix = (a, b, t) => 'rgb(' + a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',') + ')';
+      const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+      const ss = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+      const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let vh = window.innerHeight;
+      let top = 0;
+      let on = -1;
+      let live = false;
+      let mx = 0, my = 0, tx = 0, ty = 0;
+      const step = () => vh * 0.9;
+      const measure = () => { vh = window.innerHeight; top = sec.getBoundingClientRect().top + window.scrollY; };
+      const progress = () => clamp((window.scrollY - top - vh * 0.15) / step(), 0, n - 1);
+      const paint = () => {
+        mx += (tx - mx) * 0.06;
+        my += (ty - my) * 0.06;
+        const P = progress();
+        const i0 = Math.floor(P);
+        const i1 = Math.min(n - 1, i0 + 1);
+        const f = ss(0.3, 0.7, P - i0);
+        sec.style.setProperty('--fl-bg', mix(cols[i0][0], cols[i1][0], f));
+        sec.style.setProperty('--fl-fg', mix(cols[i0][1], cols[i1][1], f));
+        const now = performance.now();
+        for (let i = 0; i < n; i++) {
+          const t = P - i; // меньше нуля: стакан ещё сверху, больше нуля: уже упал вниз
+          const a = Math.abs(t);
+          const s = ss(0.16, 1, a) * Math.sign(t);
+          if (still) {
+            cups[i].style.transform = 'none';
+            cups[i].style.opacity = String(1 - ss(0.3, 0.5, a));
+          } else {
+            const bob = Math.sin(now / 900 + i * 2) * 7 * (1 - Math.min(1, a * 3));
+            cups[i].style.transform = 'translate3d(' + (mx * 12).toFixed(1) + 'px,' + (s * vh * 1.2 + bob).toFixed(1) + 'px,0) rotate(' + (s * 18 + mx * 2.5).toFixed(2) + 'deg)';
+          }
+          const wo = (1 - ss(0.2, 0.47, a)).toFixed(3);
+          const wt = still ? 'none' : 'translate3d(' + (-t * 55).toFixed(2) + 'vw,0,0)';
+          back[i].style.opacity = wo;
+          front[i].style.opacity = wo;
+          back[i].style.transform = wt;
+          front[i].style.transform = wt;
+        }
+        floats.forEach((o) => {
+          const t = P - o.f;
+          o.el.style.opacity = (1 - ss(0.45, 0.85, Math.abs(t))).toFixed(3);
+          if (still) return;
+          o.el.style.transform = 'translate3d(' + (mx * 26 * o.k).toFixed(1) + 'px,' + (t * o.k * vh * 0.9 + my * 18 * o.k).toFixed(1) + 'px,0) rotate(' + (t * o.r).toFixed(1) + 'deg)';
+        });
+        const idx = Math.round(P);
+        if (idx !== on) {
+          on = idx;
+          items.forEach((it, i) => it.classList.toggle('on', i === idx));
+          nav.forEach((b, i) => b.setAttribute('aria-current', String(i === idx)));
+        }
+      };
+      const loop = () => {
+        if (!live) return;
+        paint();
+        requestAnimationFrame(loop);
+      };
+      new IntersectionObserver((es) => {
+        const was = live;
+        live = es[0].isIntersecting;
+        if (live && !was) requestAnimationFrame(loop);
+      }, { rootMargin: '200px 0px' }).observe(sec);
+      sec.addEventListener('pointermove', (e) => {
+        tx = e.clientX / window.innerWidth * 2 - 1;
+        ty = e.clientY / window.innerHeight * 2 - 1;
+      }, { passive: true });
+      nav.forEach((b, i) => b.addEventListener('click', () => {
+        window.scrollTo({ top: top + vh * 0.15 + i * step() + 2, behavior: still ? 'auto' : 'smooth' });
+      }));
+      measure();
+      paint();
+      window.addEventListener('resize', () => { measure(); paint(); });
+      window.addEventListener('load', measure);
+      if (document.fonts) document.fonts.ready.then(measure);
+    }
   })();
 </script>
 </body>

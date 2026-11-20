@@ -56,7 +56,7 @@ function boot() {
   Object.keys(HEX).forEach((k) => { PAL[k] = new THREE.Color(HEX[k]); });
 
   const small = window.innerWidth < 760;
-  const N = small ? 400 : 720;
+  const N = small ? 460 : 960;
   const DMAX = 0.38;
 
   /* ---------- Случайные числа (одинаковые при каждой загрузке) ---------- */
@@ -226,7 +226,17 @@ function boot() {
     const e = new THREE.Euler();
     const gq = new THREE.Quaternion();
     return {
-      C: CL, R: RW, M, slot, cx: 0, cy: 0, cs: 0.5, shake: 0, extra: null,
+      C: CL, R: RW, M, slot, cx: 0, cy: 0, cs: 0.5, shake: 0, extra: null, yaw: opt.yaw || 0,
+      // точка на картинке (колонка, строка) → мировые координаты в покое
+      cellPoint(c, r, out) {
+        out.set((c - (CL - 1) / 2) * this.cs, -(r - (RW - 1) / 2) * this.cs, 0);
+        e.set(0, this.yaw, 0);
+        gq.setFromEuler(e);
+        out.applyQuaternion(gq);
+        out.x += this.cx;
+        out.y += this.cy;
+        return out;
+      },
       layout(z) {
         this.cs = Math.min(z.w * opt.fitW / CL, z.h * opt.fitH / RW);
         this.cx = z.cx;
@@ -290,7 +300,7 @@ function boot() {
   }
 
   const BROWSER_WIDE = [
-    'n1r1y1e1n4m14n8',
+    'g1r1y1e1g4w14g8',
     'w1k2w14g2w1g2w1g2w1s2w2',
     'b30',
     'b2w11b4l11b2',
@@ -311,7 +321,7 @@ function boot() {
     'w30'
   ];
   const BROWSER_NARROW = [
-    'n1r1y1e1n2m12n4',
+    'g1r1y1e1g2w12g4',
     'w1k2w11g2w1g2w1s2',
     'b22',
     'b2w8b3l8b1',
@@ -326,28 +336,29 @@ function boot() {
     'w1m7g2w2m7g2w1',
     'w22'
   ];
+  // рамка телефона серебристая: история идёт на тёмном фоне
   const PHONE = [
-    '.1n9.1',
-    'n1w3k3w3n1',
-    'n1w1k2w4g2n1',
-    'n1b9n1',
-    'n1b1w6b2n1',
-    'n1b1w4b4n1',
-    'n1b9n1',
-    'n1b1l6b2n1',
-    'n1b9n1',
-    'n1b1s4b4n1',
-    'n1b9n1',
-    'n1w9n1',
-    'n1w1l7w1n1',
-    'n1w1l3s2l2w1n1',
-    'n1w1l7w1n1',
-    'n1w1k5g2w1n1',
-    'n1w1m5g2w1n1',
-    'n1w9n1',
-    'n1w1e7w1n1',
-    'n1w9n1',
-    '.1n9.1'
+    '.1g9.1',
+    'g1w3k3w3g1',
+    'g1w1k2w4g2g1',
+    'g1b9g1',
+    'g1b1w6b2g1',
+    'g1b1w4b4g1',
+    'g1b9g1',
+    'g1b1l6b2g1',
+    'g1b9g1',
+    'g1b1s4b4g1',
+    'g1b9g1',
+    'g1w9g1',
+    'g1w1l7w1g1',
+    'g1w1l3s2l2w1g1',
+    'g1w1l7w1g1',
+    'g1w1k5g2w1g1',
+    'g1w1m5g2w1g1',
+    'g1w9g1',
+    'g1w1e7w1g1',
+    'g1w9g1',
+    '.1g9.1'
   ];
   const LOGO = [
     '.2b3.1.5n2.1b3.2',
@@ -387,6 +398,8 @@ function boot() {
     const slot = new Int32Array(N).fill(-1);
     const e = new THREE.Euler();
     const gq = new THREE.Quaternion();
+    let minX = 0;
+    let spanX = 1;
     return {
       at: 0, shift: 0, size: 0.3,
       set(list, size, at) {
@@ -396,12 +409,24 @@ function boot() {
         slot.fill(-1);
         const M = Math.min(list.length, N);
         for (let k = 0; k < M; k++) slot[Math.floor(k * N / M)] = k;
+        minX = Infinity;
+        let maxX = -Infinity;
+        list.forEach((c) => { if (c.x < minX) minX = c.x; if (c.x > maxX) maxX = c.x; });
+        spanX = Math.max(0.001, maxX - minX);
       },
       layout() {},
-      frame(t, ptr, sy) {
-        this.shift = ((sy || 0) - this.at) * view.H / view.h;
-        e.set(ptr.y * 0.12, ptr.x * 0.18, 0);
+      frame(t, ptr) {
+        // Слово приклеено к тексту: берём настоящую прокрутку, без сглаживания,
+        // поэтому оно не отстаёт и не «догоняет» страницу.
+        this.shift = (window.scrollY - this.at) * view.H / view.h;
+        e.set(ptr.y * 0.08, ptr.x * 0.12, 0);
         gq.setFromEuler(e);
+      },
+      // буквы вписываются слева направо
+      delayFor(i) {
+        const k = slot[i];
+        if (k < 0) return delay[i];
+        return 0.02 + ((cells[k].x - minX) / spanX) * 0.34;
       },
       target(i, t, p, q) {
         const k = slot[i];
@@ -411,7 +436,7 @@ function boot() {
           return 0;
         }
         const c = cells[k];
-        p.set(c.x, c.y + this.shift, Math.sin(t * 1.8 + c.x * 0.5) * this.size * 0.12);
+        p.set(c.x, c.y + this.shift, Math.sin(t * 1.8 + c.x * 0.5) * this.size * 0.08);
         q.copy(gq);
         return this.size;
       },
@@ -455,7 +480,7 @@ function boot() {
     chars.forEach((ch) => ctx.fillText(ch.textContent, padX + ch.offsetLeft - first.offsetLeft, base));
     const data = ctx.getImageData(0, 0, W, H).data;
     const alpha = (x, y) => data[(Math.min(H - 1, y | 0) * W + Math.min(W - 1, x | 0)) * 4 + 3];
-    let cell = Math.max(3, fontSize / (view.w < 900 ? 12 : 18));
+    let cell = Math.max(3, fontSize / (view.w < 900 ? 14 : 22));
     for (let tries = 0; tries < 8; tries++) {
       const cols = Math.floor(W / cell);
       const rows = Math.floor(H / cell);
@@ -522,6 +547,21 @@ function boot() {
     return { x: (PV.x + 1) / 2 * view.w, y: (1 - PV.y) / 2 * view.h };
   }
 
+  /* Точки для подписей «из чего состоит сайт» на окне браузера из кубиков */
+  const ANCHORS_WIDE = [[1.5, 1], [7, 3.5], [4, 9], [22, 5.5], [14.5, 13.5]];
+  const ANCHORS_NARROW = [[1.5, 1], [5.5, 3.5], [3.5, 6], [16.5, 4.5], [10.5, 10]];
+  const AV = new THREE.Vector3();
+  function publishAnchors() {
+    const list = (browser.C >= 30 ? ANCHORS_WIDE : ANCHORS_NARROW).map(([c, r]) => {
+      browser.cellPoint(c, r, AV);
+      AV.project(camera);
+      return { x: (AV.x + 1) / 2 * view.w, y: (1 - AV.y) / 2 * view.h };
+    });
+    if (!list.every((p) => Number.isFinite(p.x) && Number.isFinite(p.y))) return;
+    window.__scAnchors = list;
+    window.dispatchEvent(new CustomEvent('sc:anchors', { detail: list }));
+  }
+
   function publishPhone() {
     const hw = phone.C * phone.cs / 2;
     const hh = phone.R * phone.cs / 2;
@@ -570,8 +610,8 @@ function boot() {
       }
     }
     codeFade.on = codeOn;
-    codeFade.from = sCode * 0.35;
-    codeFade.to = sCode * 0.9;
+    codeFade.from = sCode * 0.5;
+    codeFade.to = sCode * 0.94;
 
     stations = [{ f: sphere, at: 0 }];
     if (codeOn) stations.push({ f: codeWord, at: sCode, win: [0.1, 0.96] }, { f: codeWord, at: sHold });
@@ -597,6 +637,7 @@ function boot() {
     const cr = contactOrb.getBoundingClientRect();
     logo.layout(zone(cr.left, cr.top + y - logoAt, cr.width, cr.height));
     publishPhone();
+    publishAnchors();
   }
 
   /* ---------- Мышь ---------- */
@@ -671,7 +712,7 @@ function boot() {
     if (!same) fb.frame(time, ptr, sy);
 
     // текст «Code» в большом слове растворяется, когда на его место прилетают кубики
-    const fade = codeFade.on ? clamp((sy - codeFade.from) / Math.max(1, codeFade.to - codeFade.from)) : 0;
+    const fade = codeFade.on ? clamp((window.scrollY - codeFade.from) / Math.max(1, codeFade.to - codeFade.from)) : 0;
     if (Math.abs(fade - codeFade.last) > 0.004) {
       codeFade.last = fade;
       root.style.setProperty('--code-fade', fade.toFixed(3));
@@ -686,7 +727,8 @@ function boot() {
 
     for (let i = 0; i < N; i++) {
       let sc;
-      const local = same ? 0 : easeIO(clamp((u - delay[i]) / (1 - DMAX)));
+      const dl = !same && fb.delayFor ? fb.delayFor(i) : delay[i];
+      const local = same ? 0 : easeIO(clamp((u - dl) / (1 - DMAX)));
       if (local <= 0) {
         sc = fa.target(i, time, P, Q);
         COL.copy(PAL[fa.key(i)]);

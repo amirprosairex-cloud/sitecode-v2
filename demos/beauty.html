@@ -57,8 +57,13 @@
     .hero-bottom { position: absolute; left: var(--pad); right: var(--pad); bottom: 34px; display: flex; justify-content: space-between; align-items: end; gap: 20px; }
     .hero-bottom p { max-width: 24em; color: var(--muted); }
 
-    /* услуги */
-    .services { padding: 140px var(--pad) 120px; }
+    /* услуги: фон перетекает в оттенок услуги под курсором */
+    .services { padding: 140px var(--pad) 120px; background: var(--tone, var(--bg)); transition: background-color 1s cubic-bezier(.2, .8, .2, 1); }
+    .svc { transition: transform .9s cubic-bezier(.2, .8, .2, 1) var(--d, 0s), opacity .9s cubic-bezier(.2, .8, .2, 1) var(--d, 0s), box-shadow .6s; }
+    .svc:hover { transform: translateY(-8px); box-shadow: 0 34px 60px -36px rgba(46, 31, 39, .45); }
+    .svc .swatch { position: absolute; right: 18px; top: 18px; width: 30px; height: 30px; border-radius: 50%; background: var(--sw); box-shadow: 0 0 0 4px rgba(255, 249, 247, .9); transform: scale(0); transition: transform .5s cubic-bezier(.2, 1.6, .4, 1); }
+    .svc:hover .swatch { transform: scale(1); }
+    .chip-float, .seal { translate: var(--px, 0) var(--py, 0); transition: translate .6s cubic-bezier(.2, .8, .2, 1); }
     .services-head { display: flex; justify-content: space-between; align-items: end; gap: 30px; margin-bottom: 56px; }
     .services-head p { max-width: 24em; color: var(--muted); }
     .svc-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
@@ -184,12 +189,12 @@
       <p data-r>Цены «от» — точную стоимость мастер назовёт после консультации. Консультация бесплатная.</p>
     </div>
     <div class="svc-grid">
-      <article class="svc" data-r><div class="pic"><img src="https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=800&q=80" alt="Укладка феном" loading="lazy"></div><div class="body"><h3>Стрижка и укладка</h3><span class="price">от 7 000 ₸</span><p>Стрижка любой длины, мытьё, укладка · 1,5 часа</p><button type="button" data-open="book" data-preset='{"service":"Стрижка и укладка"}'>Записаться</button></div></article>
-      <article class="svc" data-r style="--d:.08s"><div class="pic"><img src="https://images.unsplash.com/photo-1634449571010-02389ed0f9b0?auto=format&fit=crop&w=800&q=80" alt="Мастер окрашивает волосы" loading="lazy"></div><div class="body"><h3>Окрашивание</h3><span class="price">от 18 000 ₸</span><p>AirTouch, балаяж, тонирование · 3–5 часов</p><button type="button" data-open="book" data-preset='{"service":"Окрашивание"}'>Записаться</button></div></article>
-      <article class="svc" data-r style="--d:.16s"><div class="pic"><img src="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80" alt="Маникюр в салоне" loading="lazy"></div><div class="body"><h3>Маникюр</h3><span class="price">7 000 ₸</span><p>С покрытием гель-лак и дизайном · 1,5 часа</p><button type="button" data-open="book" data-preset='{"service":"Маникюр"}'>Записаться</button></div></article>
-      <article class="svc" data-r><div class="pic"><img src="https://images.unsplash.com/photo-1589710751893-f9a6770ad71b?auto=format&fit=crop&w=800&q=80" alt="Наращивание ресниц" loading="lazy"></div><div class="body"><h3>Брови и ресницы</h3><span class="price">от 5 000 ₸</span><p>Коррекция, окрашивание, ламинирование · 1 час</p><button type="button" data-open="book" data-preset='{"service":"Брови и ресницы"}'>Записаться</button></div></article>
-      <article class="svc" data-r style="--d:.08s"><div class="pic"><img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80" alt="Уход за лицом" loading="lazy"></div><div class="body"><h3>Уход за лицом</h3><span class="price">12 000 ₸</span><p>Чистка, маска, массаж · 1 час</p><button type="button" data-open="book" data-preset='{"service":"Уход за лицом"}'>Записаться</button></div></article>
-      <article class="svc" data-r style="--d:.16s"><div class="pic"><img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80" alt="Кисти для макияжа" loading="lazy"></div><div class="body"><h3>Макияж</h3><span class="price">10 000 ₸</span><p>Дневной, вечерний, свадебный · 1 час</p><button type="button" data-open="book" data-preset='{"service":"Макияж"}'>Записаться</button></div></article>
+      <article class="svc" data-r data-tone="#F2E3D8" style="--sw:#D9B79C"><div class="pic"><img src="https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=800&q=80" alt="Укладка феном" loading="lazy"></div><span class="swatch" aria-hidden="true"></span><div class="body"><h3>Стрижка и укладка</h3><span class="price">от 7 000 ₸</span><p>Стрижка любой длины, мытьё, укладка · 1,5 часа</p><button type="button" data-open="book" data-preset='{"service":"Стрижка и укладка"}'>Записаться</button></div></article>
+      <article class="svc" data-r data-tone="#EED6C2" style="--d:.08s;--sw:#B9773F"><div class="pic"><img src="https://images.unsplash.com/photo-1634449571010-02389ed0f9b0?auto=format&fit=crop&w=800&q=80" alt="Мастер окрашивает волосы" loading="lazy"></div><span class="swatch" aria-hidden="true"></span><div class="body"><h3>Окрашивание</h3><span class="price">от 18 000 ₸</span><p>AirTouch, балаяж, тонирование · 3–5 часов</p><button type="button" data-open="book" data-preset='{"service":"Окрашивание"}'>Записаться</button></div></article>
+      <article class="svc" data-r data-tone="#F4D6DD" style="--d:.16s;--sw:#C2506F"><div class="pic"><img src="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80" alt="Маникюр в салоне" loading="lazy"></div><span class="swatch" aria-hidden="true"></span><div class="body"><h3>Маникюр</h3><span class="price">7 000 ₸</span><p>С покрытием гель-лак и дизайном · 1,5 часа</p><button type="button" data-open="book" data-preset='{"service":"Маникюр"}'>Записаться</button></div></article>
+      <article class="svc" data-r data-tone="#E8DDD4" style="--sw:#6E5446"><div class="pic"><img src="https://images.unsplash.com/photo-1589710751893-f9a6770ad71b?auto=format&fit=crop&w=800&q=80" alt="Наращивание ресниц" loading="lazy"></div><span class="swatch" aria-hidden="true"></span><div class="body"><h3>Брови и ресницы</h3><span class="price">от 5 000 ₸</span><p>Коррекция, окрашивание, ламинирование · 1 час</p><button type="button" data-open="book" data-preset='{"service":"Брови и ресницы"}'>Записаться</button></div></article>
+      <article class="svc" data-r data-tone="#DDEDE5" style="--d:.08s;--sw:#7FB49A"><div class="pic"><img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80" alt="Уход за лицом" loading="lazy"></div><span class="swatch" aria-hidden="true"></span><div class="body"><h3>Уход за лицом</h3><span class="price">12 000 ₸</span><p>Чистка, маска, массаж · 1 час</p><button type="button" data-open="book" data-preset='{"service":"Уход за лицом"}'>Записаться</button></div></article>
+      <article class="svc" data-r data-tone="#EBD7E7" style="--d:.16s;--sw:#8E4F86"><div class="pic"><img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80" alt="Кисти для макияжа" loading="lazy"></div><span class="swatch" aria-hidden="true"></span><div class="body"><h3>Макияж</h3><span class="price">10 000 ₸</span><p>Дневной, вечерний, свадебный · 1 час</p><button type="button" data-open="book" data-preset='{"service":"Макияж"}'>Записаться</button></div></article>
     </div>
   </section>
 
@@ -365,6 +370,34 @@
       dots.appendChild(d);
     });
     timer = setInterval(() => show(i + 1), 5200);
+
+    // фон раздела услуг перетекает в оттенок карточки под курсором
+    const svcSec = document.getElementById('services');
+    const svcGrid = svcSec && svcSec.querySelector('.svc-grid');
+    if (svcGrid) {
+      svcSec.querySelectorAll('.svc[data-tone]').forEach((card) => {
+        card.addEventListener('pointerenter', () => svcSec.style.setProperty('--tone', card.dataset.tone));
+      });
+      svcGrid.addEventListener('pointerleave', () => svcSec.style.removeProperty('--tone'));
+    }
+
+    // плашки и печать на первом экране плывут за мышью на разной глубине
+    const hero = document.querySelector('.hero');
+    const floaters = Array.from(document.querySelectorAll('.hero .chip-float, .hero .seal'));
+    const depth = [26, -20, 16, -12];
+    if (hero && window.matchMedia('(hover: hover) and (pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      hero.addEventListener('pointermove', (e) => {
+        const r = hero.getBoundingClientRect();
+        const nx = (e.clientX - r.left) / r.width - 0.5;
+        const ny = (e.clientY - r.top) / r.height - 0.5;
+        floaters.forEach((el, k) => {
+          const d = depth[k % depth.length];
+          el.style.setProperty('--px', (nx * d * 2).toFixed(1) + 'px');
+          el.style.setProperty('--py', (ny * d * 1.4).toFixed(1) + 'px');
+        });
+      });
+      hero.addEventListener('pointerleave', () => floaters.forEach((el) => { el.style.setProperty('--px', '0px'); el.style.setProperty('--py', '0px'); }));
+    }
   })();
 </script>
 </body>

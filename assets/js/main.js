@@ -217,19 +217,19 @@
   const storySteps = $$('.story-step');
   const storyBars = $$('.story-bars i');
   const toast = $('#leadToast');
-  const pin = $('#worksPin');
-  const track = $('#worksTrack');
-  const worksBar = $('.works-progress i');
+  const works = $('#works');
   const benefits = $$('.benefit');
   const stepsEl = $('#steps');
   const stepItems = $$('.step');
   const marquee = $('.marquee-track');
-  const wideQuery = window.matchMedia('(min-width: 901px)');
-  const m = { vh: window.innerHeight, storyTop: 0, trackScroll: 0, pinTop: 0, pinLen: 1, stepsTop: 0, stepsH: 1, mqW: 0 };
+  const backdrop = $('#backdrop');
+  const anatomy = $('#anatomy');
+  const storyStage = $('.story-stage');
+  const m = { vh: window.innerHeight, storyTop: 0, worksTop: 0, stepsTop: 0, stepsH: 1, mqW: 0 };
   const docTop = (el) => el.getBoundingClientRect().top + window.scrollY;
 
   function measureShifts() {
-    $$('.work').forEach((w) => {
+    $$('.cf-card').forEach((w) => {
       const img = $('.work-screen img', w);
       const screen = $('.work-screen', w);
       if (!img || !img.naturalWidth) return;
@@ -241,21 +241,17 @@
   function measure() {
     m.vh = window.innerHeight;
     m.storyTop = docTop(story);
-    if (wideQuery.matches) {
-      const ts = Math.max(0, track.scrollWidth - window.innerWidth);
-      pin.style.setProperty('--track-scroll', ts + 'px');
-      m.trackScroll = ts;
-      m.pinTop = docTop(pin);
-      m.pinLen = Math.max(1, pin.offsetHeight - m.vh);
-    } else {
-      pin.style.removeProperty('--track-scroll');
-      track.style.transform = '';
-      m.trackScroll = 0;
-    }
+    m.worksTop = docTop(works);
     m.stepsTop = docTop(stepsEl);
     m.stepsH = Math.max(1, stepsEl.offsetHeight);
     m.mqW = marquee ? marquee.scrollWidth / 2 : 0;
+    if (backdrop && storyStage) {
+      backdrop.style.setProperty('--gx', ((storyStage.offsetLeft + storyStage.offsetWidth / 2) / window.innerWidth * 100).toFixed(1) + '%');
+      backdrop.style.setProperty('--gy', ((storyStage.offsetTop + storyStage.offsetHeight / 2) / window.innerHeight * 100).toFixed(1) + '%');
+    }
     measureShifts();
+    placeAnatomy();
+    lastNight = -1;
     dirty = true;
   }
 
@@ -264,12 +260,62 @@
     img.addEventListener('error', () => { img.style.visibility = 'hidden'; });
   });
 
-  /* ---------- Прокрутка: история, примеры, преимущества, шаги ---------- */
+  /* ---------- Сцена: на истории «гаснет свет» ---------- */
+  const PAPER = [231, 235, 241];
+  const NIGHT = [9, 15, 44];
+  const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+  let lastNight = -1;
+  if (backdrop) root.classList.add('night-ready');
+  function updateScene(y) {
+    if (!backdrop) return;
+    const vh = m.vh;
+    let k = smooth(m.storyTop - vh * 0.32, m.storyTop + vh * 0.04, y);
+    // когда блок с примерами полностью закрыл историю, фон снова светлый (для заявки внизу)
+    k *= 1 - smooth(m.worksTop - vh * 0.15, m.worksTop, y);
+    if (Math.abs(k - lastNight) < 0.002) return;
+    lastNight = k;
+    const c = PAPER.map((p, i) => Math.round(p + (NIGHT[i] - p) * k));
+    backdrop.style.backgroundColor = 'rgb(' + c.join(',') + ')';
+    backdrop.style.setProperty('--glow', k.toFixed(3));
+    root.style.setProperty('--night', k.toFixed(3));
+  }
+
+  /* ---------- Подписи «из чего состоит сайт» ---------- */
+  const anats = anatomy ? $$('.anat', anatomy) : [];
+  const anatSvg = $('#anatomyLines');
+  let anchors = window.__scAnchors || null;
+  window.addEventListener('sc:anchors', (e) => { anchors = e.detail; placeAnatomy(); });
+  function placeAnatomy() {
+    if (!anatomy || !anchors) return;
+    const vw = window.innerWidth;
+    const off = vw >= 901
+      ? [[-20, -74], [-175, -40], [-175, 40], [40, -84], [0, 96]]
+      : [[0, -46], [-40, -28], [-30, 44], [10, -50], [0, 60]];
+    let svg = '';
+    anats.forEach((el, k) => {
+      const a = anchors[Number(el.dataset.a)];
+      if (!a || !Number.isFinite(a.x) || !Number.isFinite(a.y)) return;
+      const b = $('b', el);
+      const w = b.offsetWidth || 150;
+      const lx = Math.min(vw - w / 2 - 10, Math.max(w / 2 + 10, a.x + off[k][0]));
+      const ly = a.y + off[k][1];
+      el.style.setProperty('--ax', a.x.toFixed(1) + 'px');
+      el.style.setProperty('--ay', a.y.toFixed(1) + 'px');
+      el.style.setProperty('--lx', lx.toFixed(1) + 'px');
+      el.style.setProperty('--ly', ly.toFixed(1) + 'px');
+      el.style.setProperty('--k', k);
+      svg += '<line x1="' + a.x.toFixed(1) + '" y1="' + a.y.toFixed(1) + '" x2="' + lx.toFixed(1) + '" y2="' + ly.toFixed(1) + '"/>';
+    });
+    anatSvg.innerHTML = svg;
+  }
+
+  /* ---------- Прокрутка: история, преимущества, шаги ---------- */
   let dirty = true;
   window.addEventListener('scroll', () => { dirty = true; }, { passive: true });
 
   function onScroll(y) {
     updateHeader(y);
+    updateScene(y);
 
     // история
     const s = (y - m.storyTop) / m.vh;
@@ -277,13 +323,7 @@
     storySteps.forEach((el, i) => el.classList.toggle('is-active', i === idx));
     storyBars.forEach((b, i) => b.style.setProperty('--p', clamp(s + 0.5 - i).toFixed(3)));
     toast.classList.toggle('is-on', s > 1.55 && s < 3.1);
-
-    // горизонтальная лента примеров
-    if (m.trackScroll) {
-      const p = clamp((y - m.pinTop) / m.pinLen);
-      track.style.transform = 'translate3d(' + (-p * m.trackScroll).toFixed(1) + 'px,0,0)';
-      worksBar.style.setProperty('--p', p.toFixed(4));
-    }
+    if (anatomy) anatomy.classList.toggle('is-on', s > -0.02 && s < 0.48);
 
     // преимущества: подсвечиваем строку в центре экрана
     const vh = m.vh;
@@ -326,11 +366,209 @@
     requestAnimationFrame(loop);
   }
 
-  /* На телефоне сайт в рамке листается сам, когда карточка на экране */
-  const playObserver = new IntersectionObserver((entries) => {
-    entries.forEach((e) => e.target.classList.toggle('is-playing', e.isIntersecting && !wideQuery.matches));
-  }, { threshold: 0.65 });
-  $$('.work').forEach((w) => playObserver.observe(w));
+  /* ---------- 3D-карусель примеров ---------- */
+  const cflow = $('#cflow');
+  if (cflow) {
+    const cards = $$('.cf-card', cflow);
+    const n = cards.length;
+    const text = $('.cf-text', cflow);
+    const kindEl = $('#cfKind');
+    const nameEl = $('#cfName');
+    const descEl = $('#cfDesc');
+    const tagsEl = $('#cfTags');
+    const openEl = $('#cfOpen');
+    const idxEl = $('#cfIndex');
+    const stage = $('#cflowStage');
+    // цвет текста на кнопке под цвет акцента
+    const ACFG = { '#C9A35E': '#16120F', '#E2A43A': '#2A1B12', '#1A1A22': '#FFD84D' };
+    const touch = window.matchMedia('(hover: none)').matches;
+    let cur = 0;
+    let timer = 0;
+    let touched = false;
+    let inView = false;
+
+    const fill = (a) => {
+      kindEl.textContent = a.kind;
+      nameEl.textContent = a.name;
+      descEl.textContent = a.desc;
+      tagsEl.textContent = '';
+      (a.tags || '').split('|').forEach((t) => {
+        if (!t) return;
+        const li = document.createElement('li');
+        li.textContent = t;
+        tagsEl.appendChild(li);
+      });
+      openEl.href = $('.work-frame', cards[cur]).getAttribute('href');
+      openEl.setAttribute('aria-label', 'Открыть демо ' + a.name);
+    };
+
+    const render = (first) => {
+      cards.forEach((c, i) => {
+        let d = i - cur;
+        if (d > n / 2) d -= n;
+        if (d < -n / 2) d += n;
+        const ad = Math.abs(d);
+        c.style.setProperty('--d', d);
+        c.style.setProperty('--ad', ad);
+        c.style.zIndex = String(20 - ad);
+        c.style.opacity = ad > 2 ? '0' : String(1 - ad * 0.22);
+        c.style.pointerEvents = ad > 2 ? 'none' : 'auto';
+        c.classList.toggle('is-active', d === 0);
+        c.classList.toggle('is-playing', d === 0 && touch);
+        c.setAttribute('aria-hidden', String(d !== 0));
+        $('.work-frame', c).tabIndex = d === 0 ? 0 : -1;
+      });
+      const a = cards[cur].dataset;
+      works.style.backgroundColor = a.bg;
+      works.style.color = a.fg;
+      works.style.setProperty('--wac', a.ac);
+      works.style.setProperty('--wacfg', ACFG[a.ac] || '#FFFFFF');
+      idxEl.textContent = String(cur + 1);
+      if (first || reduce) { fill(a); return; }
+      text.classList.add('swap');
+      setTimeout(() => { fill(a); text.classList.remove('swap'); }, 260);
+    };
+    const go = (i) => { cur = (i + n) % n; render(false); };
+    const stop = () => { touched = true; clearInterval(timer); };
+    const auto = () => {
+      clearInterval(timer);
+      if (!touched && inView && !reduce) timer = setInterval(() => go(cur + 1), 5200);
+    };
+
+    $('#cfPrev').addEventListener('click', () => { stop(); go(cur - 1); });
+    $('#cfNext').addEventListener('click', () => { stop(); go(cur + 1); });
+    cards.forEach((c, i) => c.addEventListener('click', (e) => {
+      if (i !== cur) { e.preventDefault(); stop(); go(i); }
+    }));
+    cflow.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') { stop(); go(cur - 1); }
+      if (e.key === 'ArrowRight') { stop(); go(cur + 1); }
+    });
+
+    // свайп и перетаскивание мышью
+    let sx = 0;
+    let sy0 = 0;
+    let dragging = false;
+    let swiped = false;
+    stage.addEventListener('pointerdown', (e) => { dragging = true; swiped = false; sx = e.clientX; sy0 = e.clientY; });
+    window.addEventListener('pointerup', (e) => {
+      if (!dragging) return;
+      dragging = false;
+      const dx = e.clientX - sx;
+      const dy = e.clientY - sy0;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+        swiped = true;
+        stop();
+        go(cur + (dx < 0 ? 1 : -1));
+      }
+    });
+    stage.addEventListener('click', (e) => {
+      if (swiped) { e.preventDefault(); e.stopPropagation(); swiped = false; }
+    }, true);
+
+    // сама листается, пока блок на экране и посетитель её не трогал
+    new IntersectionObserver((es) => {
+      inView = es[0].isIntersecting;
+      if (inView) auto(); else clearInterval(timer);
+    }, { threshold: 0.4 }).observe(stage);
+    stage.addEventListener('pointerenter', () => clearInterval(timer));
+    stage.addEventListener('pointerleave', auto);
+
+    render(true);
+  }
+
+  /* ---------- Робот-помощник ---------- */
+  const bot = $('#bot');
+  if (bot) {
+    const btn = $('#botBtn');
+    const look = $('.bot-look', bot);
+    const eyes = $('.bot-eyes', bot);
+    const bubble = $('#botBubble');
+    const menu = $('#botMenu');
+    let tx = 0;
+    let ty = 0;
+    let ex = 0;
+    let ey = 0;
+    let focusEl = null;
+    let hideT = 0;
+    let open = false;
+
+    const lookAt = (x, y) => {
+      const r = btn.getBoundingClientRect();
+      const dx = x - (r.left + r.width / 2);
+      const dy = y - (r.top + r.height * 0.45);
+      const d = Math.hypot(dx, dy) || 1;
+      const k = Math.min(1, d / 260);
+      tx = dx / d * 8 * k;
+      ty = dy / d * 6 * k;
+    };
+    window.addEventListener('pointermove', (e) => { if (!focusEl) lookAt(e.clientX, e.clientY); }, { passive: true });
+    // смотрит на поле, в которое вы пишете
+    document.addEventListener('focusin', (e) => {
+      if (!e.target.matches || !e.target.matches('input, textarea')) return;
+      focusEl = e.target;
+      const r = focusEl.getBoundingClientRect();
+      lookAt(r.left + r.width / 2, r.top + r.height / 2);
+    });
+    document.addEventListener('focusout', () => { focusEl = null; });
+    if (!reduce) {
+      const eyeLoop = () => {
+        ex += (tx - ex) * 0.16;
+        ey += (ty - ey) * 0.16;
+        look.setAttribute('transform', 'translate(' + ex.toFixed(2) + ' ' + ey.toFixed(2) + ')');
+        requestAnimationFrame(eyeLoop);
+      };
+      requestAnimationFrame(eyeLoop);
+      const blink = () => {
+        eyes.classList.add('blink');
+        setTimeout(() => eyes.classList.remove('blink'), 140);
+        setTimeout(blink, 2200 + Math.random() * 3800);
+      };
+      setTimeout(blink, 2600);
+    }
+    btn.addEventListener('pointerenter', () => bot.classList.add('is-happy'));
+    btn.addEventListener('pointerleave', () => bot.classList.remove('is-happy'));
+
+    let saidAt = 0;
+    const say = (msg) => {
+      if (open || !msg) return;
+      bubble.textContent = msg;
+      bubble.classList.add('is-on');
+      bot.classList.add('is-talking');
+      setTimeout(() => bot.classList.remove('is-talking'), 1400);
+      saidAt = window.scrollY;
+      clearTimeout(hideT);
+      hideT = setTimeout(() => bubble.classList.remove('is-on'), 5600);
+    };
+    // подсказка не мешает читать: прячется, как только человек листает дальше
+    window.addEventListener('scroll', () => {
+      if (bubble.classList.contains('is-on') && Math.abs(window.scrollY - saidAt) > 260) bubble.classList.remove('is-on');
+    }, { passive: true });
+    const said = new Set();
+    const sections = $$('[data-bot]');
+    const sio = new IntersectionObserver((es) => {
+      es.forEach((e) => {
+        if (!e.isIntersecting || said.has(e.target)) return;
+        said.add(e.target);
+        say(e.target.dataset.bot);
+      });
+    }, { threshold: 0.35 });
+    const startTalking = () => setTimeout(() => sections.forEach((s) => sio.observe(s)), 1800);
+    if (root.classList.contains('is-ready')) startTalking();
+    else window.addEventListener('sc:ready', startTalking, { once: true });
+
+    const setOpen = (v) => {
+      open = v;
+      menu.hidden = !v;
+      btn.setAttribute('aria-expanded', String(v));
+      if (v) bubble.classList.remove('is-on');
+    };
+    btn.addEventListener('click', (e) => { e.stopPropagation(); setOpen(!open); });
+    bubble.addEventListener('click', () => setOpen(true));
+    document.addEventListener('click', (e) => { if (open && !bot.contains(e.target)) setOpen(false); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && open) setOpen(false); });
+    $$('a', menu).forEach((a) => a.addEventListener('click', () => setOpen(false)));
+  }
 
   /* ---------- Калькулятор ---------- */
   const calc = $('#calc');

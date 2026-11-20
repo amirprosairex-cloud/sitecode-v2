@@ -67,6 +67,36 @@
     .num b { display: block; font: 800 clamp(36px, 3.6vw, 54px)/1 var(--font-head); letter-spacing: -.04em; color: var(--accent); }
     .num > span { color: var(--muted); }
 
+    /* карта улыбки: свет гаснет, улыбка под прожектором, услуги подписаны прямо на фото */
+    .scan { --dim: 0; position: relative; display: grid; grid-template-columns: .8fr 1.2fr; align-items: center; gap: clamp(20px, 4vw, 60px); margin-top: 120px; padding: 110px var(--pad); overflow: hidden; background: color-mix(in srgb, #0B2C31 calc(var(--dim) * 100%), #F4F9F8); color: color-mix(in srgb, #EAF6F4 calc(var(--dim) * 100%), #0B2C31); }
+    .scan .pill { background: rgba(127, 224, 214, calc(.1 + var(--dim) * .05)); }
+    .scan-copy p.text { max-width: 26em; margin-top: 20px; opacity: .75; font-size: 18px; }
+    .scan-stage { position: relative; display: grid; place-items: center; min-height: 640px; }
+    .scan-word { position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%); font: 800 clamp(90px, 13vw, 210px)/1 var(--font-head); letter-spacing: -.05em; color: transparent; -webkit-text-stroke: 1.5px color-mix(in srgb, #7FE0D6 calc(var(--dim) * 60%), rgba(11, 44, 49, .16)); white-space: nowrap; pointer-events: none; }
+    .scan-glow { position: absolute; left: 50%; bottom: 0; width: 560px; height: 120px; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(ellipse at center, rgba(127, 224, 214, .55), rgba(127, 224, 214, 0) 68%); opacity: var(--dim); filter: blur(8px); pointer-events: none; }
+    .scan-glow::after { content: ""; position: absolute; inset: 34% 18%; border-radius: 50%; border: 1.5px solid rgba(127, 224, 214, .7); }
+    .scan-photo { position: relative; z-index: 1; width: min(400px, 74vw); aspect-ratio: 4 / 5; border-radius: 999px 999px 34px 34px; box-shadow: 0 50px 80px -40px rgba(0, 0, 0, .6); }
+    .scan-photo .ph { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
+    .scan-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; }
+    .scan-beam { position: absolute; left: -6%; right: -6%; top: 0; height: 2px; background: #7FE0D6; box-shadow: 0 0 18px 4px rgba(127, 224, 214, .7); opacity: 0; pointer-events: none; }
+    .scan-photo.in .scan-beam { animation: beam 2.2s cubic-bezier(.5, 0, .5, 1) .2s 1 both; }
+    @keyframes beam { 0% { top: 0; opacity: 0; } 8% { opacity: 1; } 92% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+    .scan .hotspots { pointer-events: none; }
+    .scan .hs { --len: 150px; --dy: 0px; }
+    .scan .hs i { position: relative; width: 22px; height: 22px; margin: -11px 0 0 -11px; display: grid; place-items: center; background: #fff; color: var(--fg); font: 800 11px/1 var(--font-head); font-style: normal; cursor: pointer; pointer-events: auto; transform: scale(0); transition: transform .5s cubic-bezier(.2, 1.6, .4, 1) calc(var(--k) * 1s + .3s); }
+    .scan .hs::before { content: ""; position: absolute; left: 0; top: 0; width: var(--ll, 150px); height: 1.5px; background: currentColor; opacity: .75; transform-origin: 0 50%; transform: rotate(var(--ang, 0deg)) scaleX(0); transition: transform .6s cubic-bezier(.2, .8, .2, 1) calc(var(--k) * 1s + .45s); pointer-events: none; }
+    .scan .hs.l::before { transform: rotate(calc(180deg - var(--ang, 0deg))) scaleX(0); }
+    .scan .hs b { left: calc(var(--len) + 16px); top: calc(var(--dy) - 26px); display: grid; gap: 3px; padding: 10px 16px; border-radius: 16px; background: #fff; color: var(--fg); font: 800 15px/1.15 var(--font-head); white-space: nowrap; cursor: pointer; pointer-events: auto; transition-delay: calc(var(--k) * 1s + .7s); }
+    .scan .hs b small { font: 600 13px/1 var(--font-body); color: var(--accent); }
+    .scan .hs.l b { left: auto; right: calc(var(--len) + 16px); }
+    .scan .hs b:hover { background: var(--accent); color: #fff; }
+    .scan .hs b:hover small { color: #fff; }
+    .scan-photo.in .hs i { transform: scale(1); }
+    .scan-photo.in .hs::before { transform: rotate(var(--ang, 0deg)) scaleX(1); }
+    .scan-photo.in .hs.l::before { transform: rotate(calc(180deg - var(--ang, 0deg))) scaleX(1); }
+    .scan-photo.in .hs b { opacity: 1; transform: none; }
+    .scan-legend { display: none; }
+
     /* услуги */
     .services { padding: 140px var(--pad) 110px; }
     .services-head { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 24px; margin-bottom: 40px; }
@@ -136,6 +166,13 @@
       .doc-grid, .steps { grid-template-columns: 1fr 1fr; }
       .clinic { grid-template-columns: 1fr 1fr; grid-template-rows: 220px 220px 220px; }
       .clinic figure:first-child { grid-column: span 2; grid-row: auto; }
+      .scan { grid-template-columns: 1fr; margin-top: 80px; padding: 80px var(--pad); }
+      .scan-stage { min-height: 0; padding-bottom: 40px; }
+      .scan .hs b, .scan .hs::before { display: none; }
+      .scan-legend { display: grid; gap: 8px; margin-top: 26px; }
+      .scan-legend button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border: 0; border-radius: 14px; background: rgba(255, 255, 255, .08); color: inherit; font: 700 15px/1.2 var(--font-head); text-align: left; cursor: pointer; }
+      .scan-legend button i { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 50%; background: #fff; color: var(--fg); font: 800 11px/1 var(--font-head); font-style: normal; }
+      .scan-legend button span { margin-left: auto; color: #7FE0D6; white-space: nowrap; }
     }
     @media (max-width: 600px) {
       .doc-grid, .steps { grid-template-columns: 1fr; }
@@ -194,6 +231,34 @@
     <div class="num" data-r style="--d:.08s"><b><span data-count="9">0</span></b><span>врачей в команде</span></div>
     <div class="num" data-r style="--d:.16s"><b><span data-count="25000">0</span>+</b><span>пациентов</span></div>
     <div class="num" data-r style="--d:.24s"><b><span data-count="5">0</span> лет</b><span>гарантия на импланты</span></div>
+  </section>
+
+  <section class="scan" id="scan">
+    <div class="scan-copy">
+      <p class="pill" data-r>Карта улыбки</p>
+      <h2 class="h2 lines"><span class="ln"><span>Нажмите на точку</span></span><span class="ln"><span>и узнайте цену</span></span></h2>
+      <p class="text" data-r>Подписали услуги прямо на фото. Нажмите на любую, и откроем её в прайсе.</p>
+    </div>
+    <div class="scan-stage">
+      <div class="scan-word" aria-hidden="true">Улыбка</div>
+      <div class="scan-glow" aria-hidden="true"></div>
+      <figure class="scan-photo" id="scanPhoto" data-r="fade">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80" alt="Девушка с белоснежной улыбкой" loading="lazy"></div>
+        <span class="scan-beam" aria-hidden="true"></span>
+        <div class="hotspots">
+          <span class="hs" style="--x:50%;--y:41.3%;--k:.45;--len:170px;--dy:-58px"><i data-go="white" aria-hidden="true">1</i><b role="button" tabindex="0" data-go="white">Отбеливание ZOOM<small>85 000 ₸ за визит</small></b></span>
+          <span class="hs l" style="--x:44.5%;--y:42.6%;--k:.5;--len:150px;--dy:-34px"><i data-go="implant" aria-hidden="true">2</i><b role="button" tabindex="0" data-go="implant">Коронка из циркония<small>от 95 000 ₸</small></b></span>
+          <span class="hs" style="--x:52.5%;--y:45.6%;--k:.62;--len:170px;--dy:44px"><i data-go="treat" aria-hidden="true">3</i><b role="button" tabindex="0" data-go="treat">Профчистка Air Flow<small>18 000 ₸</small></b></span>
+          <span class="hs l" style="--x:46.5%;--y:45.4%;--k:.6;--len:150px;--dy:52px"><i data-go="implant" aria-hidden="true">4</i><b role="button" tabindex="0" data-go="implant">Имплант под ключ<small>от 280 000 ₸</small></b></span>
+        </div>
+      </figure>
+    </div>
+    <div class="scan-legend">
+      <button type="button" data-go="white"><i>1</i>Отбеливание ZOOM<span>85 000 ₸</span></button>
+      <button type="button" data-go="implant"><i>2</i>Коронка из циркония<span>от 95 000 ₸</span></button>
+      <button type="button" data-go="treat"><i>3</i>Профчистка Air Flow<span>18 000 ₸</span></button>
+      <button type="button" data-go="implant"><i>4</i>Имплант под ключ<span>от 280 000 ₸</span></button>
+    </div>
   </section>
 
   <section class="services" id="services" data-tabs>
@@ -363,5 +428,40 @@
 </div>
 
 <script src="assets/demo.js"></script>
+<script>
+  // Карта улыбки: свет гаснет при прокрутке, линии подписей тянутся к точкам
+  (() => {
+    const scan = document.getElementById('scan');
+    if (!scan) return;
+    document.querySelectorAll('#scan .hs').forEach((hs) => {
+      const cs = getComputedStyle(hs);
+      const len = parseFloat(cs.getPropertyValue('--len')) + 16;
+      const dy = parseFloat(cs.getPropertyValue('--dy'));
+      hs.style.setProperty('--ll', Math.hypot(len, dy).toFixed(1) + 'px');
+      hs.style.setProperty('--ang', (Math.atan2(dy, len) * 180 / Math.PI).toFixed(2) + 'deg');
+    });
+    const dim = () => {
+      const r = scan.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const enter = Math.min(1, Math.max(0, (vh * 0.85 - r.top) / (vh * 0.5)));
+      const leave = Math.min(1, Math.max(0, (r.bottom - vh * 0.15) / (vh * 0.4)));
+      scan.style.setProperty('--dim', Math.min(enter, leave).toFixed(3));
+    };
+    let tick = false;
+    window.addEventListener('scroll', () => { if (!tick) { tick = true; requestAnimationFrame(() => { tick = false; dim(); }); } }, { passive: true });
+    window.addEventListener('resize', dim);
+    dim();
+    // нажатие на подпись открывает нужную вкладку в прайсе
+    const go = (tab) => {
+      const btn = document.querySelector('#services [data-tab="' + tab + '"]');
+      if (btn) btn.click();
+      document.getElementById('services').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    scan.querySelectorAll('[data-go]').forEach((el) => {
+      el.addEventListener('click', () => go(el.dataset.go));
+      el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(el.dataset.go); } });
+    });
+  })();
+</script>
 </body>
 </html>

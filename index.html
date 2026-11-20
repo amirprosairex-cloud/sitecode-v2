@@ -50,6 +50,7 @@
   <p class="intro-skip">Нажмите, чтобы пропустить</p>
 </div>
 
+<div class="backdrop" id="backdrop" aria-hidden="true"></div>
 <canvas id="cubes" aria-hidden="true"></canvas>
 
 <header class="header" id="header">
@@ -90,7 +91,7 @@
 <main id="main">
 
   <!-- ГЛАВНЫЙ ЭКРАН -->
-  <section class="hero" id="top" data-cubes-zone>
+  <section class="hero" id="top" data-cubes-zone data-bot="Привет! Я помощник SiteCode. Листайте вниз — сайт соберётся прямо у вас на глазах.">
     <div class="hero-copy">
       <h1 class="hero-title" data-split>Сайты, которые приносят заявки</h1>
       <p class="hero-lead">Делаем сайты для барбершопов, кофеен, клиник и магазинов по всему Казахстану. Клиент оставляет заявку — она сразу приходит вам в WhatsApp.</p>
@@ -110,7 +111,7 @@
   </section>
 
   <!-- ИСТОРИЯ: кубики собираются в сайт, телефон и заявку -->
-  <section class="story" id="story" data-cubes-zone aria-label="Как устроен сайт от SiteCode">
+  <section class="story" id="story" data-cubes-zone aria-label="Как устроен сайт от SiteCode" data-bot="Смотрите: из кубиков собрался сайт. Дальше будет телефон и заявка.">
     <div class="story-sticky">
       <div class="story-stage" aria-hidden="true">
         <div class="fallback-phone">
@@ -135,6 +136,14 @@
         </article>
       </div>
       <div class="story-bars" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="anatomy" id="anatomy" aria-hidden="true">
+        <svg class="anatomy-lines" id="anatomyLines"></svg>
+        <span class="anat" data-a="0"><i></i><b>Логотип и меню</b></span>
+        <span class="anat" data-a="1"><i></i><b>Главное предложение</b></span>
+        <span class="anat" data-a="2"><i></i><b>Кнопка «Записаться»</b></span>
+        <span class="anat" data-a="3"><i></i><b>Фото вашего бизнеса</b></span>
+        <span class="anat" data-a="4"><i></i><b>Услуги и цены</b></span>
+      </div>
       <div class="lead-toast" id="leadToast" aria-hidden="true">
         <div class="lead-top">
           <span class="lead-app"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#25D366"/><path d="M17.6 11.9a5.6 5.6 0 0 1-8.3 4.9l-2.9.9.9-2.8a5.6 5.6 0 1 1 10.3-3z" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>WhatsApp</span>
@@ -151,8 +160,8 @@
     </div>
   </section>
 
-  <!-- ПРИМЕРЫ -->
-  <section class="works" id="works">
+  <!-- ПРИМЕРЫ: 3D-карусель, фон меняется под выбранный сайт -->
+  <section class="works" id="works" data-bot="Листайте примеры стрелками или свайпом. Любой сайт можно открыть и потыкать.">
     <div class="marquee" aria-hidden="true">
       <div class="marquee-track">
         <span>барбершопы</span><i></i><span>кофейни</span><i></i><span>стоматологии</span><i></i><span>салоны красоты</span><i></i><span>детейлинг</span><i></i><span>магазины</span><i></i><span>учебные центры</span><i></i>
@@ -165,103 +174,75 @@
       <p>Семь демо-сайтов для разных видов бизнеса. Откройте любой: всё кликается, а запись и заказы уходят в WhatsApp. Такой же соберём под ваш бизнес.</p>
     </div>
 
-    <div class="works-pin" id="worksPin">
-      <div class="works-sticky">
-        <div class="works-track" id="worksTrack">
+    <div class="cflow" id="cflow" role="region" aria-roledescription="карусель" aria-label="Примеры сайтов" tabindex="-1">
+      <div class="cflow-stage" id="cflowStage">
+        <div class="cflow-glow" aria-hidden="true"></div>
 
-          <article class="work" style="--tone:#2B2520">
-            <a class="work-frame" href="demos/barbershop.html" target="_blank" rel="noopener" aria-label="Открыть демо барбершопа USTARA">
-              <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>ustara.kz</span></span>
-              <span class="work-screen"><img src="assets/img/works/barbershop.jpg" alt="" loading="lazy" decoding="async"></span>
-              <span class="work-open" aria-hidden="true">Открыть демо</span>
-            </a>
-            <div class="work-meta">
-              <p class="work-kind">Барбершоп</p>
-              <h3>USTARA</h3>
-              <p class="work-desc">Запись к мастеру на свободное время, прайс, команда и отзывы.</p>
-            </div>
-          </article>
+        <article class="cf-card" data-bg="#16120F" data-fg="#EFE8DC" data-ac="#C9A35E" data-kind="Барбершоп" data-name="USTARA" data-tags="Онлайн-запись|Прайс|Мастера|Отзывы" data-desc="Тёмный зал с прожектором за курсором, прайс с фото у курсора и запись к мастеру на свободное время.">
+          <a class="work-frame" href="demos/barbershop.html" target="_blank" rel="noopener" aria-label="Открыть демо барбершопа USTARA">
+            <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>ustara.kz</span></span>
+            <span class="work-screen"><img src="assets/img/works/barbershop.jpg" alt="" decoding="async"></span>
+          </a>
+        </article>
 
-          <article class="work" style="--tone:#6B4A35">
-            <a class="work-frame" href="demos/coffee.html" target="_blank" rel="noopener" aria-label="Открыть демо кофейни DALA coffee">
-              <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>dalacoffee.kz</span></span>
-              <span class="work-screen"><img src="assets/img/works/coffee.jpg" alt="" loading="lazy" decoding="async"></span>
-              <span class="work-open" aria-hidden="true">Открыть демо</span>
-            </a>
-            <div class="work-meta">
-              <p class="work-kind">Кофейня</p>
-              <h3>DALA coffee</h3>
-              <p class="work-desc">Меню с фото и ценами, заказ навынос через WhatsApp.</p>
-            </div>
-          </article>
+        <article class="cf-card" data-bg="#3B2519" data-fg="#F3EADC" data-ac="#E2A43A" data-kind="Кофейня" data-name="DALA coffee" data-tags="Меню|Корзина|Заказ навынос" data-desc="Стакан падает сквозь слово, фон меняется под вкус напитка. Меню, корзина и заказ навынос в WhatsApp.">
+          <a class="work-frame" href="demos/coffee.html" target="_blank" rel="noopener" aria-label="Открыть демо кофейни DALA coffee">
+            <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>dalacoffee.kz</span></span>
+            <span class="work-screen"><img src="assets/img/works/coffee.jpg" alt="" decoding="async"></span>
+          </a>
+        </article>
 
-          <article class="work" style="--tone:#C98A9B">
-            <a class="work-frame" href="demos/beauty.html" target="_blank" rel="noopener" aria-label="Открыть демо салона красоты Aru Studio">
-              <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>arustudio.kz</span></span>
-              <span class="work-screen"><img src="assets/img/works/beauty.jpg" alt="" loading="lazy" decoding="async"></span>
-              <span class="work-open" aria-hidden="true">Открыть демо</span>
-            </a>
-            <div class="work-meta">
-              <p class="work-kind">Салон красоты</p>
-              <h3>Aru Studio</h3>
-              <p class="work-desc">Онлайн-запись, мастера, работы «до и после» и сертификаты.</p>
-            </div>
-          </article>
+        <article class="cf-card" data-bg="#F2D6DC" data-fg="#2E1F27" data-ac="#A84462" data-kind="Салон красоты" data-name="Aru Studio" data-tags="Запись|До и после|Сертификаты" data-desc="Нежный стиль: фон перетекает в оттенок услуги. Мастера, сравнение «до и после» и подарочные сертификаты.">
+          <a class="work-frame" href="demos/beauty.html" target="_blank" rel="noopener" aria-label="Открыть демо салона красоты Aru Studio">
+            <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>arustudio.kz</span></span>
+            <span class="work-screen"><img src="assets/img/works/beauty.jpg" alt="" decoding="async"></span>
+          </a>
+        </article>
 
-          <article class="work" style="--tone:#0E8C88">
-            <a class="work-frame" href="demos/dental.html" target="_blank" rel="noopener" aria-label="Открыть демо стоматологии Inzhu Dental">
-              <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>inzhudental.kz</span></span>
-              <span class="work-screen"><img src="assets/img/works/dental.jpg" alt="" loading="lazy" decoding="async"></span>
-              <span class="work-open" aria-hidden="true">Открыть демо</span>
-            </a>
-            <div class="work-meta">
-              <p class="work-kind">Стоматология</p>
-              <h3>Inzhu Dental</h3>
-              <p class="work-desc">Врачи, цены на лечение, запись на приём и ответы на вопросы.</p>
-            </div>
-          </article>
+        <article class="cf-card" data-bg="#D8EFEB" data-fg="#0B2C31" data-ac="#0E9E95" data-kind="Стоматология" data-name="Inzhu Dental" data-tags="Врачи|Цены|Запись на приём" data-desc="Врачи, честные цены во вкладках, подписи к услугам прямо на фото и запись на приём.">
+          <a class="work-frame" href="demos/dental.html" target="_blank" rel="noopener" aria-label="Открыть демо стоматологии Inzhu Dental">
+            <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>inzhudental.kz</span></span>
+            <span class="work-screen"><img src="assets/img/works/dental.jpg" alt="" decoding="async"></span>
+          </a>
+        </article>
 
-          <article class="work" style="--tone:#111214">
-            <a class="work-frame" href="demos/detailing.html" target="_blank" rel="noopener" aria-label="Открыть демо детейлинг-центра GLOSS Lab">
-              <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>glosslab.kz</span></span>
-              <span class="work-screen"><img src="assets/img/works/detailing.jpg" alt="" loading="lazy" decoding="async"></span>
-              <span class="work-open" aria-hidden="true">Открыть демо</span>
-            </a>
-            <div class="work-meta">
-              <p class="work-kind">Детейлинг</p>
-              <h3>GLOSS Lab</h3>
-              <p class="work-desc">Пакеты услуг, сравнение «до и после», запись на удобный день.</p>
-            </div>
-          </article>
+        <article class="cf-card" data-bg="#0B0B0D" data-fg="#F2F2F3" data-ac="#FF4D1A" data-kind="Детейлинг" data-name="GLOSS Lab" data-tags="Пакеты|До и после|Запись на бокс" data-desc="Жидкий хром на первом экране, пакеты услуг с подсветкой и сравнение «до и после».">
+          <a class="work-frame" href="demos/detailing.html" target="_blank" rel="noopener" aria-label="Открыть демо детейлинг-центра GLOSS Lab">
+            <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>glosslab.kz</span></span>
+            <span class="work-screen"><img src="assets/img/works/detailing.jpg" alt="" decoding="async"></span>
+          </a>
+        </article>
 
-          <article class="work" style="--tone:#E9DFD3">
-            <a class="work-frame" href="demos/shop.html" target="_blank" rel="noopener" aria-label="Открыть демо интернет-магазина Ayla Store">
-              <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>aylastore.kz</span></span>
-              <span class="work-screen"><img src="assets/img/works/shop.jpg" alt="" loading="lazy" decoding="async"></span>
-              <span class="work-open" aria-hidden="true">Открыть демо</span>
-            </a>
-            <div class="work-meta">
-              <p class="work-kind">Интернет-магазин</p>
-              <h3>Ayla Store</h3>
-              <p class="work-desc">Каталог с фильтрами, корзина и заказ в WhatsApp.</p>
-            </div>
-          </article>
+        <article class="cf-card" data-bg="#E8E0D4" data-fg="#171615" data-ac="#56622A" data-kind="Интернет-магазин" data-name="Ayla Store" data-tags="Каталог|Фильтры|Корзина" data-desc="Витрина-карусель, каталог с фильтрами, корзина и оформление заказа в WhatsApp.">
+          <a class="work-frame" href="demos/shop.html" target="_blank" rel="noopener" aria-label="Открыть демо интернет-магазина Ayla Store">
+            <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>aylastore.kz</span></span>
+            <span class="work-screen"><img src="assets/img/works/shop.jpg" alt="" decoding="async"></span>
+          </a>
+        </article>
 
-          <article class="work" style="--tone:#FFD23F">
-            <a class="work-frame" href="demos/school.html" target="_blank" rel="noopener" aria-label="Открыть демо учебного центра Bilim Center">
-              <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>bilimcenter.kz</span></span>
-              <span class="work-screen"><img src="assets/img/works/school.jpg" alt="" loading="lazy" decoding="async"></span>
-              <span class="work-open" aria-hidden="true">Открыть демо</span>
-            </a>
-            <div class="work-meta">
-              <p class="work-kind">Учебный центр</p>
-              <h3>Bilim Center</h3>
-              <p class="work-desc">Курсы, расписание, преподаватели и запись на пробный урок.</p>
-            </div>
-          </article>
+        <article class="cf-card" data-bg="#FFD84D" data-fg="#1A1A22" data-ac="#1A1A22" data-kind="Учебный центр" data-name="Bilim Center" data-tags="Курсы|Расписание|Пробный урок" data-desc="Живой робот-помощник, курсы, расписание со свободными местами и запись на пробный урок.">
+          <a class="work-frame" href="demos/school.html" target="_blank" rel="noopener" aria-label="Открыть демо учебного центра Bilim Center">
+            <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>bilimcenter.kz</span></span>
+            <span class="work-screen"><img src="assets/img/works/school.jpg" alt="" decoding="async"></span>
+          </a>
+        </article>
+      </div>
 
+      <div class="cflow-info">
+        <div class="cf-text" aria-live="polite">
+          <p class="cf-kind" id="cfKind">Барбершоп</p>
+          <h3 class="cf-name" id="cfName">USTARA</h3>
+          <p class="cf-desc" id="cfDesc">Тёмный зал с прожектором за курсором, прайс с фото у курсора и запись к мастеру на свободное время.</p>
+          <ul class="cf-tags" id="cfTags"></ul>
         </div>
-        <div class="works-progress" aria-hidden="true"><i></i></div>
+        <div class="cf-controls">
+          <a class="btn cf-open" id="cfOpen" href="demos/barbershop.html" target="_blank" rel="noopener">Открыть демо</a>
+          <div class="cf-nav">
+            <button class="cf-arrow" id="cfPrev" type="button" aria-label="Предыдущий пример"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <p class="cf-count"><b id="cfIndex">1</b> / 7</p>
+            <button class="cf-arrow" id="cfNext" type="button" aria-label="Следующий пример"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -302,7 +283,7 @@
   </section>
 
   <!-- ЦЕНЫ -->
-  <section class="prices" id="prices">
+  <section class="prices" id="prices" data-bot="Хотите, посчитаем цену вашего сайта? Калькулятор чуть ниже.">
     <div class="prices-head">
       <h2 data-split>Цены</h2>
       <p>Без скрытых платежей: цену называем до начала работы. Оплата частями — половина перед стартом, половина после запуска.</p>
@@ -407,7 +388,7 @@
   </section>
 
   <!-- ВОПРОСЫ -->
-  <section class="faq" id="faq">
+  <section class="faq" id="faq" data-bot="Не нашли ответ? Нажмите на меня — напишем в WhatsApp.">
     <div class="faq-side">
       <h2 data-split>Частые вопросы</h2>
       <p>Не нашли ответ? Напишите нам в <a href="#contact" data-wa="Здравствуйте! У меня вопрос про сайт.">WhatsApp</a>.</p>
@@ -441,7 +422,7 @@
   </section>
 
   <!-- ЗАЯВКА -->
-  <section class="contact" id="contact" data-cubes-zone>
+  <section class="contact" id="contact" data-cubes-zone data-bot="Оставьте имя — ответим в WhatsApp, обычно за 30 минут.">
     <div class="contact-orb" aria-hidden="true"><span class="orb-logo-fallback">{/}</span></div>
     <div class="contact-copy">
       <h2 data-split>Давайте соберём ваш сайт</h2>
@@ -509,6 +490,34 @@
     <p>Сайты для бизнеса в Казахстане</p>
   </div>
 </footer>
+
+<!-- Помощник: глаза следят за курсором, подсказывает по разделам -->
+<div class="bot" id="bot">
+  <p class="bot-bubble" id="botBubble" role="status" aria-live="polite"></p>
+  <div class="bot-menu" id="botMenu" hidden>
+    <p>Чем помочь?</p>
+    <a href="#contact" data-wa="Здравствуйте! Хочу обсудить сайт для бизнеса.">Написать в WhatsApp</a>
+    <a href="https://t.me/Go_Lumi" target="_blank" rel="noopener">Написать в Telegram</a>
+    <a href="#calc" data-bot-close>Рассчитать цену</a>
+  </div>
+  <button class="bot-btn" id="botBtn" type="button" aria-expanded="false" aria-controls="botMenu" aria-label="Помощник SiteCode: написать нам">
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <line x1="60" y1="22" x2="60" y2="10" stroke="#0F1733" stroke-width="4" stroke-linecap="round"/>
+      <circle class="bot-led" cx="60" cy="9" r="6" fill="#FFC233"/>
+      <rect x="10" y="22" width="100" height="74" rx="24" fill="#0F1733" stroke="#FFFFFF" stroke-width="3"/>
+      <rect x="20" y="31" width="80" height="56" rx="16" fill="#1C2C70"/>
+      <g class="bot-look">
+        <g class="bot-eyes">
+          <rect class="bot-eye" x="36" y="45" width="14" height="22" rx="7"/>
+          <rect class="bot-eye" x="70" y="45" width="14" height="22" rx="7"/>
+        </g>
+        <path class="bot-mouth" d="M53 75 q7 5 14 0" fill="none" stroke="#9FB6FF" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <rect x="48" y="96" width="24" height="8" rx="3" fill="#0F1733"/>
+      <rect x="34" y="104" width="52" height="8" rx="4" fill="#0F1733"/>
+    </svg>
+  </button>
+</div>
 
 <script src="assets/js/main.js"></script>
 <script type="module" src="assets/js/cubes.js"></script>

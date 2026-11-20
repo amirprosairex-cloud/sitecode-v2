@@ -53,9 +53,22 @@
     .hero-copy p { margin: 26px 0 34px; font-size: clamp(17px, 1.4vw, 20px); color: rgba(239, 232, 220, .82); max-width: 30em; }
     .hero h1 { font: 600 clamp(44px, 6vw, 92px)/.98 var(--font-head); text-transform: uppercase; }
     .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
-    .hero-word { display: flex; justify-content: space-between; margin: 0 calc(var(--pad) * -.2) -2.2vw; font: 700 23.5vw/.78 var(--font-head); letter-spacing: -.01em; color: transparent; -webkit-text-stroke: 1px rgba(239, 232, 220, .55); user-select: none; }
+    .hw-wrap { position: relative; margin: 0 calc(var(--pad) * -.2) -2.2vw; }
+    .hero-word { display: flex; justify-content: space-between; font: 700 23.5vw/.78 var(--font-head); letter-spacing: -.01em; color: transparent; -webkit-text-stroke: 1px rgba(239, 232, 220, .55); user-select: none; }
     .hero-word span { display: inline-block; transform: translateY(100%); transition: transform 1.3s cubic-bezier(.2, .8, .2, 1); transition-delay: calc(.25s + var(--i) * .07s); }
     .hero-word.in span { transform: none; }
+
+    /* прожектор: в тёмном зале свет идёт за курсором и проявляет цвет */
+    .hero-bg img { filter: grayscale(.55) brightness(.42) contrast(1.05); }
+    .hero-bg.lit { -webkit-mask-image: radial-gradient(circle var(--sr, 300px) at var(--sx, 64%) var(--sy, 38%), #000 30%, transparent 100%); mask-image: radial-gradient(circle var(--sr, 300px) at var(--sx, 64%) var(--sy, 38%), #000 30%, transparent 100%); animation: flick 1.6s steps(1, end) .5s both; }
+    .hero-bg.lit img { filter: saturate(1.15) brightness(1.06) sepia(.12); }
+    .hero-bg.lit::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle var(--sr, 300px) at var(--sx, 64%) var(--sy, 38%), rgba(255, 196, 120, .2), rgba(255, 196, 120, 0) 70%); }
+    @keyframes flick { 0% { opacity: 0; } 10% { opacity: .85; } 16% { opacity: .1; } 24% { opacity: 1; } 30% { opacity: .35; } 38%, 100% { opacity: 1; } }
+    .hero-word.gold { position: absolute; inset: 0; color: var(--accent); -webkit-text-stroke: 0; pointer-events: none; -webkit-mask-image: radial-gradient(circle calc(var(--sr, 300px) * .8) at var(--wx, -999px) var(--wy, -999px), #000 25%, transparent 100%); mask-image: radial-gradient(circle calc(var(--sr, 300px) * .8) at var(--wx, -999px) var(--wy, -999px), #000 25%, transparent 100%); }
+    .lamp-hint { position: absolute; right: var(--pad); top: 118px; display: flex; align-items: center; gap: 10px; font: 500 12px/1 var(--font-head); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+    .lamp-hint i { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px 4px rgba(201, 163, 94, .6); animation: lamp 2.4s ease-in-out infinite; }
+    @keyframes lamp { 50% { box-shadow: 0 0 4px 1px rgba(201, 163, 94, .4); } }
+    @media (prefers-reduced-motion: reduce) { .hero-bg.lit { animation: none; } }
     .hero-info { position: absolute; right: var(--pad); top: 50%; display: grid; gap: 22px; text-align: right; font-size: 14px; color: rgba(239, 232, 220, .75); }
     .hero-info b { display: block; margin-bottom: 4px; font: 500 13px/1 var(--font-head); letter-spacing: .18em; text-transform: uppercase; color: var(--accent); }
 
@@ -154,7 +167,7 @@
       .burger { display: block; margin-left: auto; }
       .nav.open { display: flex; position: fixed; inset: 68px 0 0; flex-direction: column; justify-content: center; gap: 30px; padding: var(--pad); background: var(--bg); }
       .nav.open a { font-size: 28px; }
-      .hero-info { display: none; }
+      .hero-info, .lamp-hint { display: none; }
       .about, .slots, .contacts { grid-template-columns: 1fr; }
       .about-pics { min-height: 440px; }
       .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -165,7 +178,8 @@
       .services-head { flex-direction: column; align-items: start; }
     }
     @media (max-width: 560px) {
-      .hero-word { font-size: 24vw; margin-bottom: -2vw; }
+      .hero-word { font-size: 24vw; }
+      .hw-wrap { margin-bottom: -2vw; }
       .stats b { font-size: 34px; }
       .team-grid { gap: 12px; }
       .master h3 { font-size: 20px; }
@@ -194,6 +208,8 @@
 <main id="top">
   <section class="hero">
     <div class="hero-bg"><img src="https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=2000&q=80" alt="Барбер бреет клиента опасной бритвой"></div>
+    <div class="hero-bg lit" aria-hidden="true"><img src="https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=2000&q=80" alt=""></div>
+    <p class="lamp-hint" data-r="fade" data-now style="--d:1.4s"><i></i>Ведите светом</p>
     <div class="hero-copy">
       <p class="eyebrow" data-r data-now style="--d:.1s">Барбершоп в центре Алматы</p>
       <h1 class="lines" data-now><span class="ln"><span>Стрижка,</span></span><span class="ln"><span>после которой</span></span><span class="ln"><span>хочется в зеркало</span></span></h1>
@@ -207,7 +223,10 @@
       <p><b>Каждый день</b>10:00 — 22:00</p>
       <p><b>Адрес</b>ул. Желтоксан, 115</p>
     </div>
-    <div class="hero-word" aria-hidden="true" data-now><span style="--i:0">U</span><span style="--i:1">S</span><span style="--i:2">T</span><span style="--i:3">A</span><span style="--i:4">R</span><span style="--i:5">A</span></div>
+    <div class="hw-wrap" id="hwWrap" aria-hidden="true">
+      <div class="hero-word" data-now><span style="--i:0">U</span><span style="--i:1">S</span><span style="--i:2">T</span><span style="--i:3">A</span><span style="--i:4">R</span><span style="--i:5">A</span></div>
+      <div class="hero-word gold" data-now><span style="--i:0">U</span><span style="--i:1">S</span><span style="--i:2">T</span><span style="--i:3">A</span><span style="--i:4">R</span><span style="--i:5">A</span></div>
+    </div>
   </section>
 
   <div class="ticker d-marquee" aria-hidden="true">
@@ -418,5 +437,57 @@
 </div>
 
 <script src="assets/demo.js"></script>
+<script>
+  // Прожектор на первом экране: свет следует за курсором, без мыши медленно гуляет по залу
+  (() => {
+    const hero = document.querySelector('.hero');
+    const wrap = document.getElementById('hwWrap');
+    if (!hero || !wrap) return;
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let W = hero.clientWidth, H = hero.clientHeight;
+    let x = W * 0.64, y = H * 0.38, tx = x, ty = y;
+    let lastMove = -1e9, live = true;
+    const radius = () => Math.max(170, Math.min(340, W * 0.24));
+    const apply = () => {
+      hero.style.setProperty('--sx', x.toFixed(1) + 'px');
+      hero.style.setProperty('--sy', y.toFixed(1) + 'px');
+      hero.style.setProperty('--sr', radius().toFixed(0) + 'px');
+      wrap.style.setProperty('--wx', (x - wrap.offsetLeft).toFixed(1) + 'px');
+      wrap.style.setProperty('--wy', (y - wrap.offsetTop).toFixed(1) + 'px');
+    };
+    hero.addEventListener('pointermove', (e) => {
+      const r = hero.getBoundingClientRect();
+      tx = e.clientX - r.left;
+      ty = e.clientY - r.top;
+      lastMove = performance.now();
+    });
+    let prev = 0;
+    const loop = (now) => {
+      if (!live) return;
+      if (now - lastMove > 2500) {
+        // без курсора свет плавно гуляет восьмёркой вокруг мастера
+        const t = now / 1000;
+        tx = W * (0.6 + Math.sin(t * 0.45) * 0.18);
+        ty = H * (0.5 + Math.sin(t * 0.9) * 0.32);
+      }
+      // сглаживание по времени, чтобы свет успевал за курсором при любой частоте кадров
+      const k = 1 - Math.pow(0.92, Math.min(10, (now - (prev || now)) / 16.7) || 1);
+      prev = now;
+      x += (tx - x) * k;
+      y += (ty - y) * k;
+      apply();
+      requestAnimationFrame(loop);
+    };
+    window.addEventListener('resize', () => { W = hero.clientWidth; H = hero.clientHeight; apply(); });
+    apply();
+    if (still) return;
+    new IntersectionObserver((es) => {
+      const was = live;
+      live = es[0].isIntersecting;
+      if (live && !was) requestAnimationFrame(loop);
+    }).observe(hero);
+    requestAnimationFrame(loop);
+  })();
+</script>
 </body>
 </html>
