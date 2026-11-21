@@ -11,15 +11,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap">
   <link rel="stylesheet" href="assets/demo.css">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js">
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/environments/RoomEnvironment.js">
+  <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
   <link rel="modulepreload" href="assets/ui.js">
-  <link rel="modulepreload" href="assets/kit3d.js">
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/geometries/RoundedBoxGeometry.js">
-  <link rel="preload" href="assets/models/tooth.bin" as="fetch" crossorigin>
-  <link rel="preload" href="assets/models/crown.bin" as="fetch" crossorigin>
+  <link rel="modulepreload" href="assets/fx.js">
   <style>
     :root {
       --bg: #F4F9F8; --fg: #0B2C31; --muted: #557277; --accent: #0E9E95; --accent-fg: #FFF; --soft: #DFF1EE; --warm: #FFB86B;
@@ -70,44 +64,70 @@
     .s2 { right: 4%; top: 22%; width: 16px; height: 16px; animation-delay: -1.2s; }
     @keyframes twinkle { 50% { transform: scale(.4) rotate(45deg); opacity: .4; } }
 
-    /* ===== 3D-история: зуб превращается в имплант, разбирается и собирается ===== */
+    /* ===== первый экран: улыбка под стеклянной линзой ===== */
     .hdr.dark { color: #fff; }
-    .hdr.dark.scrolled { background: rgba(4, 52, 50, .5); box-shadow: none; }
+    .hdr.dark.scrolled { background: rgba(26, 38, 40, .62); box-shadow: none; }
     .hdr.dark .btn { background: #fff; color: var(--fg); box-shadow: none; }
-    .tshow { position: relative; height: 560vh; }
-    .tshow-stick { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; color: #fff; background: radial-gradient(75% 85% at 72% 44%, #5BE6D6 0%, #15AFA2 36%, #0B716B 70%, #053F3C 100%); }
-    .tshow-stick::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 30%; background: linear-gradient(180deg, rgba(5, 63, 60, 0), rgba(5, 63, 60, .5)); pointer-events: none; }
-    .tshow-word { position: absolute; right: var(--pad); top: 14vh; z-index: 0; margin: 0; font: 800 clamp(70px, 12vw, 210px)/.85 var(--font-head); letter-spacing: -.05em; color: transparent; -webkit-text-stroke: 2px rgba(214, 255, 249, .7); white-space: nowrap; pointer-events: none; }
-    .tshow-word span { display: block; transition: transform .9s cubic-bezier(.2, .8, .2, 1), opacity .5s; }
-    .tshow-word span.swap { transform: translateY(32%); opacity: 0; }
-    #tooth3d { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; }
+    .lhero { position: relative; min-height: 100vh; min-height: 100svh; overflow: hidden; color: #fff; background: #283739; }
+    .lh-media { position: absolute; top: 0; bottom: 0; left: 34%; right: 0; }
+    .lh-media::after { content: ""; position: absolute; inset: 0 0 0 -3px; z-index: 1; pointer-events: none; background: linear-gradient(90deg, #283739 0%, rgba(40, 55, 57, .55) 9%, rgba(40, 55, 57, 0) 26%), linear-gradient(0deg, rgba(18, 28, 29, .55) 0%, rgba(18, 28, 29, 0) 28%); }
+    .lh-img, .lens-gl { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+    .lh-img { object-fit: cover; object-position: 46% 50%; }
+    .lens-gl { opacity: 0; transition: opacity .7s ease; }
+    .lens-gl.ready { opacity: 1; }
+    .lens-tag { position: absolute; left: 0; top: 0; z-index: 3; padding: 9px 14px; border-radius: 999px; background: rgba(255, 255, 255, .16); -webkit-backdrop-filter: blur(10px) saturate(1.5); backdrop-filter: blur(10px) saturate(1.5); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .4), 0 10px 24px -12px rgba(0, 0, 0, .5); font: 700 13px/1 var(--font-head); white-space: nowrap; opacity: 0; transition: opacity .6s .5s; pointer-events: none; }
+    .lens-tag.on { opacity: 1; }
+    .lh-copy { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: center; width: min(640px, 46vw); min-height: 100vh; min-height: 100svh; padding: 110px 0 96px var(--pad); }
+    .lh-copy .pill { align-self: flex-start; background: rgba(255, 255, 255, .12); color: #fff; }
+    .lh-copy h1 { font: 800 clamp(42px, 5.3vw, 88px)/1 var(--font-head); letter-spacing: -.045em; }
+    .lh-copy h1 em { font-style: normal; color: #9FF5EA; }
+    .lh-copy .hero-lead { max-width: 30em; margin: 24px 0 30px; color: rgba(255, 255, 255, .82); font-size: clamp(16px, 1.3vw, 19px); }
+    .lh-copy .btn { background: #fff; color: var(--fg); box-shadow: 0 16px 34px -16px rgba(0, 0, 0, .5); }
+    .lh-copy .btn:hover { background: #E8FFFB; }
+    .lh-copy .btn.white { background: rgba(255, 255, 255, .1); color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .42); }
+    .lh-copy .trust { gap: 10px; margin-top: 34px; }
+    .lh-copy .trust div { padding: 10px 16px 10px 14px; border-radius: 16px; background: rgba(255, 255, 255, .08); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .15); color: rgba(255, 255, 255, .78); }
+    .lh-copy .trust b { color: #fff; font-size: 24px; }
+    .lh-hint { position: absolute; right: var(--pad); bottom: 30px; z-index: 3; display: flex; align-items: center; gap: 10px; max-width: 320px; font: 700 13px/1.25 var(--font-head); color: rgba(255, 255, 255, .88); text-shadow: 0 1px 8px rgba(0, 0, 0, .35); }
+    .lh-hint i { position: relative; flex: none; width: 26px; height: 26px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .75); }
+    .lh-hint i::after { content: ""; position: absolute; inset: 6px; border-radius: 50%; background: #fff; animation: lpulse 1.8s ease-in-out infinite; }
+    @keyframes lpulse { 50% { transform: scale(.45); opacity: .45; } }
+    .hint-touch { display: none; }
+    @media (hover: none) { .hint-fine { display: none; } .hint-touch { display: inline; } }
+
+    /* ===== имплант: чертёж рисуется при прокрутке и собирается ===== */
+    .implant { position: relative; height: 340vh; }
+    .imp-stick { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; color: #fff; background: radial-gradient(60% 75% at 70% 50%, #0E5A57 0%, #083F3E 55%, #042B2B 100%); }
+    .imp-stick::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(159, 245, 234, .07) 1px, transparent 1px), linear-gradient(90deg, rgba(159, 245, 234, .07) 1px, transparent 1px); background-size: 32px 32px; -webkit-mask-image: radial-gradient(ellipse at 70% 50%, #000 25%, transparent 75%); mask-image: radial-gradient(ellipse at 70% 50%, #000 25%, transparent 75%); pointer-events: none; }
+    .imp-svg { position: absolute; right: 7vw; top: 50%; z-index: 1; width: min(42vw, 560px); height: auto; overflow: visible; transform: translateY(-50%); }
+    .imp-svg .ln { fill: none; stroke: #CFFAF4; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .imp-svg .solid { fill: rgba(5, 52, 51, .94); }
+    .imp-svg .thin { stroke-width: 1.1; stroke: rgba(207, 250, 244, .7); }
+    .imp-svg .gum { stroke: #FFB3B3; stroke-width: 2.2; }
+    .imp-svg .dim { stroke: #9FF5EA; stroke-width: 1.1; }
+    .imp-svg .bone { opacity: var(--bo, 0); }
+    .imp-svg .crown-fill { fill: url(#porcelain); opacity: var(--cf, 0); }
+    .imp-svg text { fill: #EAFFFC; font: 700 15px var(--font-head); }
+    .imp-svg text.sub { fill: rgba(207, 250, 244, .7); font: 600 12px var(--font-body); }
+    .imp-svg text.num { fill: #9FF5EA; font: 700 13px var(--font-head); letter-spacing: .02em; }
+    .imp-svg .lbl { opacity: 0; transition: opacity .5s; }
+    .imp-svg .lbl.on { opacity: 1; }
+    .imp-glow { opacity: calc(var(--ring, 0) * .9); }
+    .imp-ringwrap { opacity: var(--ring, 0); }
+    .imp-ring { transform-box: view-box; transform-origin: 200px 300px; animation: ringspin 38s linear infinite; }
+    .imp-ring text { fill: #9FF5EA; font: 800 15px var(--font-head); letter-spacing: .3em; }
+    @keyframes ringspin { to { transform: rotate(360deg); } }
     .tscene { position: absolute; left: var(--pad); top: 53%; z-index: 4; width: min(460px, 36vw); opacity: 0; visibility: hidden; transform: translateY(-50%) translateY(30px); transition: opacity .5s, transform .8s cubic-bezier(.2, .8, .2, 1), visibility 0s .8s; }
     .tscene.on { opacity: 1; visibility: visible; transform: translateY(-50%); transition: opacity .6s .1s, transform .9s cubic-bezier(.2, .8, .2, 1) .1s, visibility 0s; }
-    .tscene.thero { width: min(620px, 46vw); }
-    .tscene.thero h1 { font: 800 clamp(42px, 5.6vw, 92px)/1 var(--font-head); letter-spacing: -.045em; }
-    .tscene.thero h1 em { font-style: normal; color: #D2FFF8; }
-    .tscene .hero-lead { max-width: 30em; margin: 24px 0 30px; color: rgba(255, 255, 255, .84); font-size: clamp(16px, 1.3vw, 19px); }
     .tscene .pill { background: rgba(255, 255, 255, .16); color: #fff; }
     .tscene .btn { background: #fff; color: var(--fg); box-shadow: 0 16px 34px -16px rgba(0, 0, 0, .45); }
     .tscene .btn:hover { background: #E8FFFB; }
-    .tscene .btn.white { background: rgba(255, 255, 255, .1); color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .45); }
-    .tscene .trust div { color: rgba(255, 255, 255, .78); }
-    .tscene .trust b { color: #fff; }
-    .tglass { padding: 30px 30px 28px; border-radius: 24px; background: rgba(3, 46, 44, .36); -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18), 0 40px 70px -40px rgba(0, 0, 0, .6); }
+    .tglass { padding: 30px 30px 28px; border-radius: 24px; background: rgba(3, 46, 44, .4); -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18), 0 40px 70px -40px rgba(0, 0, 0, .6); }
     .tglass h2 { font: 800 clamp(28px, 2.6vw, 42px)/1.05 var(--font-head); letter-spacing: -.035em; }
     .tglass p { margin: 14px 0 20px; color: rgba(255, 255, 255, .84); }
     .tprice { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, .2); }
     .tprice b { font: 800 26px/1 var(--font-head); }
     .tprice small { opacity: .72; }
-    .tco { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
-    .tco svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-    .tco path { stroke: rgba(255, 255, 255, .9); stroke-width: 1.5; fill: none; }
-    .co { position: absolute; left: 0; top: 0; padding: 10px 14px; border-radius: 14px; background: #fff; color: var(--fg); font: 600 13px/1.3 var(--font-body); white-space: nowrap; opacity: 0; box-shadow: 0 16px 30px -18px rgba(0, 0, 0, .6); }
-    .co b { display: block; font: 800 15px/1.15 var(--font-head); }
-    .co small { color: var(--accent); }
-    .co::before { content: ""; position: absolute; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(255, 255, 255, .35); }
-    .co.l::before { right: -5px; }
-    .co.r::before { left: -5px; }
     .tbar { position: absolute; left: var(--pad); right: var(--pad); bottom: 26px; z-index: 4; display: flex; gap: 6px; }
     .tbar i { flex: 1; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .2); overflow: hidden; }
     .tbar i::after { content: ""; display: block; height: 100%; background: #fff; transform: scaleX(var(--f, 0)); transform-origin: left; }
@@ -116,21 +136,32 @@
     .thint i::after { content: ""; position: absolute; left: 50%; top: 6px; width: 4px; height: 7px; margin-left: -2px; border-radius: 2px; background: #fff; animation: twheel 1.6s ease-in-out infinite; }
     @keyframes twheel { 60% { transform: translateY(10px); opacity: 0; } 61% { transform: none; opacity: 0; } 100% { opacity: 1; } }
     .numbers { padding-top: 80px !important; }
-    /* чертёж импланта: сетка, размерные линии, рамка выделения как в редакторе */
-    .tgrid { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: calc(var(--da, 0) * .55); background-image: linear-gradient(rgba(255, 255, 255, .13) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .13) 1px, transparent 1px); background-size: 34px 34px; -webkit-mask-image: radial-gradient(ellipse at 68% 50%, #000 18%, transparent 68%); mask-image: radial-gradient(ellipse at 68% 50%, #000 18%, transparent 68%); }
-    .tdraw { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; overflow: visible; pointer-events: none; opacity: var(--da, 0); }
-    .tdraw .dim { fill: none; stroke: #fff; stroke-width: 1.4; }
-    .tdraw .ext { stroke: rgba(255, 255, 255, .6); stroke-width: 1; stroke-dasharray: 3 4; }
-    .tdraw .arr { fill: #fff; }
-    .tdraw text { fill: #053F3C; font: 700 12px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: .03em; }
-    .tdraw .lab { fill: #fff; }
-    .tdraw .sel { fill: rgba(155, 255, 242, .05); stroke: #9BFFF2; stroke-width: 1.3; stroke-dasharray: 7 5; }
-    .tdraw .hd { fill: #fff; stroke: #0B716B; stroke-width: 1.3; }
-    .tdraw .tag { fill: #9BFFF2; }
+    @media (max-width: 760px) {
+      .lh-media { left: 0; bottom: auto; height: 62vh; height: 62svh; }
+      .lh-media::after { background: linear-gradient(0deg, #283739 0%, rgba(40, 55, 57, .8) 12%, rgba(40, 55, 57, 0) 36%); }
+      .lh-copy { width: auto; min-height: 0; justify-content: flex-start; padding: calc(62svh - 64px) var(--pad) 44px; }
+      .lh-copy h1 { font-size: clamp(34px, 10vw, 46px); }
+      .lh-copy .hero-lead { margin: 14px 0 22px; font-size: 15px; }
+      .lh-copy .trust { margin-top: 22px; }
+      .lh-copy .trust b { font-size: 20px; }
+      .lh-hint { left: var(--pad); right: var(--pad); top: 84px; bottom: auto; max-width: none; font-size: 12px; }
+      .implant { height: 320vh; }
+      .imp-svg { left: 50%; right: auto; top: 39%; width: min(74vw, 330px); transform: translate(-50%, -50%); }
+      .imp-svg text { font-size: 17px; }
+      .imp-svg text.sub { font-size: 14px; }
+      .tscene { left: 14px; right: 14px; top: auto; bottom: 58px; width: auto; transform: translateY(30px); }
+      .tscene.on { transform: none; }
+      .tglass { padding: 20px 18px; border-radius: 18px; }
+      .tglass h2 { font-size: 24px; }
+      .tglass p { margin: 8px 0 14px; font-size: 14px; }
+      .tprice b { font-size: 20px; }
+      .thint { display: none; }
+    }
 
-    /* отбеливание: 3D-зуб и шкала оттенков */
-    .white { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: center; gap: clamp(30px, 5vw, 80px); padding: 110px var(--pad) 40px; }
-    .white .text { max-width: 30em; margin: 20px 0 28px; color: var(--muted); font-size: 18px; }
+    /* отбеливание: настоящее фото, цвет эмали меняется ползунком */
+    /* section.white — у кнопок тоже бывает класс white, раздел не должен на них влиять */
+    section.white { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: center; gap: clamp(30px, 5vw, 80px); padding: 110px var(--pad) 40px; }
+    section.white .text { max-width: 30em; margin: 20px 0 28px; color: var(--muted); font-size: 18px; }
     .shade { max-width: 520px; }
     .shade-chips { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin-bottom: 14px; }
     .shade-chips i { display: grid; place-items: end center; height: 54px; padding-bottom: 6px; border-radius: 10px 10px 16px 16px; background: var(--c); box-shadow: inset 0 -10px 16px rgba(0, 0, 0, .07), 0 0 0 1px rgba(11, 44, 49, .08); font: 700 11px/1 var(--font-head); font-style: normal; color: rgba(11, 44, 49, .55); transition: transform .3s cubic-bezier(.2, 1.4, .4, 1), box-shadow .3s; }
@@ -141,7 +172,8 @@
     .white-buy { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 30px; padding-top: 22px; border-top: 1px solid rgba(11, 44, 49, .1); }
     .white-buy b { font: 800 30px/1 var(--font-head); }
     .white-buy span { color: var(--muted); }
-    .white-stage { position: relative; aspect-ratio: 1 / .92; overflow: hidden; border-radius: 36px; background: radial-gradient(70% 70% at 50% 42%, #5BE6D6 0%, #15AFA2 46%, #0B716B 100%); }
+    .white-stage { position: relative; aspect-ratio: 1 / .92; overflow: hidden; border-radius: 36px; background: #E7D8CB; }
+    .ws-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 66% 44%; }
     .white-stage canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
     .white-stage .tone { position: absolute; left: 22px; top: 20px; padding: 8px 14px; border-radius: 999px; background: rgba(255, 255, 255, .92); color: #053F3C; font: 700 14px/1 var(--font-head); }
 
@@ -150,23 +182,6 @@
     .doc.in .ph img { transform: none; }
     .doc.in:hover .ph img { transform: translateY(-2%) scale(1.03); transition-duration: .7s; }
 
-    @media (max-width: 760px) {
-      .tshow { height: 500vh; }
-      .tshow-stick { background: radial-gradient(110% 60% at 50% 32%, #5BE6D6 0%, #15AFA2 40%, #0B716B 76%, #053F3C 100%); }
-      .tshow-word { left: var(--pad); right: auto; top: 86px; font-size: 19vw; -webkit-text-stroke-width: 1.5px; }
-      .tscene, .tscene.thero { left: 14px; right: 14px; top: auto; bottom: 58px; width: auto; transform: translateY(30px); }
-      .tscene.on { transform: none; }
-      .tscene.thero h1 { font-size: clamp(32px, 9.6vw, 46px); }
-      .tscene .hero-lead { margin: 12px 0 18px; font-size: 15px; }
-      .tscene.thero .trust { display: none; }
-      .tglass { padding: 20px 18px; border-radius: 18px; }
-      .tglass h2 { font-size: 24px; }
-      .tglass p { margin: 8px 0 14px; font-size: 14px; }
-      .tprice b { font-size: 20px; }
-      .thint { display: none; }
-      .co { padding: 7px 10px; font-size: 11px; }
-      .co b { font-size: 12px; }
-    }
 
     /* цифры */
     .numbers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 0 var(--pad); }
@@ -292,7 +307,7 @@
       footer { flex-direction: column; }
     }
     @media (max-width: 900px) {
-      .white { grid-template-columns: 1fr; padding-top: 80px; }
+      section.white { grid-template-columns: 1fr; padding-top: 80px; }
       .white-stage { order: -1; }
     }
   </style>
@@ -314,36 +329,64 @@
 </header>
 
 <main id="top">
-  <section class="tshow" id="tshow" aria-label="Зуб и имплант в 3D">
-    <div class="tshow-stick">
-      <p class="tshow-word" aria-hidden="true"><span id="tWord">Улыбка</span></p>
-      <div class="tgrid" aria-hidden="true"></div>
-      <canvas id="tooth3d" aria-hidden="true"></canvas>
-      <svg class="tdraw" id="tDraw" aria-hidden="true"></svg>
-      <div class="tco" aria-hidden="true">
-        <svg id="tLines"></svg>
-        <span class="co l" data-part="crown"><b>Коронка из циркония</b><small>от 95 000 ₸, за 5 дней</small></span>
-        <span class="co r" data-part="abut"><b>Абатмент</b><small>титан, держит коронку</small></span>
-        <span class="co l" data-part="screw"><b>Имплант</b><small>вместо корня, гарантия 5 лет</small></span>
+  <section class="lhero" aria-label="Inzhu Dental — улыбка под стеклянной линзой" data-dark>
+    <div class="lh-media">
+      <img class="lh-img" src="https://images.unsplash.com/photo-1758600588701-3aa5bb5d4e18?auto=format&fit=crop&w=2400&q=78" srcset="https://images.unsplash.com/photo-1758600588701-3aa5bb5d4e18?auto=format&fit=crop&w=1400&q=78 1400w, https://images.unsplash.com/photo-1758600588701-3aa5bb5d4e18?auto=format&fit=crop&w=2400&q=78 2400w" sizes="(max-width: 760px) 230vw, 66vw" alt="Пациентка улыбается после лечения" crossorigin="anonymous" fetchpriority="high" decoding="async">
+      <canvas class="lens-gl" id="heroGl" aria-hidden="true"></canvas>
+      <span class="lens-tag" id="lensTag" aria-hidden="true">После отбеливания</span>
+    </div>
+    <div class="lh-copy">
+      <p class="pill">Стоматология в Алматы</p>
+      <h1>Лечим зубы <em>без страха</em> и очередей</h1>
+      <p class="hero-lead">Современная анестезия, врачи с опытом от 7 лет и приём в удобное время. Запишитесь онлайн — перезвоним за 15 минут.</p>
+      <div class="hero-actions">
+        <a class="btn" href="#book">Записаться на приём</a>
+        <a class="btn white" href="#services">Посмотреть цены</a>
       </div>
+      <div class="trust"><div><b>0 ₸</b>консультация</div><div><b>1 день</b>ждать приёма</div></div>
+    </div>
+    <p class="lh-hint" aria-hidden="true"><i></i><span class="hint-fine">Наведите на улыбку — линза покажет её после отбеливания</span><span class="hint-touch">Нажмите на улыбку — линза покажет её после отбеливания</span></p>
+  </section>
 
-      <div class="tscene thero on">
-        <p class="pill">Стоматология в Алматы</p>
-        <h1>Лечим зубы <em>без страха</em> и очередей</h1>
-        <p class="hero-lead">Современная анестезия, врачи с опытом от 7 лет и приём в удобное время. Запишитесь онлайн — перезвоним за 15 минут.</p>
-        <div class="hero-actions">
-          <a class="btn" href="#book">Записаться на приём</a>
-          <a class="btn white" href="#services">Посмотреть цены</a>
-        </div>
-        <div class="trust"><div><b>0 ₸</b>консультация</div><div><b>1 день</b>ждать приёма</div></div>
-      </div>
-      <div class="tscene tglass">
-        <p class="pill">Лечение</p>
-        <h2>Каждый зуб — под микроскопом</h2>
-        <p>Видим трещины и кариес, которые не заметны глазу, и сохраняем здоровые ткани. Анестезия действует до того, как врач начнёт.</p>
-        <div class="tprice"><small>лечение кариеса</small><b>от 15 000 ₸</b></div>
-      </div>
-      <div class="tscene tglass">
+  <section class="implant" id="implant" aria-label="Как устроен имплант" data-dark>
+    <div class="imp-stick">
+      <svg class="imp-svg" viewBox="0 0 400 600" aria-hidden="true">
+        <defs>
+          <linearGradient id="porcelain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#CFEDE8"/></linearGradient>
+          <pattern id="bonePat" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1" fill="rgba(207, 250, 244, .32)"/><circle cx="6.5" cy="6.5" r=".8" fill="rgba(207, 250, 244, .2)"/></pattern>
+          <radialGradient id="impGlow"><stop offset="0" stop-color="rgba(159, 245, 234, .5)"/><stop offset="1" stop-color="rgba(159, 245, 234, 0)"/></radialGradient>
+          <path id="ringPath" d="M200 300 m-238 0 a238 238 0 1 1 476 0 a238 238 0 1 1 -476 0"/>
+        </defs>
+        <circle class="imp-glow" cx="200" cy="300" r="250" fill="url(#impGlow)"/>
+        <g class="imp-ringwrap"><g class="imp-ring"><text><textPath href="#ringPath">ГАРАНТИЯ 5 ЛЕТ • ИМПЛАНТ ПОД КЛЮЧ • РАССРОЧКА 0% • ГАРАНТИЯ 5 ЛЕТ • ИМПЛАНТ ПОД КЛЮЧ • РАССРОЧКА 0% •</textPath></text></g></g>
+        <rect class="bone" x="36" y="262" width="328" height="300" rx="26" fill="url(#bonePat)"/>
+        <path class="gum ln" data-draw="0,.1" d="M36 252 C 86 236, 130 266, 172 252"/>
+        <path class="gum ln" data-draw="0,.1" d="M228 252 C 270 266, 314 236, 364 252"/>
+        <g id="impScrew">
+          <path class="ln solid" data-draw=".02,.14" d="M174 256 L226 256 L220 488 C 218 514, 182 514, 180 488 Z"/>
+          <path class="ln thin" id="impThreads" data-draw=".08,.2" d=""/>
+          <g class="lbl" data-at=".12"><path class="ln thin" d="M178 392 L104 412"/><text x="96" y="410" text-anchor="end">Имплант</text><text class="sub" x="96" y="428" text-anchor="end">вместо корня</text></g>
+        </g>
+        <g class="dims">
+          <path class="ln dim" data-draw=".24,.34" d="M296 256 L296 500 M288 256 L304 256 M288 500 L304 500"/>
+          <path class="ln dim dash" data-draw=".24,.34" d="M174 520 L174 548 M226 520 L226 548"/>
+          <path class="ln dim" data-draw=".26,.36" d="M174 540 L226 540"/>
+          <g class="lbl" data-at=".3"><text class="num" x="306" y="382">10 мм</text><text class="num" x="200" y="566" text-anchor="middle">Ø 4,2 мм</text></g>
+        </g>
+        <g id="impAbut">
+          <path class="ln solid" data-draw=".13,.23" d="M176 194 L224 194 L216 252 L184 252 Z"/>
+          <path class="ln thin" data-draw=".18,.25" d="M179 208 L221 208"/>
+          <g class="lbl" data-at=".2"><path class="ln thin" d="M222 222 L300 206"/><text x="306" y="204">Абатмент</text><text class="sub" x="306" y="222">титан, держит коронку</text></g>
+        </g>
+        <g id="impCrown">
+          <path class="crown-fill" d="M122 118 C 118 84, 140 64, 166 70 C 180 56, 220 56, 234 70 C 260 64, 282 84, 278 118 C 276 140, 272 160, 266 178 C 262 192, 138 192, 134 178 C 128 160, 124 140, 122 118 Z"/>
+          <path class="ln solid" data-draw=".2,.32" d="M122 118 C 118 84, 140 64, 166 70 C 180 56, 220 56, 234 70 C 260 64, 282 84, 278 118 C 276 140, 272 160, 266 178 C 262 192, 138 192, 134 178 C 128 160, 124 140, 122 118 Z"/>
+          <path class="ln thin" data-draw=".28,.36" d="M158 86 C 172 102, 188 100, 200 88 C 212 100, 228 102, 242 86"/>
+          <g class="lbl" data-at=".28"><path class="ln thin" d="M126 132 L58 112"/><text x="50" y="108" text-anchor="end">Коронка</text><text class="sub" x="50" y="126" text-anchor="end">из циркония</text></g>
+        </g>
+      </svg>
+
+      <div class="tscene tglass on">
         <p class="pill">Имплантация</p>
         <h2>Внутри — три детали</h2>
         <p>Титановый имплант заменяет корень, абатмент соединяет, коронка из циркония выглядит как свой зуб.</p>
@@ -361,8 +404,8 @@
         <p>Если что-то пойдёт не так, исправим бесплатно. Рассрочка без переплаты на 6 месяцев.</p>
         <div class="hero-actions"><a class="btn" href="#book">Записаться на консультацию</a></div>
       </div>
-      <div class="tbar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-      <p class="thint" id="tHint"><i></i>Листайте — заглянем внутрь</p>
+      <div class="tbar" aria-hidden="true"><i></i><i></i><i></i></div>
+      <p class="thint" id="impHint"><i></i>Листайте — соберём имплант</p>
     </div>
   </section>
 
@@ -391,7 +434,8 @@
       </div>
     </div>
     <div class="white-stage" data-r="scale">
-      <canvas id="white3d" aria-label="3D-зуб, цвет эмали меняется ползунком"></canvas>
+      <img class="ws-img" src="https://images.unsplash.com/photo-1567516364473-233c4b6fcfbe?auto=format&fit=crop&w=1100&q=80" alt="Улыбка: цвет эмали меняется ползунком" crossorigin="anonymous" loading="lazy" decoding="async">
+      <canvas id="whiteGl" class="lens-gl" aria-hidden="true"></canvas>
       <span class="tone" id="shadeTag">A3.5</span>
     </div>
   </section>
@@ -627,21 +671,84 @@
   })();
 </script>
 <script type="module">
-  // интерфейс прокрутки: работает сразу, не дожидаясь 3D
   import { scrollScenes } from './assets/ui.js';
-  const show = document.getElementById('tshow');
-  const hdr = document.querySelector('.hdr');
-  scrollScenes(show, {
-    marks: [0, 0.14, 0.34, 0.58, 0.8],
-    words: ['Улыбка', 'Лечение', 'Внутри', 'Вместе', 'Гарантия'],
-    word: document.getElementById('tWord'),
-    scenes: Array.from(show.querySelectorAll('.tscene')),
-    bars: Array.from(show.querySelectorAll('.tbar i')),
-    hint: document.getElementById('tHint'),
-    onProgress: () => hdr.classList.toggle('dark', show.getBoundingClientRect().bottom > 70)
-  });
+  import { photoLens } from './assets/fx.js';
 
-  // ---------- отбеливание: ползунок по шкале оттенков ----------
+  // шапка становится светлой над тёмными разделами
+  const hdr = document.querySelector('.hdr');
+  const darks = Array.from(document.querySelectorAll('[data-dark]'));
+  const headerTone = () => {
+    const on = darks.some((s) => { const r = s.getBoundingClientRect(); return r.top <= 40 && r.bottom > 40; });
+    hdr.classList.toggle('dark', on);
+  };
+  window.addEventListener('scroll', headerTone, { passive: true });
+  headerTone();
+
+  // ---------- первый экран: стеклянная линза над улыбкой ----------
+  const heroImg = document.querySelector('.lh-img');
+  const heroGl = document.getElementById('heroGl');
+  if (heroImg && heroGl) {
+    photoLens(heroGl, {
+      img: heroImg,
+      pos: [0.46, 0.5],
+      aim: [0.478, 0.61],
+      swing: [0.034, 0.012],
+      zone: document.querySelector('.lhero'),
+      tag: document.getElementById('lensTag'),
+      mag: 1.42,
+      radius: (w, h) => (w < 520 ? Math.min(w * 0.24, 104) : Math.max(110, Math.min(185, w * 0.17, h * 0.21)))
+    });
+  }
+
+  // ---------- имплант: чертёж рисуется линиями, детали съезжаются вместе ----------
+  const imp = document.getElementById('implant');
+  if (imp) {
+    const svg = imp.querySelector('.imp-svg');
+    const threads = svg.querySelector('#impThreads');
+    let d = '';
+    for (let y = 272; y <= 482; y += 15) {
+      const t = (y - 256) / 232;
+      d += 'M' + (174 + t * 6 - 7).toFixed(1) + ' ' + (y + 5) + ' L' + (226 - t * 6 + 7).toFixed(1) + ' ' + (y - 5) + ' ';
+    }
+    threads.setAttribute('d', d.trim());
+    const draws = Array.from(svg.querySelectorAll('[data-draw]')).map((el) => {
+      const len = el.getTotalLength();
+      el.style.strokeDasharray = len.toFixed(1);
+      el.style.strokeDashoffset = len.toFixed(1);
+      const [a, b] = el.dataset.draw.split(',').map(Number);
+      return { el, len, a, b };
+    });
+    const crown = svg.querySelector('#impCrown');
+    const abut = svg.querySelector('#impAbut');
+    const labels = Array.from(svg.querySelectorAll('[data-at]'));
+    const seg = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
+    const io = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    scrollScenes(imp, {
+      marks: [0, 0.38, 0.7],
+      scenes: Array.from(imp.querySelectorAll('.tscene')),
+      bars: Array.from(imp.querySelectorAll('.tbar i')),
+      hint: document.getElementById('impHint'),
+      onProgress: (p) => {
+        draws.forEach((o) => { o.el.style.strokeDashoffset = (o.len * (1 - io(seg(p, o.a, o.b)))).toFixed(1); });
+        const as = io(seg(p, 0.42, 0.62));
+        crown.setAttribute('transform', 'translate(0 ' + (-72 * (1 - as)).toFixed(1) + ')');
+        abut.setAttribute('transform', 'translate(0 ' + (-36 * (1 - as)).toFixed(1) + ')');
+        svg.style.setProperty('--bo', seg(p, 0, 0.12).toFixed(3));
+        svg.style.setProperty('--cf', seg(p, 0.46, 0.64).toFixed(3));
+        svg.style.setProperty('--ring', seg(p, 0.72, 0.86).toFixed(3));
+        labels.forEach((l) => l.classList.toggle('on', p >= Number(l.dataset.at)));
+      }
+    });
+  }
+
+  // ---------- отбеливание: ползунок меняет цвет эмали прямо на фото ----------
+  const wImg = document.querySelector('.ws-img');
+  const wGl = document.getElementById('whiteGl');
+  const whiteFx = wImg && wGl ? photoLens(wGl, { img: wImg, pos: [0.66, 0.44], lens: false, white: -1, maxPx: 1.4e6 }) : null;
+  const shadeTo = (v) => { if (whiteFx) whiteFx.setWhite(-1 + 2 * v); };
+  window.addEventListener('inzhu:shade', (e) => shadeTo(e.detail));
+  shadeTo(window.__shade || 0);
+
   const shade = document.getElementById('shade');
   if (shade) {
     const NAMES = ['A3.5', 'A3', 'A2', 'A1', 'B1', 'BL1'];
@@ -670,336 +777,9 @@
         upd();
         if (k < 1) requestAnimationFrame(step);
       };
-      setTimeout(() => requestAnimationFrame(step), 500);
+      setTimeout(() => requestAnimationFrame(step), 700);
     }, { threshold: 0.5 });
     demo.observe(shade);
-  }
-</script>
-<script type="module">
-  import { createStage, THREE, track, progressOf, smooth, clamp, lerp, damp, small, still, callouts, canvasTexture, afterPaint } from './assets/kit3d.js';
-  import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-
-  const show = document.getElementById('tshow');
-  const canvas = document.getElementById('tooth3d');
-
-  await afterPaint();
-  const st = createStage(canvas, { fov: small ? 40 : 30, exposure: 1.05 });
-  const { scene, camera } = st;
-  const key = new THREE.DirectionalLight(0xffffff, 2.2);
-  key.position.set(-3, 5, 4);
-  scene.add(key);
-  const rim = new THREE.DirectionalLight(0xbffff5, 1.4);
-  rim.position.set(4, 1, -3);
-  scene.add(rim);
-
-  // ---------- модель зуба: заранее построена из гладких форм (коронка, бугорки, борозды, два корня) ----------
-  const loadBin = async (url) => {
-    const buf = await (await fetch(url)).arrayBuffer();
-    const dv = new DataView(buf);
-    const nv = dv.getUint32(4, true);
-    const ni = dv.getUint32(8, true);
-    const c = [0, 1, 2].map((i) => dv.getFloat32(16 + i * 4, true));
-    const h = [3, 4, 5].map((i) => dv.getFloat32(16 + i * 4, true));
-    const pad = (v) => (v + 3) & ~3;
-    const posOff = 40;
-    const nrmOff = posOff + pad(nv * 6);
-    const aoOff = nrmOff + pad(nv * 3);
-    const idxOff = aoOff + pad(nv);
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(new Int16Array(buf, posOff, nv * 3), 3, true));
-    g.setAttribute('normal', new THREE.BufferAttribute(new Int8Array(buf, nrmOff, nv * 3), 3, true));
-    g.setIndex(new THREE.BufferAttribute(nv > 65535 ? new Uint32Array(buf, idxOff, ni) : new Uint16Array(buf, idxOff, ni), 1));
-    // цвет: белая эмаль коронки, тёплый корень, тень в бороздах запечена в модель
-    const ao = new Uint8Array(buf, aoOff, nv);
-    const col = new Float32Array(nv * 3);
-    const pos = g.attributes.position;
-    const enamelC = new THREE.Color(0xF6F3EA);
-    const rootC = new THREE.Color(0xEADCC0);
-    const groove = new THREE.Color(0xC9B391);
-    const tmp = new THREE.Color();
-    for (let i = 0; i < nv; i++) {
-      const y = pos.getY(i) * h[1] + c[1];
-      const o = ao[i] / 255;
-      tmp.copy(rootC).lerp(enamelC, smooth(-0.12, 0.08, y)).lerp(groove, (1 - o) * 0.4).multiplyScalar(0.62 + 0.38 * o);
-      col[i * 3] = tmp.r; col[i * 3 + 1] = tmp.g; col[i * 3 + 2] = tmp.b;
-    }
-    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    g.computeBoundingSphere();
-    const m = new THREE.Mesh(g);
-    m.scale.set(h[0], h[1], h[2]);
-    m.position.set(c[0], c[1], c[2]);
-    const wrap = new THREE.Group();
-    wrap.add(m);
-    return { wrap, mesh: m };
-  };
-  const [toothM, crownM] = await Promise.all([loadBin('assets/models/tooth.bin'), loadBin('assets/models/crown.bin')]);
-  // эмаль: глянец с мягким бархатом, чтобы зуб выглядел живым, а не пластиковым
-  const enamel = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.26, clearcoat: 0.85, clearcoatRoughness: 0.12, sheen: 0.4, sheenRoughness: 0.4, sheenColor: new THREE.Color(0xfff3dc), specularIntensity: 0.7 });
-  const zirconia = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.14, clearcoat: 1, clearcoatRoughness: 0.05, sheen: 0.3, sheenColor: new THREE.Color(0xffffff) });
-  const titan = new THREE.MeshStandardMaterial({ color: 0xC4C9D0, metalness: 1, roughness: 0.26 });
-  const titanDark = new THREE.MeshStandardMaterial({ color: 0x9FA6B0, metalness: 1, roughness: 0.32 });
-  toothM.mesh.material = enamel;
-  crownM.mesh.material = zirconia;
-
-  // натуральный зуб
-  const tooth = new THREE.Group();
-  const toothInner = toothM.wrap;
-  toothInner.scale.setScalar(small ? 1.0 : 1.12);
-  tooth.add(toothInner);
-  tooth.position.y = 0.45;
-  scene.add(tooth);
-  // имплант: коронка, абатмент и винт
-  const implant = new THREE.Group();
-  const iCrown = crownM.wrap;
-  iCrown.scale.setScalar(1.5);
-  const V2 = THREE.Vector2;
-  const abutPts = [[0, 0.62], [0.2, 0.62], [0.24, 0.58], [0.27, 0.15], [0.36, 0.08], [0.38, 0], [0.3, -0.06], [0.22, -0.1], [0.2, -0.42], [0, -0.42]].map(([a, b]) => new V2(a, b));
-  // точки идут снизу вверх, иначе грани токарной фигуры смотрят внутрь
-  const abut = new THREE.Mesh(new THREE.LatheGeometry(abutPts.reverse(), 64), titan);
-  const screwPts = [new V2(0, 0), new V2(0.4, 0), new V2(0.4, -0.08)];
-  for (let i = 0; i <= 240; i++) {
-    const y = -0.1 - i * (1.95 / 240);
-    const t = (-0.1 - y) / 1.95;
-    const core = 0.31 - 0.1 * t * t;
-    const ph = ((-y) / 0.12) % 1;
-    const tri = 1 - Math.abs(ph * 2 - 1);
-    screwPts.push(new V2(core + 0.08 * tri * (1 - smooth(0.86, 1, t)), y));
-  }
-  screwPts.push(new V2(0.12, -2.12), new V2(0, -2.16));
-  const screw = new THREE.Mesh(new THREE.LatheGeometry(screwPts.reverse(), 72), titanDark);
-  implant.add(iCrown, abut, screw);
-  scene.add(implant);
-
-  // разрез десны и кости: модель как на схеме у хирурга
-  const boneTex = canvasTexture(512, 512, (g, w, h) => {
-    g.fillStyle = '#EBDDC4';
-    g.fillRect(0, 0, w, h);
-    for (let i = 0; i < 900; i++) {
-      g.fillStyle = 'rgba(176,146,104,' + (0.15 + Math.random() * 0.3).toFixed(2) + ')';
-      g.beginPath();
-      g.ellipse(Math.random() * w, Math.random() * h, 2 + Math.random() * 7, 2 + Math.random() * 5, Math.random() * 3, 0, Math.PI * 2);
-      g.fill();
-    }
-  });
-  const jaw = new THREE.Group();
-  const bone = new THREE.Mesh(new RoundedBoxGeometry(2.8, 2.2, 1.1, 4, 0.12), new THREE.MeshPhysicalMaterial({ map: boneTex, roughness: 0.85 }));
-  bone.position.set(0, -1.25, -0.55);
-  const gum = new THREE.Mesh(new RoundedBoxGeometry(2.9, 0.42, 1.2, 6, 0.18), new THREE.MeshPhysicalMaterial({ color: 0xE27D86, roughness: 0.35, clearcoat: 0.8, clearcoatRoughness: 0.2 }));
-  gum.position.set(0, 0.0, -0.55);
-  jaw.add(bone, gum);
-  scene.add(jaw);
-
-  // ---------- чертёж импланта: размерные линии и рамка выделения ----------
-  const tDraw = document.getElementById('tDraw');
-  const tv = new THREE.Vector3();
-  const tOut = { x: 0, y: 0, behind: false };
-  const pt = (obj, x, y, z) => { tv.set(x, y, z); obj.localToWorld(tv); st.toScreen(tv, tOut); return [tOut.x, tOut.y]; };
-  const f1 = (n) => n.toFixed(1);
-  const dim = (a, b, off, label) => {
-    const dx = b[0] - a[0];
-    const dy = b[1] - a[1];
-    const L = Math.hypot(dx, dy) || 1;
-    const ux = dx / L;
-    const uy = dy / L;
-    const nx = -uy * off;
-    const ny = ux * off;
-    const A = [a[0] + nx, a[1] + ny];
-    const B = [b[0] + nx, b[1] + ny];
-    let s = '<line class="ext" x1="' + f1(a[0]) + '" y1="' + f1(a[1]) + '" x2="' + f1(A[0] + nx * 0.2) + '" y2="' + f1(A[1] + ny * 0.2) + '"/>';
-    s += '<line class="ext" x1="' + f1(b[0]) + '" y1="' + f1(b[1]) + '" x2="' + f1(B[0] + nx * 0.2) + '" y2="' + f1(B[1] + ny * 0.2) + '"/>';
-    s += '<line class="dim" x1="' + f1(A[0]) + '" y1="' + f1(A[1]) + '" x2="' + f1(B[0]) + '" y2="' + f1(B[1]) + '"/>';
-    const head = (P, dir) => {
-      const hx = P[0] + ux * 10 * dir;
-      const hy = P[1] + uy * 10 * dir;
-      const px = -uy * 4;
-      const py = ux * 4;
-      return '<path class="arr" d="M' + f1(P[0]) + ' ' + f1(P[1]) + 'L' + f1(hx + px) + ' ' + f1(hy + py) + 'L' + f1(hx - px) + ' ' + f1(hy - py) + 'Z"/>';
-    };
-    s += head(A, 1) + head(B, -1);
-    let ang = Math.atan2(uy, ux) * 180 / Math.PI;
-    if (ang > 90) ang -= 180;
-    if (ang < -90) ang += 180;
-    const w = label.length * 7.4 + 16;
-    s += '<g transform="translate(' + f1((A[0] + B[0]) / 2) + ' ' + f1((A[1] + B[1]) / 2) + ') rotate(' + f1(ang) + ')"><rect class="lab" x="' + f1(-w / 2) + '" y="-11" width="' + f1(w) + '" height="22" rx="6"/><text x="0" y="4" text-anchor="middle">' + label + '</text></g>';
-    return s;
-  };
-  const drawSpec = () => {
-    // длина и диаметр винта
-    let s = dim(pt(screw, 0.42, -0.12, 0), pt(screw, 0.42, -2.12, 0), -44, '10 мм');
-    s += dim(pt(screw, -0.39, -2.05, 0), pt(screw, 0.39, -2.05, 0), 40, 'Ø 4,2 мм');
-    // рамка выделения вокруг всего импланта — как в редакторе
-    const pts = [pt(iCrown, 0, 0.92, 0), pt(iCrown, -0.62, 0.45, 0), pt(iCrown, 0.62, 0.45, 0), pt(screw, 0, -2.16, 0), pt(screw, -0.42, -1.2, 0), pt(screw, 0.42, -1.2, 0)];
-    let x0 = Infinity;
-    let y0 = Infinity;
-    let x1 = -Infinity;
-    let y1 = -Infinity;
-    pts.forEach(([x, y]) => { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); });
-    x0 -= 24; y0 -= 24; x1 += 24; y1 += 24;
-    s += '<rect class="sel" x="' + f1(x0) + '" y="' + f1(y0) + '" width="' + f1(x1 - x0) + '" height="' + f1(y1 - y0) + '"/>';
-    [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].forEach(([x, y]) => { s += '<rect class="hd" x="' + f1(x - 4.5) + '" y="' + f1(y - 4.5) + '" width="9" height="9"/>'; });
-    s += '<g transform="translate(' + f1(x0) + ' ' + f1(y0 - 32) + ')"><rect class="tag" width="168" height="22" rx="5"/><text x="10" y="15">Имплант · 3 детали</text></g>';
-    tDraw.innerHTML = s;
-  };
-  let lastDa = -1;
-
-  // ---------- финал: имплант на подставке, вокруг кольцо «гарантия 5 лет» ----------
-  const ped = new THREE.Group();
-  const pedTop = new THREE.Mesh(new THREE.CylinderGeometry(1.55, 1.7, 0.34, 96), new THREE.MeshPhysicalMaterial({ color: 0xF4FBFA, roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.08 }));
-  const pedRim = new THREE.Mesh(new THREE.TorusGeometry(1.57, 0.03, 10, 120), new THREE.MeshBasicMaterial({ color: 0x9BFFF2 }));
-  pedRim.rotation.x = Math.PI / 2;
-  pedRim.position.y = 0.17;
-  ped.add(pedTop, pedRim);
-  scene.add(ped);
-  const headFont = getComputedStyle(document.documentElement).getPropertyValue('--font-head') || 'sans-serif';
-  const gTex = canvasTexture(2048, 128, (g, w, h) => {
-    g.clearRect(0, 0, w, h);
-    g.fillStyle = '#FFFFFF';
-    g.font = '800 70px ' + headFont;
-    g.textBaseline = 'middle';
-    const s = 'ГАРАНТИЯ 5 ЛЕТ  •  ИМПЛАНТ ПОД КЛЮЧ  •  ';
-    let x = 0;
-    while (x < w) { g.fillText(s, x, h / 2 + 4); x += g.measureText(s).width; }
-  });
-  gTex.wrapS = THREE.RepeatWrapping;
-  const gRing = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.1, 0.34, 128, 1, true), new THREE.MeshBasicMaterial({ map: gTex, transparent: true, side: THREE.DoubleSide, depthWrite: false, toneMapped: false }));
-  gRing.rotation.set(0.2, 0, -0.12);
-  scene.add(gRing);
-  const PED = [[0, 0], [0.84, 0], [0.93, 1], [1, 1]];
-
-  // ---------- подписи деталей ----------
-  const coEls = Array.from(show.querySelectorAll('.co'));
-  const W3 = () => new THREE.Vector3();
-  const anchors = {
-    crown: () => iCrown.getWorldPosition(W3()).add(new THREE.Vector3(-0.85, 0.7, 0)),
-    abut: () => abut.getWorldPosition(W3()).add(new THREE.Vector3(0.3, 0.2, 0)),
-    screw: () => screw.getWorldPosition(W3()).add(new THREE.Vector3(-0.35, -0.9, 0))
-  };
-  const drawCo = callouts(st, document.getElementById('tLines'), coEls.map((el) => ({
-    el,
-    anchor: anchors[el.dataset.part],
-    dx: el.classList.contains('l') ? -80 : 80,
-    dy: 0
-  })));
-
-  // ---------- сценарий по прокрутке ----------
-  const TOOTH = [[0, 1], [0.34, 1], [0.41, 0], [1, 0]];
-  const IMPL = [[0, 0], [0.37, 0], [0.45, 1], [1, 1]];
-  const SPLIT = [[0, 1], [0.44, 1], [0.52, 1], [0.66, 0], [1, 0]];
-  const JAW = [[0, 0], [0.55, 0], [0.68, 1], [0.83, 1], [0.92, 0], [1, 0]];
-  // угол обзора, высота камеры, дистанция, точка взгляда по высоте, сдвиг кадра
-  const CAM = [
-    [0, [0.35, 0.6, 9.6, -0.2, 0.17]],
-    [0.14, [0.35, 0.6, 9.6, -0.2, 0.17]],
-    [0.26, [0.0, 5.8, 7.0, 0.5, 0.17]],
-    [0.34, [0.1, 3.6, 8.4, 0.2, 0.15]],
-    [0.46, [0.15, 0.8, 13.2, 0.25, 0.12]],
-    [0.6, [0.25, 1.4, 12.6, -0.45, 0.15]],
-    [0.8, [0.55, 1.8, 12.0, -0.5, 0.17]],
-    [1, [0.8, 1.6, 11.8, -0.5, 0.17]]
-  ];
-  let p = 0;
-  let intro = still ? 1 : 0;
-  const shiftView = (sx, sy) => {
-    const W = st.size.w;
-    const H = st.size.h;
-    if (!sx && !sy) { camera.clearViewOffset(); return; }
-    camera.setViewOffset(W * (1 + 2 * Math.abs(sx)), H * (1 + 2 * Math.abs(sy)), sx > 0 ? 0 : 2 * Math.abs(sx) * W, sy > 0 ? 2 * sy * H : 0, W, H);
-  };
-  // шейдеры собираются заранее, чтобы зуб появился без рывка
-  await st.ready();
-
-  st.onTick((dt, t) => {
-    p = damp(p, progressOf(show), 6, dt);
-    intro = Math.min(1, intro + dt / 1.6);
-    const narrow = st.size.w < 760;
-    const ti = smooth(0, 1, intro);
-
-    // натуральный зуб вращается и уходит, уступая место импланту
-    const tv = track(TOOTH, p) * ti;
-    tooth.visible = tv > 0.01;
-    tooth.scale.setScalar(Math.max(0.001, tv));
-    // покачивается щёчной стороной к зрителю: так видны и бугорки, и оба корня
-    tooth.rotation.y = -0.35 + Math.sin(t * 0.45) * 0.55 + p * 4.2;
-    tooth.rotation.x = 0.22 + Math.sin(t * 0.7) * 0.05;
-    tooth.position.y = 0.45 + Math.sin(t * 1.1) * 0.06 + (1 - ti) * -1.5;
-
-    const iv = track(IMPL, p);
-    implant.visible = iv > 0.01;
-    implant.scale.setScalar(Math.max(0.001, iv));
-    const sp = track(SPLIT, p);
-    iCrown.position.y = 0.8 + sp * (narrow ? 0.78 : 1.05);
-    abut.position.y = 0.42 + sp * 0.4;
-    screw.position.y = 0.0 - sp * 0.5;
-    const c = track(CAM, p);
-    const ang = c[0] + st.pointer.x * 0.1;
-
-    // когда появляется разрез десны и кости, имплант поворачивается к зрителю срезом
-    const jv = track(JAW, p);
-    const spin = 0.4 + t * 0.25 + p * 2.2;
-    implant.rotation.y = lerp(spin, ang + Math.sin(t * 0.5) * 0.12, jv);
-    jaw.visible = jv > 0.01;
-    jaw.position.y = (1 - jv) * -3.2;
-    jaw.scale.setScalar(Math.max(0.001, jv));
-    jaw.rotation.y = ang + Math.sin(t * 0.5) * 0.12;
-    const dist = c[2] * (narrow ? 1.62 : 1);
-    camera.position.set(Math.sin(ang) * dist, c[1] - st.pointer.y * 0.25 + (narrow ? 0.4 : 0), Math.cos(ang) * dist);
-    camera.lookAt(0, c[3] + (narrow ? 0.45 : 0), 0);
-    shiftView(narrow ? 0 : c[4], narrow ? 0.18 : 0);
-
-    drawCo(smooth(0.43, 0.47, p) * (1 - smooth(0.54, 0.58, p)));
-
-    // чертёж импланта в сцене «Внутри»
-    const da = smooth(0.45, 0.49, p) * (1 - smooth(0.62, 0.66, p));
-    if (Math.abs(da - lastDa) > 0.002) { lastDa = da; show.style.setProperty('--da', da.toFixed(3)); }
-    if (da > 0.01) drawSpec();
-    // финал: подставка поднимается, кольцо гарантии вращается вокруг импланта
-    const pv = track(PED, p);
-    ped.visible = pv > 0.01;
-    gRing.visible = pv > 0.01;
-    ped.position.y = lerp(-6.5, -2.6, pv);
-    gRing.position.y = -0.55;
-    gRing.scale.set(Math.max(0.001, pv), 1, Math.max(0.001, pv));
-    gRing.material.opacity = pv;
-    gRing.rotation.y = -t * 0.45;
-  });
-
-  // ---------- отбеливание: отдельная сцена с зубом, цвет эмали по шкале оттенков ----------
-  const wCanvas = document.getElementById('white3d');
-  if (wCanvas) {
-    const ws = createStage(wCanvas, { fov: 30, exposure: 1.08 });
-    const wk = new THREE.DirectionalLight(0xffffff, 2.2);
-    wk.position.set(-3, 5, 4);
-    ws.scene.add(wk);
-    const wr = new THREE.DirectionalLight(0xbffff5, 1.3);
-    wr.position.set(4, 1, -3);
-    ws.scene.add(wr);
-    const wm = await loadBin('assets/models/tooth.bin');
-    const wEnamel = enamel.clone();
-    wm.mesh.material = wEnamel;
-    const wt = new THREE.Group();
-    wm.wrap.scale.setScalar(1.2);
-    wt.add(wm.wrap);
-    ws.scene.add(wt);
-    const wped = new THREE.Mesh(new THREE.CylinderGeometry(1.25, 1.35, 0.24, 72), new THREE.MeshPhysicalMaterial({ color: 0xF4FBFA, roughness: 0.18, clearcoat: 1 }));
-    wped.position.y = -2.25;
-    ws.scene.add(wped);
-    // от жёлтого A3.5 к белоснежному BL1
-    const YEL = new THREE.Color(0xE2BF84);
-    const WH = new THREE.Color(0xFFFFFF);
-    let sv = window.__shade || 0;
-    let svT = sv;
-    window.addEventListener('inzhu:shade', (e) => { svT = e.detail; });
-    await ws.ready();
-    ws.onTick((dt, t) => {
-      sv = damp(sv, svT, 6, dt);
-      wEnamel.color.copy(YEL).lerp(WH, sv);
-      wEnamel.sheen = 0.15 + sv * 0.55;
-      wt.rotation.y = -0.4 + Math.sin(t * 0.5) * 0.6;
-      wt.rotation.x = 0.18;
-      wt.position.y = 0.2 + Math.sin(t * 1.1) * 0.05;
-      ws.camera.position.set(ws.pointer.x * 0.4, 0.5 - ws.pointer.y * 0.2, ws.size.w < 500 ? 9.6 : 8.6);
-      ws.camera.lookAt(0, -0.45, 0);
-    });
   }
 </script>
 </body>

@@ -45,7 +45,7 @@ function run(canvas, S, opts, draw) {
   const resize = () => {
     size.w = canvas.clientWidth || window.innerWidth;
     size.h = canvas.clientHeight || window.innerHeight;
-    const s = Math.min(Math.min(window.devicePixelRatio || 1, 1.5), Math.sqrt(maxPx / (size.w * size.h)));
+    const s = Math.min(Math.min(window.devicePixelRatio || 1, opts.maxDpr || 1.5), Math.sqrt(maxPx / (size.w * size.h)));
     size.W = Math.max(1, Math.round(size.w * s));
     size.H = Math.max(1, Math.round(size.h * s));
     if (canvas.width !== size.W || canvas.height !== size.H) { canvas.width = size.W; canvas.height = size.H; }
@@ -253,4 +253,199 @@ export function lightRibbons(canvas, opts = {}) {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   });
   return true;
+}
+
+/* ---------- Стеклянная линза над фото: увеличивает, преломляет края и показывает улыбку после отбеливания ---------- */
+const LENS_FS = `
+  uniform vec2 uRes;
+  uniform vec2 uImg;
+  uniform vec2 uPos;
+  uniform sampler2D uTex;
+  uniform vec2 uLens;
+  uniform float uR;
+  uniform float uShow;
+  uniform float uWhite;
+  uniform float uLensWhite;
+  uniform float uMag;
+  varying vec2 vUv;
+  // кадрирование как у object-fit: cover с точкой фокуса
+  vec2 cover(vec2 uv) {
+    float ca = uRes.x / uRes.y;
+    float ia = uImg.x / uImg.y;
+    vec2 s = ca > ia ? vec2(1., ia / ca) : vec2(ca / ia, 1.);
+    return (1. - s) * vec2(uPos.x, 1. - uPos.y) + uv * s;
+  }
+  vec3 tex(vec2 uv) { return texture2D(uTex, cover(uv)).rgb; }
+  // эмаль: светлые и малонасыщенные тёплые пиксели — зубы; кожа и губы почти не задеваются
+  vec3 enamel(vec3 c, float amt) {
+    float lum = dot(c, vec3(.299, .587, .114));
+    float mx = max(c.r, max(c.g, c.b));
+    float mn = min(c.r, min(c.g, c.b));
+    float sat = mx > .001 ? (mx - mn) / mx : 0.;
+    float m = smoothstep(.42, .68, lum) * (1. - smoothstep(.15, .33, sat));
+    m *= mix(.45, 1., smoothstep(-.01, .09, (c.r + c.g) * .5 - c.b));
+    vec3 white = vec3(min(1., lum * 1.1 + .06)) * vec3(.985, 1., 1.03);
+    vec3 stain = c * vec3(1.03, .95, .76);
+    return amt >= 0. ? mix(c, white, m * amt) : mix(c, stain, m * -amt);
+  }
+  void main() {
+    vec2 px = vUv * uRes;
+    vec2 d = px - uLens;
+    float R = max(uR, 1.);
+    float r = length(d) / R;
+    vec3 base = enamel(tex(vUv), uWhite);
+    if (uShow < .002 || r > 1.4) { gl_FragColor = vec4(base, 1.); return; }
+    // мягкая тень от стекла чуть ниже линзы
+    float sh = smoothstep(1.36, .96, length((d - vec2(0., -R * .16)) / R)) * (1. - smoothstep(.97, 1., r));
+    vec3 outC = base * (1. - .3 * sh * uShow);
+    // в центре увеличение, к краю стекло сжимает и преломляет картинку
+    float rr = min(r, 1.);
+    float f = mix(1. / uMag, 1., pow(rr, 2.4)) + .2 * smoothstep(.7, 1., rr);
+    float edge = smoothstep(.55, 1., rr);
+    vec2 c0 = uLens / uRes;
+    vec2 dir = d / uRes * f;
+    float ab = .022 * edge;
+    vec3 inC = vec3(tex(c0 + dir * (1. + ab)).r, tex(c0 + dir).g, tex(c0 + dir * (1. - ab)).b);
+    inC = enamel(inC, uLensWhite);
+    // жидкое стекло: светлый ободок, блик сверху слева, тонкая холодная кромка
+    vec2 n = d / R;
+    float light = max(0., dot(normalize(n + 1e-5), normalize(vec2(-.55, .83))));
+    float rim = smoothstep(.84, .985, rr) * (1. - smoothstep(.985, 1., r));
+    inC += rim * (.1 + .6 * light * light);
+    inC += smoothstep(.46, 0., length(n - vec2(-.36, .44))) * .14;
+    inC *= 1. - .16 * smoothstep(.82, 1., rr) * (1. - light);
+    inC = mix(inC, inC * vec3(.97, 1.01, 1.05), .55);
+    float inside = 1. - smoothstep(.985, 1., r);
+    gl_FragColor = vec4(mix(outC, inC, inside * uShow), 1.);
+  }
+`;
+
+/*
+  photoLens(canvas, { img, pos: [x, y], lens: true, zone, tag, aim: [x, y], swing: [ax, ay], radius(w, h) })
+  img — <img crossorigin="anonymous">: та же картинка видна, пока WebGL не готов.
+  pos — точка фокуса кадра (как object-position); aim — где на фото улыбка (доли фото),
+  swing — насколько линза гуляет вокруг неё (тоже в долях фото), на любом экране она найдёт улыбку сама.
+  Возвращает { setWhite(v) }: v от −1 (желтизна) до 1 (отбеленная эмаль) для всего фото.
+*/
+export function photoLens(canvas, opts = {}) {
+  const S = setup(canvas, LENS_FS);
+  if (!S) return null;
+  const { gl, u } = S;
+  const img = opts.img;
+  const pos = opts.pos || [0.5, 0.5];
+  const lens = opts.lens !== false;
+  const zone = opts.zone || canvas;
+  const tag = opts.tag || null;
+  const aim = opts.aim || [0.5, 0.6];
+  const swing = opts.swing || [0.04, 0.02];
+  const st = { x: 0.5, y: 0.6, tx: 0.5, ty: 0.6, show: 0, white: opts.white || 0, tw: opts.white || 0, user: -1e9, placed: false };
+  // точка на фото → доли холста с тем же кадрированием, что и в шейдере
+  const fit = (W, H) => {
+    const ca = W / H;
+    const ia = img.naturalWidth / img.naturalHeight;
+    const sx = ca > ia ? 1 : ca / ia;
+    const sy = ca > ia ? ia / ca : 1;
+    return { sx, sy, ox: (1 - sx) * pos[0], oy: (1 - sy) * pos[1] };
+  };
+  let ready = false;
+  let size = null;
+
+  const tex = gl.createTexture();
+  const upload = () => {
+    try {
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    } catch (e) { return; }
+    gl.uniform2f(u('uImg'), img.naturalWidth, img.naturalHeight);
+    gl.uniform2f(u('uPos'), pos[0], pos[1]);
+    gl.uniform1f(u('uMag'), opts.mag || 1.35);
+    gl.uniform1f(u('uLensWhite'), opts.lensWhite === undefined ? 1 : opts.lensWhite);
+    ready = true;
+  };
+  if (img.complete && img.naturalWidth) upload(); else img.addEventListener('load', upload, { once: true });
+
+  // курсор ведёт линзу; без курсора (телефон) она сама гуляет по улыбке, нажатие переносит её
+  if (lens && !reduce) {
+    const toLocal = (e) => {
+      const r = canvas.getBoundingClientRect();
+      return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height];
+    };
+    zone.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch') return;
+      const [x, y] = toLocal(e);
+      if (x < -0.1 || x > 1.1 || y < -0.1 || y > 1.1) return;
+      st.tx = x;
+      st.ty = y;
+      st.user = performance.now();
+    }, { passive: true });
+    zone.addEventListener('pointerdown', (e) => {
+      if (e.pointerType !== 'touch') return;
+      const [x, y] = toLocal(e);
+      if (x < 0 || x > 1 || y < 0 || y > 1) return;
+      st.tx = x;
+      st.ty = y;
+      st.user = performance.now();
+    }, { passive: true });
+    zone.addEventListener('pointerleave', () => { st.user = performance.now() - 1800; });
+  }
+
+  let shown = false;
+  const draw = (now, dt, time) => {
+    if (!ready || !size) return;
+    const W = size.w;
+    const H = size.h;
+    const k = 1 - Math.exp(-(dt || 0.016) * 7);
+    if (lens) {
+      const fr = fit(W, H);
+      const cx = (aim[0] - fr.ox) / fr.sx;
+      const cy = (aim[1] - fr.oy) / fr.sy;
+      if (!st.placed) { st.placed = true; st.x = st.tx = cx; st.y = st.ty = cy; }
+      if (reduce || now - st.user > 2600) {
+        const t = reduce ? 0 : (time || 0) * 0.32;
+        st.tx = cx + Math.sin(t * 1.3) * swing[0] / fr.sx;
+        st.ty = cy + Math.sin(t * 2.1 + 0.7) * swing[1] / fr.sy;
+      }
+      st.x += (st.tx - st.x) * (reduce ? 1 : k);
+      st.y += (st.ty - st.y) * (reduce ? 1 : k);
+      st.show = reduce ? 1 : Math.min(1, st.show + (dt || 0.016) * 1.4);
+    }
+    st.white += (st.tw - st.white) * (reduce ? 1 : 1 - Math.exp(-(dt || 0.016) * 6));
+    const R = opts.radius ? opts.radius(W, H) : Math.min(W, H) * 0.18;
+    const e = 1 - Math.pow(1 - st.show, 3);
+    const pop = st.show < 1 ? e + Math.sin(st.show * Math.PI) * 0.12 : 1;
+    const sc = size.W / W;
+    gl.uniform2f(u('uLens'), st.x * W * sc, (1 - st.y) * H * sc);
+    gl.uniform1f(u('uR'), R * pop * sc);
+    gl.uniform1f(u('uShow'), lens ? Math.min(1, st.show * 3) : 0);
+    gl.uniform1f(u('uWhite'), st.white);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    if (tag && lens) {
+      // подпись справа над линзой, но не за краем экрана
+      const tw = tag.offsetWidth || 150;
+      let tx = st.x * W + R * 0.62;
+      if (tx + tw > W - 10) tx = Math.max(10, st.x * W - R * 0.62 - tw);
+      tag.style.transform = 'translate(' + tx.toFixed(0) + 'px,' + Math.max(8, st.y * H - R * 1.02).toFixed(0) + 'px)';
+    }
+    if (!shown) {
+      shown = true;
+      canvas.classList.add('ready');
+      if (tag) tag.classList.add('on');
+    }
+  };
+  size = run(canvas, S, { maxPx: opts.maxPx || 2.2e6, maxDpr: opts.maxDpr || 2, zone }, draw);
+  // картинка могла догрузиться позже первого кадра — рисуем сразу, не дожидаясь прокрутки
+  const kick = () => requestAnimationFrame(() => draw(performance.now(), 0.016, 0));
+  if (ready) kick(); else img.addEventListener('load', kick, { once: true });
+
+  return {
+    setWhite(v) {
+      st.tw = Math.max(-1, Math.min(1, v));
+      if (reduce) { st.white = st.tw; draw(performance.now(), 0, 0); }
+    }
+  };
 }
