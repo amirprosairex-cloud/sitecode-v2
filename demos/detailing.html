@@ -178,8 +178,57 @@
     footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 28px var(--pad) 100px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
     footer a { color: inherit; }
 
+
+    /* рифлёное стекло с горячим светом за машиной */
+    .show-glow { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+    /* полировальная машинка вместо курсора: ведёте по кузову — лак начинает блестеть */
+    .pad { position: fixed; left: 0; top: 0; z-index: 60; width: 78px; height: 78px; margin: -39px 0 0 -39px; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate3d(-300px, -300px, 0); transition: opacity .3s; background: radial-gradient(circle, rgba(255, 255, 255, .95) 0 8%, rgba(255, 150, 105, .6) 9% 38%, rgba(255, 77, 26, .2) 39% 63%, rgba(255, 77, 26, 0) 66%); box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .55), 0 0 44px rgba(255, 90, 40, .5); }
+    .pad::after { content: ""; position: absolute; inset: 7px; border-radius: 50%; border: 2px dashed rgba(255, 255, 255, .6); animation: spin 1s linear infinite; }
+    .polishing .pad { opacity: 1; }
+    .polishing .show-stick { cursor: none; }
+    .polishing .scene { cursor: auto; }
+    .polish-tip { display: flex; align-items: center; gap: 10px; margin: -4px 0 18px; font-size: 14px; font-weight: 600; color: var(--accent); }
+    .polish-tip i { flex: none; width: 18px; height: 18px; border-radius: 50%; border: 2px dashed currentColor; animation: spin 2.2s linear infinite; }
+    @media (hover: none), (pointer: coarse) { .polish-tip { display: none; } }
+
+    /* калькулятор: кузов и услуги — сразу цена и срок */
+    .calc { padding: 140px var(--pad) 20px; }
+    .calc-head { display: grid; grid-template-columns: 1fr 1fr; align-items: end; gap: 20px 60px; }
+    .calc-lead { max-width: 32em; color: var(--muted); font-size: 18px; }
+    .calc-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, .8fr); align-items: start; gap: 18px; margin-top: 50px; }
+    .calc-bodies { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+    .cb, .cs { position: relative; display: block; cursor: pointer; }
+    .cb input, .cs input { position: absolute; opacity: 0; pointer-events: none; }
+    .cb span { display: grid; justify-items: center; gap: 6px; padding: 18px 10px 14px; border-radius: 16px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); transition: box-shadow .25s, background-color .25s; }
+    .cb svg { width: 76px; height: 44px; fill: none; stroke: #8C8C95; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: stroke .25s, transform .4s cubic-bezier(.2, 1.4, .4, 1); }
+    .cb:hover svg { transform: translateX(4px); }
+    .cb b { font: 400 16px/1 var(--font-head); text-transform: uppercase; }
+    .cb small { color: var(--muted); font-size: 13px; }
+    .cb input:checked + span, .cs input:checked + span { background: #1C1310; box-shadow: inset 0 0 0 1.5px var(--accent); }
+    .cb input:checked + span svg { stroke: var(--accent); }
+    .cb input:focus-visible + span, .cs input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .calc-services { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .cs span { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 14px; min-height: 84px; padding: 16px 18px 16px 56px; border-radius: 16px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); transition: box-shadow .25s, background-color .25s; }
+    .cs span::before { content: ""; position: absolute; left: 18px; top: 50%; width: 22px; height: 22px; margin-top: -11px; border-radius: 7px; box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .3); transition: background-color .2s, box-shadow .2s; }
+    .cs input:checked + span::before { background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 14px no-repeat; box-shadow: none; }
+    .cs b { font: 400 17px/1.1 var(--font-head); text-transform: uppercase; }
+    .cs small { grid-column: 1; color: var(--muted); font-size: 13px; }
+    .cs em { grid-column: 2; grid-row: 1 / span 2; font-style: normal; font-weight: 700; white-space: nowrap; }
+    .calc-total { position: sticky; top: 90px; padding: 30px 28px 28px; border-radius: 22px; background: linear-gradient(160deg, #1D1D22, #121215); box-shadow: inset 0 0 0 1px var(--line), 0 40px 70px -40px rgba(0, 0, 0, .8); }
+    .calc-label { color: var(--muted); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; }
+    .calc-sum { margin: 10px 0 6px; font: 400 clamp(42px, 4.2vw, 62px)/1 var(--font-head); white-space: nowrap; }
+    .calc-sum b { font-weight: 400; }
+    .calc-time { font-weight: 600; color: var(--accent); }
+    .calc-list { display: grid; gap: 9px; margin: 22px 0; padding-top: 18px; border-top: 1px solid var(--line); }
+    .calc-list li { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; color: rgba(242, 242, 243, .82); }
+    .calc-list li b { white-space: nowrap; }
+    .calc-total .btn { width: 100%; }
+    .calc-note { margin-top: 14px; font-size: 13px; color: var(--muted); }
+
     @media (max-width: 1000px) {
       .nav { display: none; }
+      .calc-head, .calc-grid { grid-template-columns: 1fr; }
+      .calc-total { position: relative; top: auto; }
       .hdr .btn { margin-left: auto; }
       .packs-grid { grid-template-columns: 1fr; }
       .ba-sec { grid-template-columns: 1fr; }
@@ -211,6 +260,9 @@
     }
     @media (max-width: 560px) {
       .proc { grid-template-columns: 1fr; }
+      .calc-bodies { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .calc-services { grid-template-columns: 1fr; }
+      .calc { padding-top: 100px; }
       .gal figure:nth-child(n) { grid-column: span 12; }
       footer { flex-direction: column; }
     }
@@ -228,10 +280,13 @@
   <button class="btn" type="button" data-open="book">Записаться</button>
 </header>
 
+<div class="pad" aria-hidden="true"></div>
+
 <main id="top">
   <section class="show" id="show" aria-label="Машина в 3D: полировка, керамика и оклейка">
     <div class="show-stick">
       <div class="show-bg" aria-hidden="true"></div>
+      <canvas class="show-glow" aria-hidden="true"></canvas>
       <p class="show-word" aria-hidden="true"><span id="showWord">Gloss</span></p>
       <div class="show-fallback" aria-hidden="true"><img src="https://images.unsplash.com/photo-1567808291548-fc3ee04dbcf0?auto=format&fit=crop&w=2000&q=80" alt=""></div>
       <picture class="show-poster" aria-hidden="true">
@@ -263,6 +318,7 @@
         <h2>Убираем царапины и паутинку</h2>
         <p>Шлифуем лак в три этапа, пока кузов снова не начнёт отражать небо. Листайте — блеск растёт прямо на глазах.</p>
         <div class="meter"><span>Блеск</span><i id="gloss"></i><b id="glossVal">23%</b></div>
+        <p class="polish-tip"><i></i>Проведите курсором по машине — отполируйте сами</p>
         <div class="price"><small>седан, 1 день</small><b>от 60 000 ₸</b></div>
       </div>
       <div class="scene glass" data-scene="2">
@@ -309,6 +365,42 @@
       <span>Полировка</span><i></i><span>Керамика</span><i></i><span>Химчистка салона</span><i></i><span>Антидождь</span><i></i><span>Оклейка плёнкой</span><i></i>
     </div>
   </div>
+
+  <section class="calc" id="calc" aria-label="Калькулятор стоимости">
+    <div class="calc-head">
+      <div>
+        <p class="tag" data-r>Калькулятор</p>
+        <h2 class="h2 lines"><span class="ln"><span>Цена за минуту</span></span></h2>
+      </div>
+      <p class="calc-lead" data-r>Выберите кузов и услуги — сразу покажем цену и сколько машина пробудет у нас. Осмотр перед работой бесплатный.</p>
+    </div>
+    <div class="calc-grid">
+      <div class="calc-form">
+        <div class="calc-bodies" role="radiogroup" aria-label="Кузов">
+          <label class="cb"><input type="radio" name="cbody" value="Седан" data-k="1" checked><span><svg viewBox="0 0 76 44" aria-hidden="true"><path d="M6 33v-6l9-3 11-9h21l12 9 11 3v6"/><path d="M6 33h7m14 0h22m14 0h7"/><circle cx="20" cy="33" r="6"/><circle cx="56" cy="33" r="6"/></svg><b>Седан</b><small>базовая цена</small></span></label>
+          <label class="cb"><input type="radio" name="cbody" value="Кроссовер" data-k="1.2"><span><svg viewBox="0 0 76 44" aria-hidden="true"><path d="M6 33v-8l7-3 8-10h28l9 10 11 3v8"/><path d="M6 33h7m14 0h22m14 0h7"/><circle cx="20" cy="33" r="6.5"/><circle cx="56" cy="33" r="6.5"/></svg><b>Кроссовер</b><small>+20%</small></span></label>
+          <label class="cb"><input type="radio" name="cbody" value="Внедорожник" data-k="1.35"><span><svg viewBox="0 0 76 44" aria-hidden="true"><path d="M5 33v-11l6-2 4-11h36l6 11 14 2v11"/><path d="M5 33h8m16 0h18m16 0h8"/><circle cx="21" cy="33" r="7"/><circle cx="55" cy="33" r="7"/></svg><b>Внедорожник</b><small>+35%</small></span></label>
+          <label class="cb"><input type="radio" name="cbody" value="Премиум" data-k="1.5"><span><svg viewBox="0 0 76 44" aria-hidden="true"><path d="M4 33v-5l11-4 12-7h17l14 7 14 4v5"/><path d="M4 33h9m14 0h22m14 0h9"/><circle cx="20" cy="33" r="6"/><circle cx="56" cy="33" r="6"/></svg><b>Премиум</b><small>+50%</small></span></label>
+        </div>
+        <div class="calc-services">
+          <label class="cs"><input type="checkbox" value="Полировка" data-price="60000" data-h="8" checked><span><b>Полировка</b><small>убираем до 90% царапин</small><em>60 000 ₸</em></span></label>
+          <label class="cs"><input type="checkbox" value="Керамика 9H" data-price="150000" data-h="16"><span><b>Керамика 9H</b><small>защита лака до 3 лет</small><em>150 000 ₸</em></span></label>
+          <label class="cs"><input type="checkbox" value="Химчистка салона" data-price="45000" data-h="6"><span><b>Химчистка салона</b><small>сиденья, потолок, ковры</small><em>45 000 ₸</em></span></label>
+          <label class="cs"><input type="checkbox" value="Антидождь" data-price="6000" data-h="1"><span><b>Антидождь</b><small>все стёкла, на 6 месяцев</small><em>6 000 ₸</em></span></label>
+          <label class="cs"><input type="checkbox" value="Плёнка на зоны риска" data-price="120000" data-h="10"><span><b>Плёнка на зоны риска</b><small>капот, фары, бампер</small><em>120 000 ₸</em></span></label>
+          <label class="cs"><input type="checkbox" value="Полная оклейка" data-price="350000" data-h="20"><span><b>Полная оклейка</b><small>новый цвет или защита</small><em>350 000 ₸</em></span></label>
+        </div>
+      </div>
+      <aside class="calc-total" aria-live="polite">
+        <p class="calc-label">Итого</p>
+        <p class="calc-sum"><b id="calcSum">60 000</b> ₸</p>
+        <p class="calc-time" id="calcTime">Готово за 1 день</p>
+        <ul class="calc-list" id="calcList"></ul>
+        <button class="btn" type="button" id="calcBook">Записать машину</button>
+        <p class="calc-note">Точную цену подтвердим после осмотра. В будни — скидка 10%.</p>
+      </aside>
+    </div>
+  </section>
 
   <section class="packs" id="packs">
     <p class="tag" data-r>Пакеты</p>
@@ -418,6 +510,7 @@
           <label class="d-chip"><input type="radio" name="body" value="Седан" checked><span>Седан</span></label>
           <label class="d-chip"><input type="radio" name="body" value="Кроссовер"><span>Кроссовер</span></label>
           <label class="d-chip"><input type="radio" name="body" value="Внедорожник"><span>Внедорожник</span></label>
+          <label class="d-chip"><input type="radio" name="body" value="Премиум"><span>Премиум</span></label>
         </div>
       </fieldset>
       <fieldset class="d-field" data-label="День">
@@ -447,6 +540,7 @@
 <script type="module">
   // интерфейс прокрутки: работает сразу, не дожидаясь 3D
   import { scrollScenes } from './assets/ui.js';
+  import { fluteGlow } from './assets/fx.js';
   const show = document.getElementById('show');
   scrollScenes(show, {
     marks: [0, 0.11, 0.29, 0.46, 0.66, 0.81],
@@ -459,6 +553,73 @@
   const poster = document.querySelector('.show-poster img');
   const posterOk = () => document.documentElement.classList.add('poster');
   if (poster.complete && poster.naturalWidth) posterOk(); else poster.addEventListener('load', posterOk);
+
+  // рифлёное стекло с тёплым светом за машиной — работает сразу, без 3D
+  const glowCanvas = document.querySelector('.show-glow');
+  const glow = glowCanvas ? fluteGlow(glowCanvas, { zone: show, hot: [0.95, 0.33, 0.1] }) : null;
+  const placeGlow = () => { if (glow) glow.center(window.innerWidth < 760 ? 0.5 : 0.66, window.innerWidth < 760 ? 0.72 : 0.58); };
+  placeGlow();
+  window.addEventListener('resize', placeGlow);
+  window.__glow = glow;
+
+  // ---------- калькулятор: кузов и услуги → цена и срок ----------
+  const calc = document.getElementById('calc');
+  if (calc) {
+    const sumEl = document.getElementById('calcSum');
+    const timeEl = document.getElementById('calcTime');
+    const listEl = document.getElementById('calcList');
+    const fmt = (n) => Math.round(n).toLocaleString('ru-RU').replace(/\s/g, ' ');
+    let shown = 0;
+    let goal = 0;
+    let raf = 0;
+    const tick = () => {
+      shown += (goal - shown) * 0.2;
+      if (Math.abs(goal - shown) < 60) shown = goal;
+      sumEl.textContent = fmt(Math.round(shown / 100) * 100);
+      raf = shown !== goal ? requestAnimationFrame(tick) : 0;
+    };
+    const days = (n) => n + ' ' + (n % 10 === 1 && n % 100 !== 11 ? 'день' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'дня' : 'дней');
+    const update = () => {
+      const body = calc.querySelector('input[name="cbody"]:checked');
+      const k = Number(body.dataset.k);
+      const items = Array.from(calc.querySelectorAll('.cs input:checked'));
+      // цены в карточках услуг сразу пересчитываются под кузов
+      calc.querySelectorAll('.cs input').forEach((it) => { it.parentElement.querySelector('em').textContent = fmt(Math.round(Number(it.dataset.price) * k / 500) * 500) + ' ₸'; });
+      let total = 0;
+      let hours = 0;
+      listEl.textContent = '';
+      items.forEach((it) => {
+        const pr = Math.round(Number(it.dataset.price) * k / 500) * 500;
+        total += pr;
+        hours += Number(it.dataset.h);
+        const li = document.createElement('li');
+        const a = document.createElement('span');
+        const b = document.createElement('b');
+        a.textContent = it.value;
+        b.textContent = fmt(pr) + ' ₸';
+        li.append(a, b);
+        listEl.appendChild(li);
+      });
+      goal = total;
+      timeEl.textContent = !items.length ? 'Выберите хотя бы одну услугу' : hours <= 2 ? 'Готово за ' + hours + ' ч — пока пьёте кофе' : 'Готово за ' + days(Math.max(1, Math.ceil(hours / 9)));
+      if (!raf) raf = requestAnimationFrame(tick);
+      window.__calc = { body: body.value, items: items.map((it) => it.value), total };
+    };
+    calc.addEventListener('change', update);
+    update();
+    const PACK = { 'Полировка': 'Полировка', 'Керамика 9H': 'Керамика', 'Химчистка салона': 'Химчистка салона', 'Полная оклейка': 'Оклейка плёнкой', 'Плёнка на зоны риска': 'Оклейка плёнкой', 'Антидождь': 'Экспресс' };
+    document.getElementById('calcBook').addEventListener('click', () => {
+      const c = window.__calc;
+      const first = c.items.find((x) => PACK[x]);
+      window.Demo.openModal('book', { pack: first ? PACK[first] : undefined, body: c.body });
+    });
+    // расчёт попадает в заявку, которая придёт владельцу в WhatsApp
+    window.DemoExtraRows = (form) => {
+      const c = window.__calc;
+      if (!form || !form.closest('#book') || !c || !c.items.length) return [];
+      return [['Расчёт', c.items.join(' + ') + ', ' + c.body.toLowerCase()], ['По калькулятору', fmt(c.total) + ' ₸']];
+    };
+  }
 </script>
 <script type="module">
   import { createStage, loadModel, THREE, track, progressOf, smooth, clamp, lerp, damp, small, still, easeOut, callouts, afterPaint, studioScene } from './assets/kit3d.js';
@@ -487,6 +648,60 @@
     const darkChrome = new THREE.MeshStandardMaterial({ color: 0x2a2b30, metalness: 1, roughness: 0.18 });
     const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x0a0a0d, metalness: 0.9, roughness: 0.02, transparent: true, opacity: 0.62 });
     root.getObjectByName('body').material = paint;
+
+    // ---------- лак с эффектами: плёнка и керамика растекаются волной, полировка — под курсором ----------
+    const bodyMesh = root.getObjectByName('body');
+    bodyMesh.geometry.computeBoundingBox();
+    const bb = bodyMesh.geometry.boundingBox;
+    // маска полировки в координатах экрана: где провели «машинкой», лак блестит
+    const PW = 256;
+    const PH = 144;
+    const pc = document.createElement('canvas');
+    pc.width = PW;
+    pc.height = PH;
+    const pctx = pc.getContext('2d');
+    pctx.fillStyle = '#000';
+    pctx.fillRect(0, 0, PW, PH);
+    const polishTex = new THREE.CanvasTexture(pc);
+    polishTex.colorSpace = THREE.NoColorSpace;
+    const FX = {
+      uNew: { value: new THREE.Color(0xE64A19) },
+      uWrap: { value: -1 },
+      uRimK: { value: 0 },
+      uCer: { value: -1 },
+      uPol: { value: polishTex },
+      uPolOn: { value: 0 },
+      uDull: { value: 1 },
+      uRes: { value: new THREE.Vector2(1, 1) },
+      uZ: { value: new THREE.Vector2(bb.min.z, bb.max.z) }
+    };
+    paint.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, FX);
+      sh.vertexShader = 'varying vec3 vCar;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n  vCar = position;');
+      sh.fragmentShader = [
+        'varying vec3 vCar;',
+        'uniform vec3 uNew; uniform float uWrap; uniform float uRimK; uniform float uCer;',
+        'uniform sampler2D uPol; uniform float uPolOn; uniform float uDull; uniform vec2 uRes; uniform vec2 uZ;',
+        sh.fragmentShader
+      ].join('\n')
+        .replace('#include <color_fragment>', `#include <color_fragment>
+          // положение вдоль кузова: 0 — нос, 1 — корма; край волны неровный, как у жидкости
+          float zN = (vCar.z - uZ.x) / (uZ.y - uZ.x);
+          float wob = sin(vCar.x * 9. + vCar.y * 6.) * .014 + sin(vCar.y * 17. - vCar.x * 4.) * .006;
+          float eW = zN - uWrap + wob;
+          float wrapT = 1. - smoothstep(-.008, .008, eW);
+          diffuseColor.rgb = mix(diffuseColor.rgb, uNew, wrapT);
+          float eC = zN - uCer + wob * 1.4;
+          float cerT = 1. - smoothstep(-.01, .01, eC);
+          float pm = texture2D(uPol, gl_FragCoord.xy / uRes).r * uPolOn;
+          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb / max(uDull, .05), pm);`)
+        .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+          roughnessFactor = mix(roughnessFactor, .07, pm);
+          roughnessFactor = mix(roughnessFactor, .03, cerT);`)
+        .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+          totalEmissiveRadiance += vec3(1., .72, .45) * exp(-pow(eW / .02, 2.)) * uRimK * 1.4;
+          totalEmissiveRadiance += vec3(.45, .7, 1.) * exp(-pow(eC / .05, 2.)) * step(-.5, uCer) * step(uCer, 1.05) * .5;`);
+    };
     ['rim_fl', 'rim_fr', 'rim_rr', 'rim_rl'].forEach((n) => { const o = root.getObjectByName(n); if (o) o.material = chrome; });
     ['trim', 'chrome'].forEach((n) => { const o = root.getObjectByName(n); if (o) o.material = darkChrome; });
     // спицы дисков — тёмный хром, жёлтые значки и колпачки убираем в графит
@@ -576,15 +791,19 @@
       dy: el.dataset.part === 'glass' ? -60 : el.dataset.part === 'body' ? -40 : el.dataset.part === 'cabin' ? 50 : 30
     })));
 
-    // ---------- цвет плёнки ----------
-    const target = new THREE.Color(0xE64A19);
+    // ---------- цвет плёнки: новый цвет растекается по кузову от носа к корме ----------
     const dull = new THREE.Color();
     let matte = false;
+    let nextMatte = false;
+    const wrap = { t: 1, on: false };
     const chipName = document.getElementById('chipName');
     show.querySelectorAll('[data-paint]').forEach((b) => b.addEventListener('click', () => {
       show.querySelectorAll('[data-paint]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-      target.set(b.dataset.paint);
-      matte = b.dataset.matte === '1';
+      if (wrap.on) { color.copy(FX.uNew.value); matte = nextMatte; }
+      FX.uNew.value.set(b.dataset.paint);
+      nextMatte = b.dataset.matte === '1';
+      wrap.on = true;
+      wrap.t = still ? 1 : 0;
       chipName.textContent = b.dataset.name;
     }));
 
@@ -604,7 +823,18 @@
     ];
     const EXPLODE = [[0, 0], [0.47, 0], [0.56, 1], [0.64, 1], [0.73, 0], [1, 0]];
     // на первом экране машина уже блестит; в сцене полировки тускнеет («до») и полируется прокруткой («после»)
-    const GLOSS = [[0, 1], [0.08, 1], [0.13, 0], [0.27, 1], [1, 1]];
+    const GLOSS = [[0, 1], [0.08, 1], [0.13, 0], [0.235, 0], [0.285, 1], [1, 1]];
+    // керамика стекает по кузову в своей сцене и остаётся до конца
+    const CER = [[0, -1], [0.3, -0.15], [0.43, 1.15], [1, 1.15]];
+    // сила света за стеклом по сценам
+    const HEAT = [[0, 0.9], [0.11, 0.9], [0.15, 0.5], [0.29, 0.7], [0.46, 0.4], [0.66, 0.8], [0.81, 0.95], [1, 0.95]];
+    const pad = document.querySelector('.pad');
+    const fineP = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const root2 = document.documentElement;
+    const tmpC = { r: 0, g: 0, b: 0 };
+    let handGloss = 0;
+    let lastPX = -1;
+    let lastPY = -1;
     const SWEEP = [[0, 0], [0.11, 0], [0.45, 1], [1, 1]];
 
     const glossBar = document.getElementById('gloss');
@@ -650,20 +880,82 @@
         w.rotation.x = -(t * 1.2 + (1 - iw) * 9 + ex * 4) * (q.front ? 1 : 1);
       });
 
-      // лак: тусклый → зеркальный по мере прокрутки, отражения бегут по кузову
+      // лак: на первом экране зеркальный, в сцене полировки тусклый — полируете курсором или прокруткой
       const g = track(GLOSS, p);
-      color.lerp(target, 1 - Math.exp(-dt * 5));
+      const dk = lerp(0.62, 1, g);
       dull.copy(color).multiplyScalar(0.62);
       paint.color.copy(dull).lerp(color, g);
       paint.roughness = lerp(0.6, matte ? 0.55 : 0.3, g);
-      paint.clearcoat = matte ? lerp(paint.clearcoat, 0.05, 0.1) : lerp(0.1, 1, g);
+      paint.clearcoat = matte ? 0.05 : lerp(0.1, 1, g);
       paint.metalness = matte ? 0.2 : 0.7;
+      FX.uDull.value = dk;
+      st.renderer.getDrawingBufferSize(FX.uRes.value);
+
+      // плёнка: волна нового цвета
+      if (wrap.on) {
+        wrap.t = Math.min(1, wrap.t + dt / 1.5);
+        const e = wrap.t < 0.5 ? 2 * wrap.t * wrap.t : 1 - Math.pow(-2 * wrap.t + 2, 2) / 2;
+        FX.uWrap.value = lerp(-0.08, 1.1, e);
+        FX.uRimK.value = Math.sin(Math.PI * Math.min(1, wrap.t * 1.1));
+        if (wrap.t >= 1) {
+          wrap.on = false;
+          color.copy(FX.uNew.value);
+          matte = nextMatte;
+          FX.uWrap.value = -1;
+          FX.uRimK.value = 0;
+        }
+      }
+      // керамика стекает по кузову, за ней лак мокрый и зеркальный
+      FX.uCer.value = track(CER, p);
+
+      // полировка своими руками: маска под «машинкой», на телефоне машинка ходит сама
+      const inPolish = p > 0.115 && p < 0.272;
+      FX.uPolOn.value = damp(FX.uPolOn.value, inPolish ? 1 : 0, 6, dt);
+      let px = -1;
+      let py = -1;
+      const overCar = fineP && st.pointer.cx > st.size.w * (narrow ? 0 : 0.38);
+      if (FX.uPolOn.value > 0.01) {
+        pctx.globalCompositeOperation = 'source-over';
+        pctx.fillStyle = 'rgba(0,0,0,0.016)';
+        pctx.fillRect(0, 0, PW, PH);
+        if (overCar && st.pointer.cx >= 0) { px = st.pointer.cx; py = st.pointer.cy; }
+        else if (!fineP) { px = st.size.w * (0.5 + 0.3 * Math.sin(t * 1.25)); py = st.size.h * (0.27 + 0.07 * Math.sin(t * 2.5)); }
+        if (px >= 0) {
+          const x = px / st.size.w * PW;
+          const y = py / st.size.h * PH;
+          const r = 20 * PW / 256;
+          const rg = pctx.createRadialGradient(x, y, 0, x, y, r);
+          rg.addColorStop(0, 'rgba(255,255,255,0.9)');
+          rg.addColorStop(1, 'rgba(255,255,255,0)');
+          pctx.fillStyle = rg;
+          pctx.beginPath();
+          pctx.arc(x, y, r, 0, Math.PI * 2);
+          pctx.fill();
+          if (lastPX >= 0 && fineP) handGloss = Math.min(1, handGloss + Math.hypot(px - lastPX, py - lastPY) / 2600);
+          lastPX = px;
+          lastPY = py;
+        } else lastPX = -1;
+        polishTex.needsUpdate = true;
+      } else lastPX = -1;
+      root2.classList.toggle('polishing', inPolish && overCar);
+      if (pad && fineP) pad.style.transform = 'translate3d(' + st.pointer.cx + 'px,' + st.pointer.cy + 'px,0)';
+
       if (scene.environmentRotation) scene.environmentRotation.y = track(SWEEP, p) * Math.PI * 2 + Math.sin(t * 0.2) * 0.15 + (1 - easeOut(arrive)) * 2.4;
-      const gl = Math.round(lerp(23, 100, g));
+      const gm = inPolish ? Math.max(g, handGloss) : g;
+      const gl = Math.round(lerp(23, 100, gm));
       if (gl !== lastGl) {
         lastGl = gl;
         glossBar.style.setProperty('--g', (gl / 100).toFixed(2));
         glossVal.textContent = gl + '%';
+      }
+
+      // свет за стеклом: сила по сцене, цвет — как у плёнки
+      if (window.__glow) {
+        const src = wrap.on ? FX.uNew.value : color;
+        src.getRGB(tmpC, THREE.SRGBColorSpace);
+        const lum = tmpC.r * 0.3 + tmpC.g * 0.59 + tmpC.b * 0.11;
+        if (lum < 0.12) { tmpC.r = 0.55; tmpC.g = 0.6; tmpC.b = 0.72; }
+        window.__glow.set(track(HEAT, p), [tmpC.r, tmpC.g, tmpC.b]);
       }
 
       // камера
