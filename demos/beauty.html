@@ -94,8 +94,60 @@
     .pbar i { flex: 1; height: 2px; background: rgba(255, 220, 230, .16); overflow: hidden; }
     .pbar i::after { content: ""; display: block; height: 100%; background: #F7B9C9; transform: scaleX(var(--f, 0)); transform-origin: left; }
     .phint { position: absolute; right: var(--pad); top: 110px; z-index: 3; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: rgba(251, 239, 242, .55); transition: opacity .4s; }
+    /* своя линейка ухода: продукт падает в кадр перед огромным словом, фон под оттенок */
+    .line { position: relative; height: 330vh; }
+    .line-stick { --lb: #F3CBA6; --lf: #3A1E12; position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--lb); color: var(--lf); transition: background-color 1s cubic-bezier(.2, .8, .2, 1), color .6s; }
+    .line-stick::before { content: ""; position: absolute; left: 64%; top: 52%; width: min(80vw, 980px); aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0)); pointer-events: none; }
+    .line-word { position: absolute; left: 0; right: 0; top: 46%; z-index: 0; margin: 0; text-align: center; white-space: nowrap; font: italic 600 clamp(120px, 22vw, 400px)/1 var(--font-head); letter-spacing: -.03em; color: color-mix(in srgb, var(--lf) 12%, transparent); transform: translateY(-50%); pointer-events: none; }
+    .line-word span { display: inline-block; transition: transform .9s cubic-bezier(.2, .8, .2, 1), opacity .45s; }
+    .line-word span.swap { opacity: 0; transform: translateY(22%) scale(.97); }
+    #line3d { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; }
+    .line-card { position: absolute; left: var(--pad); top: 52%; z-index: 3; width: min(430px, 34vw); padding: 30px; border-radius: 28px; background: rgba(255, 255, 255, .42); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .5); opacity: 0; visibility: hidden; transform: translateY(-50%) translateY(30px); transition: opacity .5s, transform .8s cubic-bezier(.2, .8, .2, 1), visibility 0s .8s; }
+    .line-card.on { opacity: 1; visibility: visible; transform: translateY(-50%); transition: opacity .6s .1s, transform .9s cubic-bezier(.2, .8, .2, 1) .1s, visibility 0s; }
+    .line-card .sub { color: inherit; opacity: .7; }
+    .line-card h2 { margin: 8px 0 12px; font: 600 clamp(38px, 3.6vw, 58px)/.98 var(--font-head); }
+    .line-card h2 i { font-style: italic; }
+    .line-card p.txt { opacity: .82; }
+    .line-buy { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; margin-top: 22px; padding-top: 18px; border-top: 1px solid color-mix(in srgb, var(--lf) 16%, transparent); }
+    .line-buy b { font: 600 32px/1 var(--font-head); }
+    .line-buy .btn { background: var(--lf); color: var(--lb); }
+    .line-bar { position: absolute; left: var(--pad); right: var(--pad); bottom: 26px; z-index: 3; display: flex; gap: 6px; }
+    .line-bar i { flex: 1; height: 2px; background: color-mix(in srgb, var(--lf) 18%, transparent); overflow: hidden; }
+    .line-bar i::after { content: ""; display: block; height: 100%; background: var(--lf); transform: scaleX(var(--f, 0)); transform-origin: left; }
+
+    /* стена работ: фото серые, под линзой — в цвете */
+    .lens { padding: 110px var(--pad); }
+    .lens-head { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 16px 40px; margin-bottom: 40px; }
+    .lens-head p.txt { max-width: 26em; color: var(--muted); }
+    .lens-wall { position: relative; cursor: none; touch-action: pan-y; }
+    .lens-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .lens-grid img { width: 100%; aspect-ratio: 4 / 4.6; object-fit: cover; border-radius: 22px; }
+    .lens-grid.gray img { filter: grayscale(1) brightness(.9) contrast(.92); }
+    .lens-grid.color { position: absolute; inset: 0; clip-path: circle(var(--r, 0px) at var(--x, 50%) var(--y, 50%)); pointer-events: none; }
+    .lens-grid.color img { transform: scale(1.035); }
+    .lens-ring { position: absolute; left: var(--x, 50%); top: var(--y, 50%); width: calc(var(--r, 0px) * 2); height: calc(var(--r, 0px) * 2); border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 2px rgba(255, 255, 255, .95), 0 24px 60px -16px rgba(46, 31, 39, .55); pointer-events: none; }
+    .lens-ring::after { content: "после"; position: absolute; left: 50%; bottom: -34px; transform: translateX(-50%); padding: 6px 12px; border-radius: 999px; background: var(--fg); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; opacity: calc(var(--r, 0px) / 140px); }
+
+    /* мастера веером: карточки раскрываются из стопки */
+    @media (min-width: 901px) {
+      .team-grid .master { position: relative; transition: transform 1s cubic-bezier(.2, .8, .2, 1), box-shadow .5s, opacity .6s; }
+      .team-grid .master:nth-child(1) { transform: translateX(62%) rotate(-10deg) translateY(30px); }
+      .team-grid .master:nth-child(2) { z-index: 2; }
+      .team-grid .master:nth-child(3) { transform: translateX(-62%) rotate(10deg) translateY(30px); }
+      .team-grid.fan .master:nth-child(1) { transform: rotate(-4deg) translateY(16px); }
+      .team-grid.fan .master:nth-child(2) { transform: translateY(-6px); }
+      .team-grid.fan .master:nth-child(3) { transform: rotate(4deg) translateY(16px); }
+      .team-grid.fan .master:hover { z-index: 3; transform: translateY(-14px) scale(1.03); }
+    }
+
     @media (max-width: 760px) {
       .pshow { height: 420vh; }
+      .line { height: 300vh; }
+      .line-card { left: 16px; right: 16px; top: auto; bottom: 54px; width: auto; padding: 22px 20px; transform: translateY(30px); }
+      .line-card.on { transform: none; }
+      .line-card h2 { font-size: 34px; }
+      .line-word { top: 26%; font-size: 30vw; }
+      .lens-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .pscene, .phero { left: 16px; right: 16px; top: auto; bottom: 54px; width: auto; transform: translateY(30px); }
       .pscene.on { transform: none; }
       .phero h1 { font-size: clamp(40px, 11vw, 56px); }
@@ -269,6 +321,32 @@
     </div>
   </section>
 
+  <section class="line" id="line" aria-label="Своя линейка ухода">
+    <div class="line-stick" id="lstick">
+      <p class="line-word" aria-hidden="true"><span id="lineWord">Сияние</span></p>
+      <canvas id="line3d" aria-hidden="true"></canvas>
+      <div class="line-card on">
+        <p class="sub">Сыворотка ARU</p>
+        <h2>Сияние <i>за неделю</i></h2>
+        <p class="txt">Витамин C и ниацинамид. Через неделю кожа ровнее, и утром не хочется тонального.</p>
+        <div class="line-buy"><b>9 800 ₸</b><button class="btn" type="button" data-open="book" data-preset='{"service":"Уход за лицом"}'>Попробовать в салоне</button></div>
+      </div>
+      <div class="line-card">
+        <p class="sub">Помада ARU</p>
+        <h2>Пион <i>на весь день</i></h2>
+        <p class="txt">Стойкий бархатный оттенок, не сушит губы. Подберём тон под ваш макияж прямо в кресле.</p>
+        <div class="line-buy"><b>6 500 ₸</b><button class="btn" type="button" data-open="book" data-preset='{"service":"Макияж"}'>Подобрать оттенок</button></div>
+      </div>
+      <div class="line-card">
+        <p class="sub">Крем ARU</p>
+        <h2>Облако <i>для кожи</i></h2>
+        <p class="txt">Лёгкий крем с пептидами. Впитывается за минуту и держит увлажнение весь день.</p>
+        <div class="line-buy"><b>12 400 ₸</b><button class="btn" type="button" data-open="book" data-preset='{"service":"Уход за лицом"}'>Взять пробник в салоне</button></div>
+      </div>
+      <div class="line-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+    </div>
+  </section>
+
   <section class="ba-sec">
     <div>
       <p class="sub" data-r>До и после</p>
@@ -286,6 +364,35 @@
       <input type="range" min="0" max="100" value="50" aria-label="Сравнить до и после">
       <span class="ba-line"></span>
       <span class="ba-tag l">До</span><span class="ba-tag r">После</span>
+    </div>
+  </section>
+
+  <section class="lens" id="works" aria-label="Работы мастеров">
+    <div class="lens-head">
+      <div>
+        <p class="sub" data-r>Работы</p>
+        <h2 class="title lines"><span class="ln"><span>Наведите —</span></span><span class="ln"><span><i>и увидите цвет</i></span></span></h2>
+      </div>
+      <p class="txt" data-r>Фото после процедур, без фильтров. Ведите курсором или пальцем по стене — под линзой работа в настоящем цвете.</p>
+    </div>
+    <div class="lens-wall" id="lensWall" data-r>
+      <div class="lens-grid gray">
+        <img src="https://images.unsplash.com/photo-1560869713-bf165a9cfac1?auto=format&fit=crop&w=700&q=75" alt="Укладка локонами" loading="lazy">
+        <img src="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=700&q=75" alt="Маникюр с покрытием" loading="lazy">
+        <img src="https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=700&q=75" alt="Окрашивание волос" loading="lazy">
+        <img src="https://images.unsplash.com/photo-1589710751893-f9a6770ad71b?auto=format&fit=crop&w=700&q=75" alt="Брови и ресницы" loading="lazy">
+        <img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=700&q=75" alt="Уход за лицом" loading="lazy">
+        <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=75" alt="Макияж" loading="lazy">
+      </div>
+      <div class="lens-grid color" aria-hidden="true">
+        <img src="https://images.unsplash.com/photo-1560869713-bf165a9cfac1?auto=format&fit=crop&w=700&q=75" alt="" loading="lazy">
+        <img src="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=700&q=75" alt="" loading="lazy">
+        <img src="https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=700&q=75" alt="" loading="lazy">
+        <img src="https://images.unsplash.com/photo-1589710751893-f9a6770ad71b?auto=format&fit=crop&w=700&q=75" alt="" loading="lazy">
+        <img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=700&q=75" alt="" loading="lazy">
+        <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=75" alt="" loading="lazy">
+      </div>
+      <span class="lens-ring" aria-hidden="true"></span>
     </div>
   </section>
 
@@ -483,6 +590,88 @@
     hint: document.getElementById('pHint'),
     onProgress: () => hdr.classList.toggle('dark', show.getBoundingClientRect().bottom > 70)
   });
+
+  // ---------- своя линейка: прокрутка меняет продукт, фон и слово ----------
+  const line = document.getElementById('line');
+  if (line) {
+    const lstick = document.getElementById('lstick');
+    const LC = [['#F3CBA6', '#3A1E12'], ['#F2B6C4', '#3A1222'], ['#DCD8F0', '#241F3D']];
+    scrollScenes(line, {
+      marks: [0, 0.36, 0.7],
+      words: ['Сияние', 'Пион', 'Облако'],
+      word: document.getElementById('lineWord'),
+      scenes: Array.from(line.querySelectorAll('.line-card')),
+      bars: Array.from(line.querySelectorAll('.line-bar i')),
+      onScene: (i) => {
+        lstick.style.setProperty('--lb', LC[i][0]);
+        lstick.style.setProperty('--lf', LC[i][1]);
+        window.__lineI = i;
+        window.dispatchEvent(new CustomEvent('aru:line', { detail: i }));
+      }
+    });
+  }
+
+  // ---------- стена работ: линза показывает цвет ----------
+  const wall = document.getElementById('lensWall');
+  if (wall) {
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const L = { x: 0, y: 0, tx: 0, ty: 0, r: 0, tr: 0, on: false, auto: !fine, vis: false };
+    const setV = () => {
+      wall.style.setProperty('--x', L.x.toFixed(1) + 'px');
+      wall.style.setProperty('--y', L.y.toFixed(1) + 'px');
+      wall.style.setProperty('--r', L.r.toFixed(1) + 'px');
+    };
+    wall.addEventListener('pointermove', (e) => {
+      const b = wall.getBoundingClientRect();
+      L.tx = e.clientX - b.left;
+      L.ty = e.clientY - b.top;
+      if (e.pointerType === 'mouse') { L.on = true; L.auto = false; }
+    });
+    wall.addEventListener('pointerdown', (e) => {
+      const b = wall.getBoundingClientRect();
+      L.tx = e.clientX - b.left;
+      L.ty = e.clientY - b.top;
+      L.auto = false;
+      L.on = true;
+    });
+    wall.addEventListener('pointerleave', () => { if (fine) L.on = false; });
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now) => {
+      raf = L.vis ? requestAnimationFrame(tick) : 0;
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const b = wall.getBoundingClientRect();
+      if (L.auto) {
+        // на телефоне линза сама гуляет по стене
+        const t = now / 1000;
+        L.tx = b.width * (0.5 + 0.38 * Math.sin(t * 0.55));
+        L.ty = b.height * (0.5 + 0.34 * Math.sin(t * 0.9 + 1));
+        L.on = true;
+      }
+      L.tr = L.on ? Math.min(150, b.width * 0.2) : 0;
+      const k = 1 - Math.exp(-dt * 10);
+      L.x += (L.tx - L.x) * k;
+      L.y += (L.ty - L.y) * k;
+      L.r += (L.tr - L.r) * (1 - Math.exp(-dt * 7));
+      setV();
+    };
+    new IntersectionObserver((es) => {
+      L.vis = es[0].isIntersecting;
+      if (L.vis && !raf) { last = performance.now(); raf = requestAnimationFrame(tick); }
+    }).observe(wall);
+  }
+
+  // ---------- мастера раскрываются веером из стопки ----------
+  const tg = document.querySelector('.team-grid');
+  if (tg) {
+    const fan = new IntersectionObserver((es) => {
+      if (!es[0].isIntersecting) return;
+      setTimeout(() => tg.classList.add('fan'), 250);
+      fan.disconnect();
+    }, { threshold: 0.35 });
+    fan.observe(tg);
+  }
 </script>
 <script type="module">
   import { createStage, THREE, progressOf, smooth, damp, small, still, afterPaint } from './assets/kit3d.js';
@@ -670,6 +859,152 @@
       push = damp(push, over ? 1 : 0, 6, dt);
       if (over) u.uMouse.value.set(hit.x - lay.x, hit.y - lay.y, push);
       else u.uMouse.value.z = push;
+    });
+  }
+</script>
+<script type="module">
+  // ---------- своя линейка ухода: сыворотка, помада и крем падают в кадр, вокруг кружат лепестки ----------
+  import { createStage, THREE, damp, small, still, canvasTexture, afterPaint, progressOf } from './assets/kit3d.js';
+
+  const sec = document.getElementById('line');
+  const canvas = document.getElementById('line3d');
+  if (sec && canvas) {
+    await afterPaint();
+    const st = createStage(canvas, { fov: small ? 34 : 26, exposure: 1.05 });
+    const { scene, camera } = st;
+    const key = new THREE.DirectionalLight(0xfff0e6, 2.4);
+    key.position.set(-3, 5, 4);
+    scene.add(key);
+    const back = new THREE.DirectionalLight(0xffffff, 1.1);
+    back.position.set(3, 2, -4);
+    scene.add(back);
+    const V2 = THREE.Vector2;
+    const DS = THREE.DoubleSide;
+    const gold = new THREE.MeshStandardMaterial({ color: 0xD8B27A, metalness: 1, roughness: 0.2 });
+    const label = (title, sub, ink) => canvasTexture(1024, 256, (g, w, h) => {
+      g.clearRect(0, 0, w, h);
+      g.fillStyle = ink;
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.font = 'italic 600 92px "Cormorant Garamond", Georgia, serif';
+      g.fillText(title, w * 0.5, h * 0.44);
+      g.font = '600 30px Manrope, Arial, sans-serif';
+      g.fillText(sub, w * 0.5, h * 0.8);
+    });
+
+    // сыворотка: стеклянный флакон с пипеткой, внутри золотистая жидкость
+    const serum = new THREE.Group();
+    const bottle = [[0.001, 0], [0.5, 0], [0.56, 0.06], [0.56, 1.25], [0.48, 1.45], [0.22, 1.56], [0.2, 1.7]].map(([a, b]) => new V2(a, b));
+    serum.add(new THREE.Mesh(new THREE.LatheGeometry(bottle, 64), new THREE.MeshPhysicalMaterial({ color: 0xF6E2C8, roughness: 0.05, transparent: true, opacity: 0.32, clearcoat: 1, side: DS, depthWrite: false })));
+    const juice = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1.1, 48), new THREE.MeshPhysicalMaterial({ color: 0xE6A04A, roughness: 0.15, clearcoat: 1, transparent: true, opacity: 0.88 }));
+    juice.position.y = 0.6;
+    serum.add(juice);
+    const sl = new THREE.Mesh(new THREE.CylinderGeometry(0.565, 0.565, 0.55, 64, 1, true), new THREE.MeshBasicMaterial({ map: label('Сияние', 'ARU · vitamin C', '#5A2E14'), transparent: true, side: DS, depthWrite: false }));
+    sl.position.y = 0.62;
+    serum.add(sl);
+    const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.16, 48), gold);
+    collar.position.y = 1.72;
+    const bulb = new THREE.Mesh(new THREE.LatheGeometry([[0.001, 0], [0.2, 0], [0.22, 0.12], [0.2, 0.42], [0.12, 0.56], [0.001, 0.6]].map(([a, b]) => new V2(a, b)), 48), new THREE.MeshPhysicalMaterial({ color: 0x2B1A12, roughness: 0.45, clearcoat: 0.4 }));
+    bulb.position.y = 1.8;
+    serum.add(collar, bulb);
+
+    // помада: золотой футляр и скошенный стержень цвета пиона
+    const lip = new THREE.Group();
+    const caseM = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.1, 48), gold);
+    caseM.position.y = 0.55;
+    const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.32, 48), gold);
+    sleeve.position.y = 1.26;
+    const bulletG = new THREE.CylinderGeometry(0.28, 0.28, 0.9, 48, 4);
+    const bp = bulletG.attributes.position;
+    for (let i = 0; i < bp.count; i++) { if (bp.getY(i) > 0.3) bp.setY(i, bp.getY(i) - 0.3 + 0.3 - bp.getX(i) * 0.55 + 0.05); }
+    bulletG.computeVertexNormals();
+    const bullet = new THREE.Mesh(bulletG, new THREE.MeshPhysicalMaterial({ color: 0xC23E5D, roughness: 0.32, sheen: 0.6, sheenColor: new THREE.Color(0xFFB3C6), clearcoat: 0.4 }));
+    bullet.position.y = 1.75;
+    lip.add(caseM, sleeve, bullet);
+    lip.scale.setScalar(1.2);
+
+    // крем: баночка с кремом, крышка зависла над ней
+    const cream = new THREE.Group();
+    const jar = new THREE.Mesh(new THREE.LatheGeometry([[0.001, 0], [0.82, 0], [0.9, 0.08], [0.9, 0.7], [0.84, 0.78], [0.8, 0.8]].map(([a, b]) => new V2(a, b)), 72), new THREE.MeshPhysicalMaterial({ color: 0xF4F1FB, roughness: 0.35, transmission: 0, clearcoat: 0.8, sheen: 0.4 }));
+    const swirl = new THREE.Mesh(new THREE.LatheGeometry([[0.001, 0.86], [0.3, 0.86], [0.55, 0.82], [0.76, 0.8]].map(([a, b]) => new V2(a, b)), 72), new THREE.MeshPhysicalMaterial({ color: 0xFFFDF8, roughness: 0.5, sheen: 0.5 }));
+    const tip = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.22, 24), swirl.material);
+    tip.position.y = 0.95;
+    const lidG = new THREE.Group();
+    const lidM = new THREE.Mesh(new THREE.CylinderGeometry(0.92, 0.92, 0.28, 72), new THREE.MeshPhysicalMaterial({ color: 0xFBFAFF, roughness: 0.25, clearcoat: 1 }));
+    const lidRing = new THREE.Mesh(new THREE.TorusGeometry(0.92, 0.03, 10, 96), gold);
+    lidRing.rotation.x = Math.PI / 2;
+    lidRing.position.y = -0.14;
+    lidG.add(lidM, lidRing);
+    lidG.position.set(0.35, 1.7, -0.2);
+    lidG.rotation.set(0.5, 0, -0.35);
+    const lb = new THREE.Mesh(new THREE.CylinderGeometry(0.905, 0.905, 0.4, 72, 1, true), new THREE.MeshBasicMaterial({ map: label('Облако', 'ARU · peptide cream', '#3B3366'), transparent: true, side: DS, depthWrite: false }));
+    lb.position.y = 0.4;
+    cream.add(jar, swirl, tip, lidG, lb);
+    cream.scale.setScalar(1.15);
+
+    const items = [serum, lip, cream];
+    items.forEach((m) => { m.visible = false; scene.add(m); });
+
+    // подставка и лепестки
+    const plinth = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.45, 0.22, 96), new THREE.MeshPhysicalMaterial({ color: 0xFFFFFF, roughness: 0.25, clearcoat: 1, transparent: true, opacity: 0.9 }));
+    plinth.position.y = -1.3;
+    scene.add(plinth);
+    const petalShape = new THREE.Shape();
+    petalShape.moveTo(0, 0);
+    petalShape.bezierCurveTo(0.22, 0.1, 0.24, 0.42, 0, 0.6);
+    petalShape.bezierCurveTo(-0.24, 0.42, -0.22, 0.1, 0, 0);
+    const petalG = new THREE.ShapeGeometry(petalShape, 10);
+    const pp = petalG.attributes.position;
+    for (let i = 0; i < pp.count; i++) pp.setZ(i, pp.getX(i) * pp.getX(i) * 1.2 + pp.getY(i) * 0.12);
+    petalG.computeVertexNormals();
+    const PETAL = [0xF7B486, 0xE4708E, 0xB6A8E6];
+    const petalMat = new THREE.MeshPhysicalMaterial({ color: PETAL[0], roughness: 0.5, sheen: 0.8, sheenColor: new THREE.Color(0xFFFFFF), side: DS });
+    const petals = Array.from({ length: small ? 12 : 20 }, (_, k) => {
+      const m = new THREE.Mesh(petalG, petalMat);
+      m.userData = { a: (k / 20) * Math.PI * 2, r: 1.6 + (k % 4) * 0.45, y: -1 + ((k * 7) % 10) / 10 * 3.2, sp: 0.12 + (k % 3) * 0.05, s: 0.55 + (k % 5) * 0.12 };
+      scene.add(m);
+      return m;
+    });
+
+    let cur = window.__lineI || 0;
+    let fall = 1;
+    let prev = -1;
+    window.addEventListener('aru:line', (e) => { if (e.detail === cur) return; prev = cur; cur = e.detail; fall = still ? 1 : 0; });
+    const pc = new THREE.Color(PETAL[cur]);
+    await st.ready();
+    st.onTick((dt, t) => {
+      const narrow = st.size.w < 760;
+      fall = Math.min(1, fall + dt / 1.1);
+      // новый продукт падает сверху и мягко отскакивает, прежний улетает вверх
+      const e = fall < 1 ? 1 - Math.pow(1 - fall, 3) * Math.cos(fall * 7) : 1;
+      items.forEach((m, i) => {
+        if (i === cur) {
+          m.visible = true;
+          m.position.y = -1.19 + (1 - e) * 5;
+          m.rotation.y = t * 0.45;
+          m.rotation.z = Math.sin(t * 0.8) * 0.04;
+        } else if (i === prev && fall < 0.6) {
+          m.visible = true;
+          m.position.y += dt * 9;
+        } else m.visible = false;
+      });
+      pc.lerp(new THREE.Color(PETAL[cur]), 1 - Math.exp(-dt * 3));
+      petalMat.color.copy(pc);
+      petals.forEach((m) => {
+        const u = m.userData;
+        const a = u.a + t * u.sp;
+        m.position.set(Math.cos(a) * u.r, u.y + Math.sin(t * 0.6 + u.a) * 0.25 - ((t * 0.12 + u.a) % 1) * 0.2, Math.sin(a) * u.r * 0.6 - 0.4);
+        m.rotation.set(t * 0.4 + u.a, t * 0.3 + u.a * 2, t * 0.2);
+        m.scale.setScalar(u.s);
+      });
+      const W = st.size.w;
+      const H = st.size.h;
+      camera.position.set(st.pointer.x * 0.4, 0.8 - st.pointer.y * 0.25, narrow ? 11.5 : 9.8);
+      camera.lookAt(0, -0.15, 0);
+      // товар справа от карточки на компьютере, по центру сверху на телефоне
+      if (narrow) camera.setViewOffset(W, H * 1.36, 0, H * 0.36, W, H);
+      else camera.setViewOffset(W * 1.32, H, 0, 0, W, H);
+      void progressOf;
     });
   }
 </script>
