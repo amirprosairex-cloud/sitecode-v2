@@ -116,6 +116,40 @@
     .thint i::after { content: ""; position: absolute; left: 50%; top: 6px; width: 4px; height: 7px; margin-left: -2px; border-radius: 2px; background: #fff; animation: twheel 1.6s ease-in-out infinite; }
     @keyframes twheel { 60% { transform: translateY(10px); opacity: 0; } 61% { transform: none; opacity: 0; } 100% { opacity: 1; } }
     .numbers { padding-top: 80px !important; }
+    /* чертёж импланта: сетка, размерные линии, рамка выделения как в редакторе */
+    .tgrid { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: calc(var(--da, 0) * .55); background-image: linear-gradient(rgba(255, 255, 255, .13) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .13) 1px, transparent 1px); background-size: 34px 34px; -webkit-mask-image: radial-gradient(ellipse at 68% 50%, #000 18%, transparent 68%); mask-image: radial-gradient(ellipse at 68% 50%, #000 18%, transparent 68%); }
+    .tdraw { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; overflow: visible; pointer-events: none; opacity: var(--da, 0); }
+    .tdraw .dim { fill: none; stroke: #fff; stroke-width: 1.4; }
+    .tdraw .ext { stroke: rgba(255, 255, 255, .6); stroke-width: 1; stroke-dasharray: 3 4; }
+    .tdraw .arr { fill: #fff; }
+    .tdraw text { fill: #053F3C; font: 700 12px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: .03em; }
+    .tdraw .lab { fill: #fff; }
+    .tdraw .sel { fill: rgba(155, 255, 242, .05); stroke: #9BFFF2; stroke-width: 1.3; stroke-dasharray: 7 5; }
+    .tdraw .hd { fill: #fff; stroke: #0B716B; stroke-width: 1.3; }
+    .tdraw .tag { fill: #9BFFF2; }
+
+    /* отбеливание: 3D-зуб и шкала оттенков */
+    .white { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: center; gap: clamp(30px, 5vw, 80px); padding: 110px var(--pad) 40px; }
+    .white .text { max-width: 30em; margin: 20px 0 28px; color: var(--muted); font-size: 18px; }
+    .shade { max-width: 520px; }
+    .shade-chips { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin-bottom: 14px; }
+    .shade-chips i { display: grid; place-items: end center; height: 54px; padding-bottom: 6px; border-radius: 10px 10px 16px 16px; background: var(--c); box-shadow: inset 0 -10px 16px rgba(0, 0, 0, .07), 0 0 0 1px rgba(11, 44, 49, .08); font: 700 11px/1 var(--font-head); font-style: normal; color: rgba(11, 44, 49, .55); transition: transform .3s cubic-bezier(.2, 1.4, .4, 1), box-shadow .3s; }
+    .shade-chips i.on { transform: translateY(-6px); box-shadow: inset 0 -10px 16px rgba(0, 0, 0, .07), 0 0 0 2px var(--accent); }
+    .shade input[type=range] { width: 100%; height: 34px; margin: 0; background: none; accent-color: var(--accent); cursor: pointer; }
+    .shade-now { display: flex; align-items: baseline; justify-content: space-between; margin-top: 8px; color: var(--muted); }
+    .shade-now b { font: 800 34px/1 var(--font-head); color: var(--fg); }
+    .white-buy { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 30px; padding-top: 22px; border-top: 1px solid rgba(11, 44, 49, .1); }
+    .white-buy b { font: 800 30px/1 var(--font-head); }
+    .white-buy span { color: var(--muted); }
+    .white-stage { position: relative; aspect-ratio: 1 / .92; overflow: hidden; border-radius: 36px; background: radial-gradient(70% 70% at 50% 42%, #5BE6D6 0%, #15AFA2 46%, #0B716B 100%); }
+    .white-stage canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+    .white-stage .tone { position: absolute; left: 22px; top: 20px; padding: 8px 14px; border-radius: 999px; background: rgba(255, 255, 255, .92); color: #053F3C; font: 700 14px/1 var(--font-head); }
+
+    /* врачи «вырастают» снизу кадра */
+    .doc .ph img { transform: translateY(16%) scale(1.08); transition: transform 1.4s cubic-bezier(.2, .8, .2, 1); }
+    .doc.in .ph img { transform: none; }
+    .doc.in:hover .ph img { transform: translateY(-2%) scale(1.03); transition-duration: .7s; }
+
     @media (max-width: 760px) {
       .tshow { height: 500vh; }
       .tshow-stick { background: radial-gradient(110% 60% at 50% 32%, #5BE6D6 0%, #15AFA2 40%, #0B716B 76%, #053F3C 100%); }
@@ -257,6 +291,10 @@
       .clinic figure:first-child { grid-column: auto; }
       footer { flex-direction: column; }
     }
+    @media (max-width: 900px) {
+      .white { grid-template-columns: 1fr; padding-top: 80px; }
+      .white-stage { order: -1; }
+    }
   </style>
 </head>
 <body data-brand="Inzhu Dental">
@@ -279,7 +317,9 @@
   <section class="tshow" id="tshow" aria-label="Зуб и имплант в 3D">
     <div class="tshow-stick">
       <p class="tshow-word" aria-hidden="true"><span id="tWord">Улыбка</span></p>
+      <div class="tgrid" aria-hidden="true"></div>
       <canvas id="tooth3d" aria-hidden="true"></canvas>
+      <svg class="tdraw" id="tDraw" aria-hidden="true"></svg>
       <div class="tco" aria-hidden="true">
         <svg id="tLines"></svg>
         <span class="co l" data-part="crown"><b>Коронка из циркония</b><small>от 95 000 ₸, за 5 дней</small></span>
@@ -331,6 +371,29 @@
     <div class="num" data-r style="--d:.08s"><b><span data-count="9">0</span></b><span>врачей в команде</span></div>
     <div class="num" data-r style="--d:.16s"><b><span data-count="25000">0</span>+</b><span>пациентов</span></div>
     <div class="num" data-r style="--d:.24s"><b><span data-count="5">0</span> лет</b><span>гарантия на импланты</span></div>
+  </section>
+
+  <section class="white" id="white" aria-label="Отбеливание">
+    <div class="white-copy">
+      <p class="pill" data-r>Отбеливание</p>
+      <h2 class="h2 lines"><span class="ln"><span>Белее на 8 тонов</span></span><span class="ln"><span>за один визит</span></span></h2>
+      <p class="text" data-r>Потяните ползунок — так меняется цвет эмали по шкале оттенков, которой пользуется врач. Холодный свет, без боли и чувствительности после.</p>
+      <div class="shade" data-r>
+        <div class="shade-chips" aria-hidden="true">
+          <i class="on" style="--c:#E6CFA0">A3.5</i><i style="--c:#EAD8B2">A3</i><i style="--c:#EFE1C4">A2</i><i style="--c:#F3E9D6">A1</i><i style="--c:#F6F1E6">B1</i><i style="--c:#FAF8F3">BL1</i>
+        </div>
+        <input type="range" id="shade" min="0" max="100" value="0" aria-label="Оттенок эмали: от A3.5 до BL1">
+        <div class="shade-now"><span>было <b id="shadeFrom">A3.5</b></span><span>станет <b id="shadeTo">A3.5</b></span></div>
+      </div>
+      <div class="white-buy">
+        <b>от 45 000 ₸</b><span>1 визит · 60 минут</span>
+        <button class="btn" type="button" data-open="bookModal" data-preset='{"service":"Отбеливание"}'>Записаться на отбеливание</button>
+      </div>
+    </div>
+    <div class="white-stage" data-r="scale">
+      <canvas id="white3d" aria-label="3D-зуб, цвет эмали меняется ползунком"></canvas>
+      <span class="tone" id="shadeTag">A3.5</span>
+    </div>
   </section>
 
   <section class="scan" id="scan">
@@ -577,6 +640,40 @@
     hint: document.getElementById('tHint'),
     onProgress: () => hdr.classList.toggle('dark', show.getBoundingClientRect().bottom > 70)
   });
+
+  // ---------- отбеливание: ползунок по шкале оттенков ----------
+  const shade = document.getElementById('shade');
+  if (shade) {
+    const NAMES = ['A3.5', 'A3', 'A2', 'A1', 'B1', 'BL1'];
+    const chips = Array.from(document.querySelectorAll('.shade-chips i'));
+    let touched = false;
+    const upd = () => {
+      const v = shade.value / 100;
+      const k = Math.min(5, Math.round(v * 5));
+      chips.forEach((c, i) => c.classList.toggle('on', i === k));
+      document.getElementById('shadeTo').textContent = NAMES[k];
+      document.getElementById('shadeTag').textContent = NAMES[k];
+      window.__shade = v;
+      window.dispatchEvent(new CustomEvent('inzhu:shade', { detail: v }));
+    };
+    shade.addEventListener('input', () => { touched = true; upd(); });
+    // когда блок появился, ползунок сам проезжает до белого — видно, что его можно тянуть
+    const demo = new IntersectionObserver((es) => {
+      if (!es[0].isIntersecting) return;
+      demo.disconnect();
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const t0 = performance.now();
+      const step = (now) => {
+        if (touched) return;
+        const k = Math.min(1, (now - t0) / 2600);
+        shade.value = String(Math.round((k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2) * 100));
+        upd();
+        if (k < 1) requestAnimationFrame(step);
+      };
+      setTimeout(() => requestAnimationFrame(step), 500);
+    }, { threshold: 0.5 });
+    demo.observe(shade);
+  }
 </script>
 <script type="module">
   import { createStage, THREE, track, progressOf, smooth, clamp, lerp, damp, small, still, callouts, canvasTexture, afterPaint } from './assets/kit3d.js';
@@ -692,6 +789,83 @@
   jaw.add(bone, gum);
   scene.add(jaw);
 
+  // ---------- чертёж импланта: размерные линии и рамка выделения ----------
+  const tDraw = document.getElementById('tDraw');
+  const tv = new THREE.Vector3();
+  const tOut = { x: 0, y: 0, behind: false };
+  const pt = (obj, x, y, z) => { tv.set(x, y, z); obj.localToWorld(tv); st.toScreen(tv, tOut); return [tOut.x, tOut.y]; };
+  const f1 = (n) => n.toFixed(1);
+  const dim = (a, b, off, label) => {
+    const dx = b[0] - a[0];
+    const dy = b[1] - a[1];
+    const L = Math.hypot(dx, dy) || 1;
+    const ux = dx / L;
+    const uy = dy / L;
+    const nx = -uy * off;
+    const ny = ux * off;
+    const A = [a[0] + nx, a[1] + ny];
+    const B = [b[0] + nx, b[1] + ny];
+    let s = '<line class="ext" x1="' + f1(a[0]) + '" y1="' + f1(a[1]) + '" x2="' + f1(A[0] + nx * 0.2) + '" y2="' + f1(A[1] + ny * 0.2) + '"/>';
+    s += '<line class="ext" x1="' + f1(b[0]) + '" y1="' + f1(b[1]) + '" x2="' + f1(B[0] + nx * 0.2) + '" y2="' + f1(B[1] + ny * 0.2) + '"/>';
+    s += '<line class="dim" x1="' + f1(A[0]) + '" y1="' + f1(A[1]) + '" x2="' + f1(B[0]) + '" y2="' + f1(B[1]) + '"/>';
+    const head = (P, dir) => {
+      const hx = P[0] + ux * 10 * dir;
+      const hy = P[1] + uy * 10 * dir;
+      const px = -uy * 4;
+      const py = ux * 4;
+      return '<path class="arr" d="M' + f1(P[0]) + ' ' + f1(P[1]) + 'L' + f1(hx + px) + ' ' + f1(hy + py) + 'L' + f1(hx - px) + ' ' + f1(hy - py) + 'Z"/>';
+    };
+    s += head(A, 1) + head(B, -1);
+    let ang = Math.atan2(uy, ux) * 180 / Math.PI;
+    if (ang > 90) ang -= 180;
+    if (ang < -90) ang += 180;
+    const w = label.length * 7.4 + 16;
+    s += '<g transform="translate(' + f1((A[0] + B[0]) / 2) + ' ' + f1((A[1] + B[1]) / 2) + ') rotate(' + f1(ang) + ')"><rect class="lab" x="' + f1(-w / 2) + '" y="-11" width="' + f1(w) + '" height="22" rx="6"/><text x="0" y="4" text-anchor="middle">' + label + '</text></g>';
+    return s;
+  };
+  const drawSpec = () => {
+    // длина и диаметр винта
+    let s = dim(pt(screw, 0.42, -0.12, 0), pt(screw, 0.42, -2.12, 0), -44, '10 мм');
+    s += dim(pt(screw, -0.39, -2.05, 0), pt(screw, 0.39, -2.05, 0), 40, 'Ø 4,2 мм');
+    // рамка выделения вокруг всего импланта — как в редакторе
+    const pts = [pt(iCrown, 0, 0.92, 0), pt(iCrown, -0.62, 0.45, 0), pt(iCrown, 0.62, 0.45, 0), pt(screw, 0, -2.16, 0), pt(screw, -0.42, -1.2, 0), pt(screw, 0.42, -1.2, 0)];
+    let x0 = Infinity;
+    let y0 = Infinity;
+    let x1 = -Infinity;
+    let y1 = -Infinity;
+    pts.forEach(([x, y]) => { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); });
+    x0 -= 24; y0 -= 24; x1 += 24; y1 += 24;
+    s += '<rect class="sel" x="' + f1(x0) + '" y="' + f1(y0) + '" width="' + f1(x1 - x0) + '" height="' + f1(y1 - y0) + '"/>';
+    [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].forEach(([x, y]) => { s += '<rect class="hd" x="' + f1(x - 4.5) + '" y="' + f1(y - 4.5) + '" width="9" height="9"/>'; });
+    s += '<g transform="translate(' + f1(x0) + ' ' + f1(y0 - 32) + ')"><rect class="tag" width="168" height="22" rx="5"/><text x="10" y="15">Имплант · 3 детали</text></g>';
+    tDraw.innerHTML = s;
+  };
+  let lastDa = -1;
+
+  // ---------- финал: имплант на подставке, вокруг кольцо «гарантия 5 лет» ----------
+  const ped = new THREE.Group();
+  const pedTop = new THREE.Mesh(new THREE.CylinderGeometry(1.55, 1.7, 0.34, 96), new THREE.MeshPhysicalMaterial({ color: 0xF4FBFA, roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.08 }));
+  const pedRim = new THREE.Mesh(new THREE.TorusGeometry(1.57, 0.03, 10, 120), new THREE.MeshBasicMaterial({ color: 0x9BFFF2 }));
+  pedRim.rotation.x = Math.PI / 2;
+  pedRim.position.y = 0.17;
+  ped.add(pedTop, pedRim);
+  scene.add(ped);
+  const headFont = getComputedStyle(document.documentElement).getPropertyValue('--font-head') || 'sans-serif';
+  const gTex = canvasTexture(2048, 128, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    g.fillStyle = '#FFFFFF';
+    g.font = '800 70px ' + headFont;
+    g.textBaseline = 'middle';
+    const s = 'ГАРАНТИЯ 5 ЛЕТ  •  ИМПЛАНТ ПОД КЛЮЧ  •  ';
+    let x = 0;
+    while (x < w) { g.fillText(s, x, h / 2 + 4); x += g.measureText(s).width; }
+  });
+  gTex.wrapS = THREE.RepeatWrapping;
+  const gRing = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.1, 0.34, 128, 1, true), new THREE.MeshBasicMaterial({ map: gTex, transparent: true, side: THREE.DoubleSide, depthWrite: false, toneMapped: false }));
+  gRing.rotation.set(0.2, 0, -0.12);
+  scene.add(gRing);
+  const PED = [[0, 0], [0.84, 0], [0.93, 1], [1, 1]];
+
   // ---------- подписи деталей ----------
   const coEls = Array.from(show.querySelectorAll('.co'));
   const W3 = () => new THREE.Vector3();
@@ -711,7 +885,7 @@
   const TOOTH = [[0, 1], [0.34, 1], [0.41, 0], [1, 0]];
   const IMPL = [[0, 0], [0.37, 0], [0.45, 1], [1, 1]];
   const SPLIT = [[0, 1], [0.44, 1], [0.52, 1], [0.66, 0], [1, 0]];
-  const JAW = [[0, 0], [0.55, 0], [0.68, 1], [1, 1]];
+  const JAW = [[0, 0], [0.55, 0], [0.68, 1], [0.83, 1], [0.92, 0], [1, 0]];
   // угол обзора, высота камеры, дистанция, точка взгляда по высоте, сдвиг кадра
   const CAM = [
     [0, [0.35, 0.6, 9.6, -0.2, 0.17]],
@@ -773,7 +947,60 @@
     shiftView(narrow ? 0 : c[4], narrow ? 0.18 : 0);
 
     drawCo(smooth(0.43, 0.47, p) * (1 - smooth(0.54, 0.58, p)));
+
+    // чертёж импланта в сцене «Внутри»
+    const da = smooth(0.45, 0.49, p) * (1 - smooth(0.62, 0.66, p));
+    if (Math.abs(da - lastDa) > 0.002) { lastDa = da; show.style.setProperty('--da', da.toFixed(3)); }
+    if (da > 0.01) drawSpec();
+    // финал: подставка поднимается, кольцо гарантии вращается вокруг импланта
+    const pv = track(PED, p);
+    ped.visible = pv > 0.01;
+    gRing.visible = pv > 0.01;
+    ped.position.y = lerp(-6.5, -2.6, pv);
+    gRing.position.y = -0.55;
+    gRing.scale.set(Math.max(0.001, pv), 1, Math.max(0.001, pv));
+    gRing.material.opacity = pv;
+    gRing.rotation.y = -t * 0.45;
   });
+
+  // ---------- отбеливание: отдельная сцена с зубом, цвет эмали по шкале оттенков ----------
+  const wCanvas = document.getElementById('white3d');
+  if (wCanvas) {
+    const ws = createStage(wCanvas, { fov: 30, exposure: 1.08 });
+    const wk = new THREE.DirectionalLight(0xffffff, 2.2);
+    wk.position.set(-3, 5, 4);
+    ws.scene.add(wk);
+    const wr = new THREE.DirectionalLight(0xbffff5, 1.3);
+    wr.position.set(4, 1, -3);
+    ws.scene.add(wr);
+    const wm = await loadBin('assets/models/tooth.bin');
+    const wEnamel = enamel.clone();
+    wm.mesh.material = wEnamel;
+    const wt = new THREE.Group();
+    wm.wrap.scale.setScalar(1.2);
+    wt.add(wm.wrap);
+    ws.scene.add(wt);
+    const wped = new THREE.Mesh(new THREE.CylinderGeometry(1.25, 1.35, 0.24, 72), new THREE.MeshPhysicalMaterial({ color: 0xF4FBFA, roughness: 0.18, clearcoat: 1 }));
+    wped.position.y = -2.25;
+    ws.scene.add(wped);
+    // от жёлтого A3.5 к белоснежному BL1
+    const YEL = new THREE.Color(0xE2BF84);
+    const WH = new THREE.Color(0xFFFFFF);
+    let sv = window.__shade || 0;
+    let svT = sv;
+    window.addEventListener('inzhu:shade', (e) => { svT = e.detail; });
+    await ws.ready();
+    ws.onTick((dt, t) => {
+      sv = damp(sv, svT, 6, dt);
+      wEnamel.color.copy(YEL).lerp(WH, sv);
+      wEnamel.sheen = 0.15 + sv * 0.55;
+      wt.rotation.y = -0.4 + Math.sin(t * 0.5) * 0.6;
+      wt.rotation.x = 0.18;
+      wt.position.y = 0.2 + Math.sin(t * 1.1) * 0.05;
+      ws.camera.position.set(ws.pointer.x * 0.4, 0.5 - ws.pointer.y * 0.2, ws.size.w < 500 ? 9.6 : 8.6);
+      ws.camera.lookAt(0, -0.45, 0);
+    });
+  }
 </script>
 </body>
 </html>
