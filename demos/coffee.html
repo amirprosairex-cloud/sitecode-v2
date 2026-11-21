@@ -9,7 +9,7 @@
   <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Yeseva+One&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Golos+Text:wght@400;500;600;700&family=Yeseva+One&display=swap">
   <link rel="stylesheet" href="assets/demo.css">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
@@ -136,7 +136,7 @@
 
     /* ===== 3D-стакан: подставка в кольце, слои, кольцо текста, смена цвета ===== */
     .cshow { position: relative; height: 500vh; }
-    .cshow-stick { --cb: #EFE7DA; --cf: #2A1D16; position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--cb); color: var(--cf); transition: background-color .9s cubic-bezier(.2, .8, .2, 1), color .6s; }
+    .cshow-stick { --cb: #EFE7DA; --cf: #2A1D16; position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--cb); color: var(--cf); transition: color .6s; }
     .cshow-stick::before { content: ""; position: absolute; left: 50%; top: 54%; width: min(90vw, 1100px); aspect-ratio: 1; transform: translate(-30%, -50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0)); pointer-events: none; }
     .cword { position: absolute; left: 0; right: 0; top: 50%; z-index: 0; margin: 0; text-align: center; white-space: nowrap; font: 400 clamp(120px, 26vw, 460px)/1 var(--font-head); letter-spacing: -.02em; color: transparent; -webkit-text-stroke: 0; transform: translateY(-58%); pointer-events: none; }
     .cword span { display: inline-block; color: color-mix(in srgb, var(--cf) 9%, transparent); text-shadow: 0 2px 0 rgba(255, 255, 255, .35), 0 -2px 0 rgba(0, 0, 0, .05); transition: transform .9s cubic-bezier(.2, .8, .2, 1), opacity .5s; }
@@ -175,6 +175,45 @@
     .chint i { position: relative; width: 22px; height: 34px; border-radius: 12px; border: 1.5px solid currentColor; }
     .chint i::after { content: ""; position: absolute; left: 50%; top: 6px; width: 4px; height: 7px; margin-left: -2px; border-radius: 2px; background: #E2A43A; animation: cwheel 1.6s ease-in-out infinite; }
     @keyframes cwheel { 60% { transform: translateY(10px); opacity: 0; } 61% { transform: none; opacity: 0; } 100% { opacity: 1; } }
+    /* смена сцены мазком кисти, слово залито кофе */
+    .cbrush { position: absolute; inset: 0; z-index: 0; display: block; width: 100%; height: 100%; pointer-events: none; }
+    .cword span.tex { background-image: var(--tex); background-size: cover; background-position: center; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; text-shadow: none; opacity: .42; }
+    .cword span.tex.swap { opacity: 0; }
+    /* имя для стакана */
+    .cname { display: grid; gap: 8px; margin: 4px 0 20px; }
+    .cname span { font-size: 13px; font-weight: 600; opacity: .72; }
+    .cname input { width: 100%; max-width: 280px; padding: 10px 18px; border: 1.5px solid color-mix(in srgb, var(--cf) 28%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--cb) 65%, #fff); color: var(--cf); font: 700 24px/1.1 "Caveat", cursive; }
+    .cname input::placeholder { color: color-mix(in srgb, var(--cf) 45%, transparent); }
+    .cname input:focus { outline: none; border-color: var(--cf); }
+
+    /* хиты недели: напитки на вращающейся подставке, фон под вкус */
+    .hits { --hb: #E8A65A; --hf: #2B1506; position: relative; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); align-items: center; gap: 30px; min-height: 100vh; min-height: 100svh; padding: 90px var(--pad) 70px; overflow: hidden; background: var(--hb); color: var(--hf); transition: background-color .9s cubic-bezier(.2, .8, .2, 1), color .6s; }
+    .hits::before { content: ""; position: absolute; left: 33%; top: 56%; width: min(80vw, 1000px); aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 255, 255, .42), rgba(255, 255, 255, 0)); pointer-events: none; }
+    .hits-stage { position: relative; align-self: stretch; min-height: 560px; }
+    #hits3d { position: absolute; left: -20px; top: -30px; display: block; width: calc(100% + 40px); height: calc(100% + 60px); cursor: grab; touch-action: pan-y; }
+    #hits3d:active { cursor: grabbing; }
+    .hits-word { position: absolute; left: 50%; top: 42%; margin: 0; transform: translate(-50%, -50%); font: 400 clamp(84px, 12.5vw, 220px)/1 var(--font-head); white-space: nowrap; color: color-mix(in srgb, var(--hf) 11%, transparent); pointer-events: none; }
+    .hits-word span { display: inline-block; transition: transform .8s cubic-bezier(.2, .8, .2, 1), opacity .45s; }
+    .hits-word span.swap { opacity: 0; transform: translateY(18%) scale(.96); }
+    .hits-info { position: relative; z-index: 2; max-width: 460px; }
+    .hits-swap { transition: opacity .3s, transform .55s cubic-bezier(.2, .8, .2, 1); }
+    .hits-swap.out { opacity: 0; transform: translateY(14px); }
+    .hits .kicker { color: inherit; opacity: .72; }
+    .hits-info h2 { margin: 10px 0 14px; font: 400 clamp(36px, 3.6vw, 58px)/1.02 var(--font-head); }
+    .hits-desc { font-size: 18px; opacity: .82; }
+    .hits-facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 28px; padding: 0; list-style: none; }
+    .hits-facts li { padding: 8px 14px; border-radius: 999px; background: color-mix(in srgb, var(--hf) 10%, transparent); font-size: 14px; font-weight: 600; }
+    .hits-buy { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; }
+    .hits-buy b { font: 400 36px/1 var(--font-head); }
+    .hits-buy .btn { background: var(--hf); color: var(--hb); }
+    .hits-nav { display: flex; align-items: center; gap: 16px; margin-top: 36px; }
+    .hits-arrow { display: grid; place-items: center; width: 54px; height: 54px; border: 1.5px solid currentColor; border-radius: 50%; background: none; color: inherit; font-size: 20px; cursor: pointer; transition: background-color .3s, color .3s; }
+    .hits-arrow:hover { background: var(--hf); color: var(--hb); }
+    .hits-num { font-weight: 700; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
+    .hits-dots { display: flex; gap: 6px; }
+    .hits-dots i { width: 26px; height: 3px; border-radius: 3px; background: color-mix(in srgb, var(--hf) 22%, transparent); transition: background-color .3s, width .4s; }
+    .hits-dots i.on { width: 46px; background: var(--hf); }
+
     @media (max-width: 760px) {
       .cshow { height: 440vh; }
       .cword { top: 32%; font-size: 34vw; }
@@ -186,6 +225,9 @@
       .ccard h2 { font-size: 26px; }
       .ccard p { font-size: 14px; margin: 8px 0 12px; }
       .cbig { right: 16px; top: 78px; bottom: auto; }
+      .hits { grid-template-columns: 1fr; padding-top: 70px; }
+      .hits-stage { min-height: 50vh; }
+      .hits-word { top: 40%; }
       .cbig b { font-size: 19vw; }
       .cbig span { font-size: 22px; }
       .chint { display: none; }
@@ -287,6 +329,7 @@
 <main id="top">
   <section class="cshow" id="cshow" aria-label="Стакан кофе в 3D: слои, обжарка, 5 минут">
     <div class="cshow-stick" id="cstick">
+      <canvas class="cbrush" aria-hidden="true"></canvas>
       <p class="cword" aria-hidden="true"><span id="cWord">DALA</span></p>
       <canvas id="cup3d" aria-hidden="true"></canvas>
       <div class="cco" aria-hidden="true">
@@ -320,6 +363,7 @@
         <p class="kicker">Заказ навынос</p>
         <h2>Готово за 5 минут</h2>
         <p>Оформите заказ на сайте, пока едете. Напишем на стакане ваше имя и не заставим ждать.</p>
+        <label class="cname"><span>Имя для стакана — напишем прямо сейчас</span><input id="cupName" type="text" maxlength="14" placeholder="Ваше имя" autocomplete="given-name"></label>
         <div class="hero-actions"><a class="btn" href="#menu">Открыть меню</a></div>
       </div>
       <p class="cbig" aria-hidden="true"><b>5</b><span>минут</span></p>
@@ -334,6 +378,31 @@
       <span>эспрессо</span><i></i><span>капучино</span><i></i><span>раф</span><i></i><span>флэт уайт</span><i></i><span>колд брю</span><i></i><span>круассаны</span><i></i>
     </div>
   </div>
+  <section class="hits" id="hits" aria-label="Хиты недели">
+    <div class="hits-stage">
+      <p class="hits-word" aria-hidden="true"><span id="hitWord">Карамель</span></p>
+      <canvas id="hits3d" aria-label="Напитки на вращающейся подставке. Потяните, чтобы повернуть"></canvas>
+    </div>
+    <div class="hits-info">
+      <div class="hits-swap" id="hitSwap">
+        <p class="kicker">Хиты недели</p>
+        <h2 id="hitName">Карамельный раф</h2>
+        <p class="hits-desc" id="hitDesc">Сливки, домашняя солёная карамель и двойной эспрессо. Тёплый, как плед.</p>
+        <ul class="hits-facts" id="hitFacts"><li>350 мл</li><li>сливки 10%</li><li>своя карамель</li></ul>
+      </div>
+      <div class="hits-buy">
+        <b id="hitPrice">1 900 ₸</b>
+        <button class="btn" type="button" id="hitAdd" data-add="Карамельный раф" data-price="1900">В заказ</button>
+      </div>
+      <div class="hits-nav">
+        <button class="hits-arrow" type="button" data-dir="-1" aria-label="Предыдущий напиток">←</button>
+        <span class="hits-num" id="hitNum">01 / 04</span>
+        <button class="hits-arrow" type="button" data-dir="1" aria-label="Следующий напиток">→</button>
+        <span class="hits-dots" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></span>
+      </div>
+    </div>
+  </section>
+
   <section class="menu" id="menu" data-tabs>
     <div class="menu-head">
       <div>
@@ -626,24 +695,108 @@
 <script type="module">
   // интерфейс прокрутки: работает сразу, не дожидаясь 3D
   import { scrollScenes } from './assets/ui.js';
+  import { brushWipe } from './assets/fx.js';
   const show = document.getElementById('cshow');
   const stick = document.getElementById('cstick');
   const big = show.querySelector('.cbig');
+  const word = document.getElementById('cWord');
   // фон и текст каждой сцены: сливки → карамель → эспрессо → зелёный DALA
   const COLORS = [['#EFE7DA', '#2A1D16'], ['#E6B56E', '#2E1A0C'], ['#2A1D16', '#F3EADC'], ['#3F5A3C', '#F6F0E6']];
+  // слово сцены залито кофе: зёрна, слои латте, пенка, наливаем латте-арт
+  const TEX = ['1447933601403-0c6688de566e', '1517701604599-bb29b565090c', '1514432324607-a09d9b4aefdd', '1541167760496-1628856ab772'].map((id) => 'url("https://images.unsplash.com/photo-' + id + '?auto=format&fit=crop&w=1000&q=60")');
+  TEX.forEach((t) => { const im = new Image(); im.src = t.slice(5, -2); });
+  word.classList.add('tex');
+  word.style.setProperty('--tex', TEX[0]);
+  const brush = brushWipe(stick.querySelector('.cbrush'));
+  let first = true;
   scrollScenes(show, {
     marks: [0, 0.18, 0.46, 0.72],
     words: ['DALA', 'Слои', 'Обжарка', 'Навынос'],
-    word: document.getElementById('cWord'),
+    word,
     scenes: Array.from(show.querySelectorAll('.cscene')),
     bars: Array.from(show.querySelectorAll('.cbar i')),
     hint: document.getElementById('cHint'),
     onScene: (i) => {
-      stick.style.setProperty('--cb', COLORS[i][0]);
-      stick.style.setProperty('--cf', COLORS[i][1]);
       big.classList.toggle('on', i === 3);
+      stick.style.setProperty('--cf', COLORS[i][1]);
+      // текстуры слова мелькают, как образцы материала, и останавливаются на своей
+      [0, 90, 180].forEach((d, k) => setTimeout(() => word.style.setProperty('--tex', TEX[(i + k + 1) % TEX.length]), d));
+      setTimeout(() => word.style.setProperty('--tex', TEX[i]), 270);
+      if (first) { first = false; stick.style.setProperty('--cb', COLORS[i][0]); return; }
+      brush.paint(COLORS[i][0], () => stick.style.setProperty('--cb', COLORS[i][0]));
     }
   });
+
+  // имя для стакана: подписываем стакан в 3D
+  const nameInput = document.getElementById('cupName');
+  if (nameInput) nameInput.addEventListener('input', () => {
+    window.__cupName = nameInput.value.trim();
+    window.dispatchEvent(new CustomEvent('dala:name', { detail: window.__cupName }));
+  });
+
+  // ---------- хиты недели ----------
+  const HITS = [
+    { name: 'Карамельный раф', word: 'Карамель', desc: 'Сливки, домашняя солёная карамель и двойной эспрессо. Тёплый, как плед.', facts: ['350 мл', 'сливки 10%', 'своя карамель'], price: 1900, bg: '#E8A65A', fg: '#2B1506' },
+    { name: 'Матча латте со льдом', word: 'Матча', desc: 'Японская матча, кокосовое молоко и лёд. Свежо и бодрит без горечи.', facts: ['400 мл', 'церемониальная матча', 'без сахара'], price: 2100, bg: '#A9C98B', fg: '#14240E' },
+    { name: 'Колд брю', word: 'Колд брю', desc: 'Заваривается 16 часов в холоде. Мягкий вкус с нотами шоколада и вишни.', facts: ['350 мл', 'Эфиопия', '16 часов'], price: 1500, bg: '#2C1E17', fg: '#F3E6D3' },
+    { name: 'Лавандовый раф', word: 'Лаванда', desc: 'Сливочный раф с сиропом из лаванды. Цветочный, мягкий и очень фотогеничный.', facts: ['350 мл', 'сироп из лаванды', 'сливки'], price: 1900, bg: '#BCA9DE', fg: '#22183A' }
+  ];
+  const hits = document.getElementById('hits');
+  if (hits) {
+    const $h = (id) => document.getElementById(id);
+    const swap = $h('hitSwap');
+    const hw = $h('hitWord');
+    const add = $h('hitAdd');
+    const dots = Array.from(hits.querySelectorAll('.hits-dots i'));
+    const money = (n) => n.toLocaleString('ru-RU').replace(/\s/g, ' ') + ' ₸';
+    let cur = 0;
+    let autoT = 0;
+    let visible = false;
+    let hover = false;
+    const setHit = (i, user) => {
+      i = (i + HITS.length) % HITS.length;
+      if (i === cur && !user) return;
+      cur = i;
+      const h = HITS[i];
+      hits.style.setProperty('--hb', h.bg);
+      hits.style.setProperty('--hf', h.fg);
+      swap.classList.add('out');
+      hw.classList.add('swap');
+      setTimeout(() => {
+        $h('hitName').textContent = h.name;
+        $h('hitDesc').textContent = h.desc;
+        const ul = $h('hitFacts');
+        ul.textContent = '';
+        h.facts.forEach((f) => { const li = document.createElement('li'); li.textContent = f; ul.appendChild(li); });
+        hw.textContent = h.word;
+        swap.classList.remove('out');
+        hw.classList.remove('swap');
+      }, 280);
+      $h('hitPrice').textContent = money(h.price);
+      add.dataset.add = h.name;
+      add.dataset.price = String(h.price);
+      $h('hitNum').textContent = String(i + 1).padStart(2, '0') + ' / ' + String(HITS.length).padStart(2, '0');
+      dots.forEach((d, k) => d.classList.toggle('on', k === i));
+      window.__hit = i;
+      window.dispatchEvent(new CustomEvent('dala:hit', { detail: i }));
+      clearTimeout(autoT);
+      autoT = setTimeout(auto, 6500);
+    };
+    const auto = () => { if (visible && !hover && !document.hidden) setHit(cur + 1); else autoT = setTimeout(auto, 2000); };
+    hits.querySelectorAll('.hits-arrow').forEach((b) => b.addEventListener('click', () => setHit(cur + Number(b.dataset.dir), true)));
+    hits.addEventListener('pointerenter', () => { hover = true; });
+    hits.addEventListener('pointerleave', () => { hover = false; });
+    hits.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') setHit(cur + 1, true); if (e.key === 'ArrowLeft') setHit(cur - 1, true); });
+    window.addEventListener('dala:hit-go', (e) => setHit(e.detail, true));
+    // автолистание начинается заново, когда раздел появился на экране
+    new IntersectionObserver((es) => {
+      const was = visible;
+      visible = es[0].isIntersecting;
+      if (visible && !was) { clearTimeout(autoT); autoT = setTimeout(auto, 6500); }
+    }, { threshold: 0.3 }).observe(hits);
+    window.__hit = 0;
+    autoT = setTimeout(auto, 6500);
+  }
 </script>
 <script type="module">
   import { createStage, THREE, track, progressOf, smooth, clamp, lerp, damp, small, still, callouts, canvasTexture, blobShadow, afterPaint } from './assets/kit3d.js';
@@ -730,6 +883,59 @@
   });
   cup.position.y = -1.15;
   scene.add(cup);
+
+  // ---------- имя на стакане: пишем маркером, как бариста ----------
+  const NW = 1024;
+  const NH = 256;
+  const nc = document.createElement('canvas');
+  nc.width = NW;
+  nc.height = NH;
+  const nx = nc.getContext('2d');
+  const nameTex = new THREE.CanvasTexture(nc);
+  nameTex.colorSpace = THREE.SRGBColorSpace;
+  nameTex.anisotropy = 8;
+  const nameBand = new THREE.Mesh(band(1.6, 2.02, 0.004), new THREE.MeshBasicMaterial({ map: nameTex, transparent: true, depthWrite: false }));
+  // надпись по центру текстуры смотрит назад — разворачиваем к зрителю
+  nameBand.rotation.y = Math.PI;
+  segs[2].g.add(nameBand);
+  let nameStr = 'для вас';
+  let write = 1;
+  const heart = (g, x, y, s) => {
+    g.beginPath();
+    g.moveTo(x, y + s * 0.35);
+    g.bezierCurveTo(x - s * 0.9, y - s * 0.3, x - s * 0.35, y - s * 0.95, x, y - s * 0.4);
+    g.bezierCurveTo(x + s * 0.35, y - s * 0.95, x + s * 0.9, y - s * 0.3, x, y + s * 0.35);
+    g.fill();
+  };
+  const drawName = () => {
+    nx.clearRect(0, 0, NW, NH);
+    nx.save();
+    nx.translate(NW / 2, NH / 2 + 8);
+    nx.rotate(-0.05);
+    let size = 118;
+    nx.font = '700 ' + size + 'px Caveat, "Segoe Script", cursive';
+    const tw = nx.measureText(nameStr).width;
+    if (tw > 380) { size *= 380 / tw; nx.font = '700 ' + size + 'px Caveat, "Segoe Script", cursive'; }
+    const w = nx.measureText(nameStr).width;
+    // проявляем слева направо, будто пишут прямо сейчас
+    nx.beginPath();
+    nx.rect(-w / 2 - 40, -NH, (w + 110) * write, NH * 2);
+    nx.clip();
+    nx.textAlign = 'center';
+    nx.textBaseline = 'middle';
+    nx.fillStyle = '#1F140D';
+    nx.fillText(nameStr, -16, 0);
+    nx.fillStyle = '#C8452C';
+    heart(nx, w / 2 + 20, -size * 0.18, size * 0.26);
+    nx.restore();
+    nameTex.needsUpdate = true;
+  };
+  if (document.fonts && document.fonts.load) document.fonts.load('700 150px Caveat').then(drawName, drawName); else drawName();
+  let nameT = 0;
+  window.addEventListener('dala:name', (e) => {
+    clearTimeout(nameT);
+    nameT = setTimeout(() => { nameStr = e.detail || 'для вас'; write = still ? 1 : 0; drawName(); }, 350);
+  });
 
   // подставка и светящееся кольцо-портал за стаканом
   const stand = new THREE.Group();
@@ -834,7 +1040,6 @@
     const sp = track(SPLIT, p);
     segs.forEach((s) => { s.g.position.y = s.i * sp * 0.7; });
     cup.position.y = -1.15 + (1 - ti) * 2.4 + Math.sin(t * 1.1) * 0.03;
-    cup.rotation.y = t * 0.3 + p * 4.5;
     cup.rotation.z = Math.sin(t * 0.7) * 0.03;
     portal.rotation.z = t * 0.2;
     portal.scale.setScalar(1 + Math.sin(t * 1.4) * 0.015);
@@ -858,8 +1063,213 @@
     camera.lookAt(0, c[3], 0);
     shiftView(narrow ? 0 : c[4], narrow ? 0.17 : 0);
 
+    // в финале стакан поворачивается к вам подписью
+    const spin = t * 0.3 + p * 4.5;
+    const face = smooth(0.7, 0.8, p);
+    const look = ang + Math.sin(t * 0.7) * 0.12;
+    cup.rotation.y = lerp(spin, look + Math.PI * 2 * Math.round((spin - look) / (Math.PI * 2)), face);
+    if (write < 1) { write = Math.min(1, write + dt / 0.9); drawName(); }
+
     drawCo(smooth(0.22, 0.27, p) * (1 - smooth(0.4, 0.45, p)));
   });
+</script>
+<script type="module">
+  // ---------- хиты недели: напитки на вращающейся подставке, вокруг летают ингредиенты ----------
+  import { createStage, THREE, damp, small, still, canvasTexture, afterPaint } from './assets/kit3d.js';
+  import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+  const sec = document.getElementById('hits');
+  const canvas = document.getElementById('hits3d');
+  if (sec && canvas) {
+    await afterPaint();
+    const st = createStage(canvas, { fov: small ? 34 : 27, exposure: 1.05 });
+    const { scene, camera } = st;
+    const key = new THREE.DirectionalLight(0xfff2e0, 2.2);
+    key.position.set(-3, 5, 4);
+    scene.add(key);
+    const back = new THREE.DirectionalLight(0xffffff, 1);
+    back.position.set(3, 2, -4);
+    scene.add(back);
+
+    const V2 = THREE.Vector2;
+    const DS = THREE.DoubleSide;
+    const paper = new THREE.MeshPhysicalMaterial({ color: 0xFBF8F2, roughness: 0.6, clearcoat: 0.15, side: DS });
+    const lidMat = new THREE.MeshPhysicalMaterial({ color: 0xFFFFFF, roughness: 0.28, clearcoat: 0.6, side: DS });
+    const plastic = new THREE.MeshPhysicalMaterial({ color: 0xFFFFFF, roughness: 0.06, transparent: true, opacity: 0.2, clearcoat: 1, clearcoatRoughness: 0.04, side: DS, depthWrite: false });
+    const iceMat = new THREE.MeshPhysicalMaterial({ color: 0xE8F4FF, roughness: 0.08, transparent: true, opacity: 0.55, clearcoat: 1 });
+    const liquid = (c, r = 0.3) => new THREE.MeshPhysicalMaterial({ color: c, roughness: r, clearcoat: 0.4 });
+    const sleeve = (hex) => canvasTexture(1024, 256, (g, w, h) => {
+      g.fillStyle = hex;
+      g.fillRect(0, 0, w, h);
+      g.fillStyle = 'rgba(255,255,255,.92)';
+      g.font = '400 108px "Yeseva One", Georgia, serif';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      for (let k = 0; k < 2; k++) g.fillText('DALA', w * (0.25 + k * 0.5), h / 2 + 6);
+    });
+    const R0 = 0.48;
+    const R1 = 0.68;
+    const HT = 1.75;
+    const rAt = (y) => R0 + (R1 - R0) * (y / HT);
+    const wall = (y0, y1, r = 0) => new THREE.LatheGeometry([new V2(rAt(y0) + r, y0), new V2(rAt(y1) + r, y1)], 72);
+
+    // горячий напиток: бумажный стакан, цветная манжета, крышка
+    const hotCup = (hex) => {
+      const g = new THREE.Group();
+      g.add(new THREE.Mesh(wall(0, HT), paper));
+      const bottom = new THREE.Mesh(new THREE.CircleGeometry(R0, 48), paper);
+      bottom.rotation.x = Math.PI / 2;
+      g.add(bottom);
+      const sl = new THREE.Mesh(wall(0.5, 1.18, 0.012), new THREE.MeshPhysicalMaterial({ map: sleeve(hex), roughness: 0.8 }));
+      g.add(sl);
+      const lid = new THREE.Mesh(new THREE.LatheGeometry([[R1 + 0.05, HT - 0.02], [R1 + 0.06, HT + 0.06], [R1 - 0.02, HT + 0.11], [0.64, HT + 0.17], [0.42, HT + 0.2], [0.08, HT + 0.21], [0, HT + 0.21]].map(([a, b]) => new V2(a, b)), 72), lidMat);
+      const hole = new THREE.Mesh(new THREE.CapsuleGeometry(0.05, 0.14, 4, 10), liquid(0x1b120c, 0.6));
+      hole.rotation.z = Math.PI / 2;
+      hole.position.set(0.45, HT + 0.195, 0);
+      g.add(lid, hole);
+      return g;
+    };
+    // холодный напиток: прозрачный стакан, слои, лёд и трубочка
+    const coldCup = (bottomC, topC, strawC, iceN) => {
+      const g = new THREE.Group();
+      const h1 = HT * 0.5;
+      const h2 = HT * 0.86;
+      const lo = new THREE.Mesh(new THREE.CylinderGeometry(rAt(h1) * 0.95, R0 * 0.95, h1, 48), liquid(bottomC, 0.35));
+      lo.position.y = h1 / 2;
+      const hi = new THREE.Mesh(new THREE.CylinderGeometry(rAt(h2) * 0.95, rAt(h1) * 0.95, h2 - h1, 48), liquid(topC, 0.3));
+      hi.position.y = (h1 + h2) / 2;
+      g.add(lo, hi);
+      for (let k = 0; k < iceN; k++) {
+        const c = new THREE.Mesh(new RoundedBoxGeometry(0.3, 0.3, 0.3, 3, 0.06), iceMat);
+        const a = k * 2.1;
+        c.position.set(Math.cos(a) * 0.22, h2 - 0.05 + (k % 2) * 0.08, Math.sin(a) * 0.22);
+        c.rotation.set(a, a * 0.7, 0);
+        g.add(c);
+      }
+      g.add(new THREE.Mesh(wall(0, HT), plastic));
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(R1 + 0.02, 48, 16, 0, Math.PI * 2, 0, Math.PI / 2), plastic);
+      dome.scale.y = 0.42;
+      dome.position.y = HT;
+      g.add(dome);
+      const straw = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 2.1, 16), new THREE.MeshPhysicalMaterial({ color: strawC, roughness: 0.35, clearcoat: 0.6 }));
+      straw.position.set(0.12, HT + 0.05, 0.05);
+      straw.rotation.z = -0.16;
+      g.add(straw);
+      return g;
+    };
+
+    // напитки в том же порядке, что и в тексте
+    const cups = [hotCup('#7A4A22'), coldCup(0xF1EEE1, 0x7FA64B, 0x5E8A3A, 3), coldCup(0x2A160C, 0x3A2113, 0x1d1d1f, 5), hotCup('#5B4690')];
+    const ring = new THREE.Group();
+    const RR = 1.6;
+    cups.forEach((c, i) => {
+      const a = i * Math.PI / 2;
+      c.position.set(Math.sin(a) * RR, 0.12, Math.cos(a) * RR);
+      ring.add(c);
+    });
+    const plinth = new THREE.Mesh(new THREE.CylinderGeometry(2.45, 2.55, 0.24, 96), new THREE.MeshPhysicalMaterial({ color: 0xF6EFE4, roughness: 0.35, clearcoat: 0.8 }));
+    const edge = new THREE.Mesh(new THREE.TorusGeometry(2.47, 0.022, 8, 140), new THREE.MeshBasicMaterial({ color: 0xE2A43A }));
+    edge.rotation.x = Math.PI / 2;
+    edge.position.y = 0.12;
+    plinth.position.y = 0;
+    ring.add(plinth, edge);
+    ring.position.y = -1.05;
+    scene.add(ring);
+
+    // ингредиенты вокруг выбранного напитка
+    const beanGeo = (() => {
+      const g = new THREE.SphereGeometry(1, 24, 18);
+      const p = g.attributes.position;
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i);
+        let y = p.getY(i);
+        if (y > 0) y -= 0.32 * Math.exp(-(x * x) / 0.02) * y;
+        p.setXYZ(i, x * 0.62, y * 0.42, p.getZ(i) * 0.88);
+      }
+      g.computeVertexNormals();
+      return g;
+    })();
+    const beanMat = new THREE.MeshPhysicalMaterial({ color: 0x4A2A16, roughness: 0.38, clearcoat: 0.7 });
+    const make = (n, fn) => Array.from({ length: n }, (_, k) => fn(k));
+    const SETS = [
+      make(14, (k) => { const m = k < 9 ? new THREE.Mesh(new THREE.SphereGeometry(0.1, 20, 14), new THREE.MeshPhysicalMaterial({ color: 0xC5772A, roughness: 0.12, clearcoat: 1, transmission: 0 })) : new THREE.Mesh(beanGeo, beanMat); if (k < 9) m.scale.set(1, 1.5, 1); else m.scale.setScalar(0.14); return m; }),
+      make(14, () => { const m = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 10), new THREE.MeshPhysicalMaterial({ color: 0x6E9B3D, roughness: 0.45, sheen: 0.5, sheenColor: new THREE.Color(0xC9E59A), side: DS })); m.scale.set(0.24, 0.025, 0.11); return m; }),
+      make(12, (k) => { if (k < 7) return new THREE.Mesh(new RoundedBoxGeometry(0.3, 0.3, 0.3, 3, 0.07), iceMat); const m = new THREE.Mesh(beanGeo, beanMat); m.scale.setScalar(0.14); return m; }),
+      make(16, () => { const g = new THREE.Group(); const mt = new THREE.MeshPhysicalMaterial({ color: 0x8A6CC8, roughness: 0.5, sheen: 0.6, sheenColor: new THREE.Color(0xD9C9F5) }); for (let j = 0; j < 4; j++) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 8), mt); b.position.set((j % 2) * 0.06, j * 0.07, (j > 1 ? 0.04 : -0.02)); g.add(b); } return g; })
+    ];
+    const orbit = SETS.map((set) => {
+      const grp = new THREE.Group();
+      set.forEach((m, k) => {
+        m.userData = { a: (k / set.length) * Math.PI * 2, r: 1.05 + (k % 3) * 0.35, y: -0.9 + ((k * 7) % 10) / 10 * 2.0, sp: 0.25 + (k % 4) * 0.08, rx: k * 1.3, ry: k * 0.7 };
+        grp.add(m);
+      });
+      grp.scale.setScalar(0.001);
+      scene.add(grp);
+      return grp;
+    });
+
+    // перетаскивание: тянете — подставка крутится, отпускаете — встаёт ближайший напиток
+    let idx = window.__hit || 0;
+    let rot = -idx * Math.PI / 2;
+    let goal = rot;
+    let drag = false;
+    let lastX = 0;
+    let moved = 0;
+    canvas.addEventListener('pointerdown', (e) => { drag = true; moved = 0; lastX = e.clientX; canvas.setPointerCapture(e.pointerId); });
+    canvas.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      const dx = e.clientX - lastX;
+      lastX = e.clientX;
+      moved += Math.abs(dx);
+      goal += dx * 0.008;
+      rot = goal;
+    });
+    const release = () => {
+      if (!drag) return;
+      drag = false;
+      if (moved < 6) return;
+      const n = Math.round(-goal / (Math.PI / 2));
+      window.dispatchEvent(new CustomEvent('dala:hit-go', { detail: ((n % 4) + 4) % 4 }));
+    };
+    canvas.addEventListener('pointerup', release);
+    canvas.addEventListener('pointercancel', release);
+    window.addEventListener('dala:hit', (e) => {
+      idx = e.detail;
+      // поворот коротким путём
+      const base = -idx * Math.PI / 2;
+      goal = base + Math.PI * 2 * Math.round((goal - base) / (Math.PI * 2));
+    });
+
+    await st.ready();
+    st.onTick((dt, t) => {
+      const narrow = st.size.w < 760;
+      if (!drag) rot = damp(rot, goal, 5, dt);
+      ring.rotation.y = rot;
+      cups.forEach((c, i) => {
+        const on = i === idx;
+        const s = damp(c.scale.x, on ? 1.12 : 0.78, 6, dt);
+        c.scale.setScalar(s);
+        c.rotation.y = on ? t * 0.45 : -rot + Math.sin(t * 0.3 + i) * 0.2;
+      });
+      // выбранный стакан всегда спереди: центр орбиты ингредиентов
+      orbit.forEach((grp, k) => {
+        const s = damp(grp.scale.x, k === idx ? 1 : 0.001, 4, dt);
+        grp.scale.setScalar(Math.max(0.001, s));
+        grp.position.set(0, 0, RR);
+        grp.visible = s > 0.01;
+        if (!grp.visible) return;
+        grp.children.forEach((m) => {
+          const u = m.userData;
+          const a = u.a + t * u.sp * (still ? 0 : 1);
+          m.position.set(Math.cos(a) * u.r, u.y + Math.sin(t * 0.9 + u.a) * 0.12, Math.sin(a) * u.r * 0.55);
+          m.rotation.set(u.rx + t * 0.5, u.ry + t * 0.35, 0);
+        });
+      });
+      const dist = narrow ? 12.6 : 10.6;
+      camera.position.set(st.pointer.x * 0.5, 1.7 - st.pointer.y * 0.3, dist);
+      camera.lookAt(0, 0.05, 0);
+    });
+  }
 </script>
 </body>
 </html>

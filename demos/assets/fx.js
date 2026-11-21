@@ -145,3 +145,66 @@ export function fluteGlow(canvas, opts = {}) {
     center(x, y) { st.cx = x; st.cy = y; }
   };
 }
+
+/* ---------- Мазок кисти: новый цвет фона закрашивает экран широкими мазками с рваным краем ---------- */
+export function brushWipe(canvas) {
+  const ctx = canvas.getContext('2d');
+  let W = 1;
+  let H = 1;
+  let anim = null;
+  const size = () => {
+    const r = 0.6;
+    W = canvas.width = Math.max(1, Math.round((canvas.clientWidth || window.innerWidth) * r));
+    H = canvas.height = Math.max(1, Math.round((canvas.clientHeight || window.innerHeight) * r));
+  };
+  new ResizeObserver(size).observe(canvas);
+  size();
+  // шесть мазков сверху вниз, через один — справа налево; к концу закрывают весь экран
+  const STROKES = [0.06, 0.22, 0.38, 0.54, 0.7, 0.86, 1.0].map((y, k) => ({ y, dir: k % 2 ? -1 : 1, tilt: (k % 3 - 1) * 0.05, delay: k * 0.07 }));
+  const rnd = (i) => { const x = Math.sin(i * 127.1) * 43758.5453; return x - Math.floor(x); };
+  const drawStroke = (s, f, seed) => {
+    const thick = H * 0.24;
+    const steps = Math.ceil(W / (thick * 0.18));
+    const n = Math.floor(steps * f);
+    for (let i = 0; i <= n; i++) {
+      const u = i / steps;
+      const x = s.dir > 0 ? -0.08 * W + u * 1.16 * W : 1.08 * W - u * 1.16 * W;
+      const y = (s.y + s.tilt * (u - 0.5) + Math.sin(u * 7 + seed) * 0.012) * H;
+      const r = thick * 0.5 * (0.86 + 0.14 * rnd(i + seed * 31));
+      ctx.beginPath();
+      ctx.ellipse(x, y, r * 1.15, r, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // ворс кисти по краям мазка
+      for (let b = 0; b < 3; b++) {
+        const a = rnd(i * 3 + b + seed) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.arc(x + Math.cos(a) * r * 0.9, y + Math.sin(a) * r * 0.95, r * (0.08 + 0.1 * rnd(i + b * 7 + seed)), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  };
+  return {
+    paint(color, done) {
+      if (anim) { cancelAnimationFrame(anim.raf); const d = anim.done; anim = null; if (d) d(); }
+      if (reduce) { ctx.clearRect(0, 0, W, H); if (done) done(); return; }
+      const t0 = performance.now();
+      const seed = Math.random() * 10;
+      const a = { raf: 0, done };
+      const step = (now) => {
+        const t = Math.min(1, (now - t0) / 820);
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = color;
+        STROKES.forEach((s, k) => {
+          const f = Math.min(1, Math.max(0, (t - s.delay) / 0.5));
+          if (f > 0) drawStroke(s, 1 - Math.pow(1 - f, 2), seed + k);
+        });
+        if (t < 1) { a.raf = requestAnimationFrame(step); return; }
+        anim = null;
+        if (done) done();
+        requestAnimationFrame(() => ctx.clearRect(0, 0, W, H));
+      };
+      a.raf = requestAnimationFrame(step);
+      anim = a;
+    }
+  };
+}
