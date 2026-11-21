@@ -14,39 +14,18 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Sacramento&family=Unbounded:wght@500;700;800&display=swap">
   <link rel="stylesheet" href="assets/css/main.css">
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
-    }
-  }
-  </script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/geometries/RoundedBoxGeometry.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/environments/RoomEnvironment.js">
+  <link rel="modulepreload" href="assets/js/cubes.js">
 </head>
 <body>
 <a class="skip-link" href="#main">Перейти к содержимому</a>
 
-<!-- Интро: надпись пишется от руки, как в дизайн-редакторе -->
+<!-- Интро: логотип пишется светом и тает в сайт (шейдер в assets/js/shader.js) -->
 <div class="intro" id="intro" aria-hidden="true">
-  <div class="intro-board">
-    <svg class="intro-sign" viewBox="0 0 640 230">
-      <defs>
-        <clipPath id="signClip"><rect id="signRect" x="0" y="0" width="0" height="230"/></clipPath>
-      </defs>
-      <text class="sign-text" x="320" y="140" text-anchor="middle" clip-path="url(#signClip)">SiteCode</text>
-      <path class="sign-line" d="M112 186 C 230 168, 404 166, 524 178 L 546 172" pathLength="1"/>
-    </svg>
-    <span class="intro-pen"></span>
-  </div>
-  <div class="intro-toolbar">
-    <span class="tool"><svg viewBox="0 0 24 24"><path d="M5 3l14 7.5-6.2 1.6L10 19z" fill="currentColor"/></svg></span>
-    <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v18M16 3v18M3 8h18M3 16h18"/></svg></span>
-    <span class="tool tool-pen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 20l3.6-.9L19 7.7 16.3 5 4.9 16.4z"/><path d="M14.5 6.8l2.7 2.7"/></svg></span>
-    <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5h14M12 5v14"/></svg></span>
-    <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/></svg></span>
-    <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/></svg></span>
-  </div>
-  <svg class="intro-cursor" viewBox="0 0 24 24"><path d="M4 2l16 9-7 2-3 7z" fill="#0F1733" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>
   <p class="intro-skip">Нажмите, чтобы пропустить</p>
 </div>
 
@@ -92,6 +71,7 @@
 
   <!-- ГЛАВНЫЙ ЭКРАН -->
   <section class="hero" id="top" data-cubes-zone data-bot="Привет! Я помощник SiteCode. Листайте вниз — сайт соберётся прямо у вас на глазах.">
+    <canvas class="hero-sky" aria-hidden="true"></canvas>
     <div class="hero-copy">
       <h1 class="hero-title" data-split>Сайты, которые приносят заявки</h1>
       <p class="hero-lead">Делаем сайты для барбершопов, кофеен, клиник и магазинов по всему Казахстану. Клиент оставляет заявку — она сразу приходит вам в WhatsApp.</p>
@@ -192,14 +172,14 @@
           </a>
         </article>
 
-        <article class="cf-card" data-bg="#24111A" data-fg="#FBEFF2" data-ac="#F7B9C9" data-kind="Салон красоты" data-name="Aru Studio" data-tags="Портрет из частиц|Запись|Сертификаты" data-desc="Портрет из светящихся частиц собирается и перетекает в услуги. Мастера, «до и после» и сертификаты.">
+        <article class="cf-card" data-bg="#24111A" data-fg="#FBEFF2" data-ac="#F7B9C9" data-kind="Салон красоты" data-name="Aru Studio" data-tags="Фото из частиц|Запись|Сертификаты" data-desc="Фото из тысяч светящихся точек вихрем перетекает от услуги к услуге и расступается под курсором. Мастера, «до и после» и сертификаты.">
           <a class="work-frame" href="demos/beauty.html" target="_blank" rel="noopener" aria-label="Открыть демо салона красоты Aru Studio">
             <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>arustudio.kz</span></span>
             <span class="work-screen"><img src="assets/img/works/beauty.jpg" alt="" decoding="async"></span>
           </a>
         </article>
 
-        <article class="cf-card" data-bg="#0B5F5A" data-fg="#EFFFFC" data-ac="#5BE6D6" data-kind="Стоматология" data-name="Inzhu Dental" data-tags="3D-имплант|Цены|Запись на приём" data-desc="3D-зуб превращается в имплант, разбирается на детали и садится в десну. Цены во вкладках и запись на приём.">
+        <article class="cf-card" data-bg="#0B5F5A" data-fg="#EFFFFC" data-ac="#5BE6D6" data-kind="Стоматология" data-name="Inzhu Dental" data-tags="3D-зуб|Имплант|Запись на приём" data-desc="Анатомичный 3D-моляр превращается в имплант, разбирается на детали и садится в десну. Цены во вкладках и запись на приём.">
           <a class="work-frame" href="demos/dental.html" target="_blank" rel="noopener" aria-label="Открыть демо стоматологии Inzhu Dental">
             <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>inzhudental.kz</span></span>
             <span class="work-screen"><img src="assets/img/works/dental.jpg" alt="" decoding="async"></span>
@@ -213,7 +193,7 @@
           </a>
         </article>
 
-        <article class="cf-card" data-bg="#F3E6A6" data-fg="#2A2610" data-ac="#2A2610" data-kind="Интернет-магазин" data-name="Ayla Store" data-tags="3D-сумка|Каталог|Корзина" data-desc="3D-сумка на подставке: выбираете цвет — меняются кожа, фон и слово позади. Каталог с фильтрами и корзина.">
+        <article class="cf-card" data-bg="#F3E6A6" data-fg="#2A2610" data-ac="#2A2610" data-kind="Интернет-магазин" data-name="Ayla Store" data-tags="3D-сумка|Вешалка новинок|Образы" data-desc="Кожаная 3D-сумка меняет цвет вместе с фоном, новинки качаются на вешалке, образ недели покупается в один клик. Быстрый просмотр с размерами и корзина.">
           <a class="work-frame" href="demos/shop.html" target="_blank" rel="noopener" aria-label="Открыть демо интернет-магазина Ayla Store">
             <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>aylastore.kz</span></span>
             <span class="work-screen"><img src="assets/img/works/shop.jpg" alt="" decoding="async"></span>
@@ -519,6 +499,7 @@
   </button>
 </div>
 
+<script src="assets/js/shader.js"></script>
 <script src="assets/js/main.js"></script>
 <script type="module" src="assets/js/cubes.js"></script>
 </body>

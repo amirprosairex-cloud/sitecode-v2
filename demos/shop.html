@@ -11,6 +11,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Tenor+Sans&display=swap">
   <link rel="stylesheet" href="assets/demo.css">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/environments/RoomEnvironment.js">
+  <link rel="modulepreload" href="assets/ui.js">
+  <link rel="modulepreload" href="assets/kit3d.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/geometries/RoundedBoxGeometry.js">
+  <link rel="preload" href="assets/models/bag.bin" as="fetch" crossorigin>
   <style>
     :root {
       --bg: #F3EFE9; --fg: #171615; --muted: #78716A; --accent: #56622A; --accent-fg: #FFF; --card: #EAE4DC; --line: rgba(23, 22, 21, .12);
@@ -92,7 +100,8 @@
     .clouds i:nth-child(5) { left: 76%; animation-duration: 32s; animation-delay: -9s; }
     .clouds i:nth-child(6) { left: 46%; bottom: 10%; width: 22%; opacity: .7; animation-duration: 22s; }
     @keyframes drift { to { transform: translateX(6%); } }
-    #bag3d { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; cursor: grab; touch-action: pan-y; }
+    #bag3d { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; cursor: grab; touch-action: pan-y; opacity: 0; transition: opacity .9s ease .1s; }
+    #bag3d.on { opacity: 1; }
     #bag3d:active { cursor: grabbing; }
     .bcopy { position: absolute; left: var(--pad); top: 50%; z-index: 2; width: min(460px, 36vw); transform: translateY(-50%); }
     .bkick { margin-bottom: 16px; font-size: 13px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; opacity: .7; }
@@ -175,7 +184,158 @@
     .panel-foot p { margin-bottom: 16px; font-size: 13px; color: var(--muted); }
     .panel-foot .btn { width: 100%; }
 
-    footer { display: flex; justify-content: space-between; gap: 16px; padding: 28px var(--pad) 100px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+
+
+    /* ===== новинки на вешалке: штанга едет при прокрутке, вещи качаются от мыши ===== */
+    .rack-sec { position: relative; height: 240vh; background: #E7DFD3; }
+    .rack-stick { position: sticky; top: 72px; display: flex; flex-direction: column; height: calc(100vh - 72px); height: calc(100svh - 72px); overflow: hidden; }
+    .rack-head { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 14px 30px; padding: clamp(30px, 6vh, 64px) var(--pad) 0; }
+    .rack-head h2 { font: 400 clamp(38px, 5vw, 76px)/1 var(--font-head); }
+    .rack-head p { max-width: 25em; color: var(--muted); }
+    .rack { position: relative; flex: 1; min-height: 0; }
+    .rail { position: absolute; left: -2%; right: -2%; top: clamp(34px, 9%, 70px); z-index: 2; height: 9px; border-radius: 5px; background: linear-gradient(180deg, #5a5752 0%, #1d1c1a 45%, #0d0c0b 100%); box-shadow: 0 10px 18px -10px rgba(0, 0, 0, .6); }
+    .rail::before, .rail::after { content: ""; position: absolute; bottom: 4px; width: 7px; height: 100vh; background: linear-gradient(90deg, #0d0c0b, #4a4743 50%, #0d0c0b); }
+    .rail::before { left: 1.2%; }
+    .rail::after { right: 1.2%; }
+    .rack-track { position: absolute; left: 0; top: clamp(34px, 9%, 70px); z-index: 3; display: flex; align-items: flex-start; gap: clamp(14px, 2vw, 34px); margin-top: -13px; padding: 0 var(--pad); will-change: transform; }
+    .hang { position: relative; flex: none; width: clamp(168px, 16vw, 250px); padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; transform-origin: 50% 7px; -webkit-tap-highlight-color: transparent; }
+    .hang .hook { display: block; width: 58%; height: auto; margin: 0 auto -3px; overflow: visible; }
+    .hang .hook path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .hang .garment { position: relative; display: block; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 14px 14px 6px 6px; background: #F4EFE8; box-shadow: 0 34px 40px -26px rgba(45, 33, 22, .6), 0 2px 0 rgba(255, 255, 255, .5) inset; }
+    .hang .garment img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s cubic-bezier(.2, .8, .2, 1); }
+    .hang:hover .garment img, .hang:focus-visible .garment img { transform: scale(1.06); }
+    .hang .tag { position: absolute; right: -8px; top: 38%; z-index: 2; display: grid; gap: 3px; padding: 9px 12px 9px 20px; background: #FBF8F3; font-size: 12px; line-height: 1.2; clip-path: polygon(11px 0, 100% 0, 100% 100%, 11px 100%, 0 50%); transform: rotate(7deg); transform-origin: 0 50%; }
+    .hang .tag::before { content: ""; position: absolute; left: 7px; top: calc(50% - 2.5px); width: 5px; height: 5px; border-radius: 50%; background: #CBBFAE; }
+    .hang .tag b { font-size: 15px; white-space: nowrap; }
+    .hang .tag small { max-width: 11em; color: var(--muted); }
+    .hang .new { position: absolute; left: 10px; top: 10px; padding: 5px 9px; border-radius: 999px; background: var(--fg); color: var(--bg); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .rack-foot { display: flex; align-items: center; gap: 18px; padding: 0 var(--pad) clamp(18px, 4vh, 36px); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .rack-progress { flex: 1; max-width: 340px; height: 2px; background: rgba(23, 22, 21, .14); }
+    .rack-progress i { display: block; height: 100%; background: var(--fg); transform: scaleX(var(--p, 0)); transform-origin: left; }
+
+    /* ===== образы недели: выбранный выходит вперёд под прожектор ===== */
+    .looks { position: relative; padding: 110px var(--pad) 120px; overflow: hidden; background: #141311; color: #F3EFE9; }
+    .looks::before { content: ""; position: absolute; left: var(--lx, 30%); top: 8%; width: min(60vw, 760px); aspect-ratio: 1; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 236, 205, .2), rgba(255, 236, 205, 0)); transition: left .9s cubic-bezier(.2, .8, .2, 1); pointer-events: none; }
+    .looks-head { position: relative; display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 16px 30px; }
+    .looks-head h2 { font: 400 clamp(38px, 5vw, 76px)/1 var(--font-head); }
+    .looks-head p { max-width: 24em; color: rgba(243, 239, 233, .62); }
+    .looks-wrap { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 360px; align-items: center; gap: clamp(24px, 4vw, 60px); margin-top: 54px; }
+    .lineup { position: relative; display: flex; justify-content: center; align-items: flex-end; height: min(68vh, 620px); padding-bottom: 18px; }
+    .lineup::after { content: ""; position: absolute; left: 4%; right: 4%; bottom: 0; height: 36px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 236, 205, .14), rgba(255, 236, 205, 0)); }
+    .look-card { position: relative; flex: 1 1 0; max-width: 230px; height: 80%; margin: 0 -10px; padding: 0; border: 0; border-radius: 8px; background: none; color: inherit; cursor: pointer; filter: grayscale(.75) brightness(.5); transform-origin: 50% 100%; transition: transform .8s cubic-bezier(.2, .8, .2, 1), filter .6s; }
+    .look-card img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; box-shadow: 0 40px 60px -30px rgba(0, 0, 0, .9); }
+    .look-card span { position: absolute; left: 12px; bottom: 12px; padding: 6px 10px; border-radius: 999px; background: rgba(20, 19, 17, .7); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; opacity: 0; transition: opacity .4s; }
+    .look-card:hover { filter: grayscale(.3) brightness(.75); }
+    .look-card.on { z-index: 3; filter: none; transform: scale(1.18); }
+    .look-card.on span { opacity: 1; }
+    .look-info { position: relative; }
+    .look-info .kick { font-size: 12px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #C9B98F; }
+    .look-info h3 { margin: 10px 0 8px; font: 400 clamp(34px, 3.2vw, 48px)/1 var(--font-head); }
+    .look-info .note { color: rgba(243, 239, 233, .62); }
+    .look-swap { transition: opacity .35s, transform .5s cubic-bezier(.2, .8, .2, 1); }
+    .look-swap.out { opacity: 0; transform: translateY(12px); }
+    .look-items { margin: 22px 0 18px; }
+    .look-items li { display: grid; grid-template-columns: 52px 1fr auto; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid rgba(243, 239, 233, .12); }
+    .look-items img { width: 52px; height: 64px; object-fit: cover; border-radius: 4px; }
+    .look-items b { white-space: nowrap; }
+    .look-total { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; font: 400 26px/1 var(--font-head); }
+    .look-total small { font: 500 13px var(--font-body); color: #C9B98F; }
+    .look-info .btn { width: 100%; background: #F3EFE9; color: #141311; }
+    .look-info .btn:hover { background: #C9B98F; }
+
+    /* ===== быстрый просмотр товара ===== */
+    .prod .ph { cursor: zoom-in; }
+    .qv { position: fixed; inset: 0; z-index: 115; display: grid; place-items: center; padding: 16px; visibility: hidden; transition: visibility 0s .5s; }
+    .qv.open { visibility: visible; transition: none; }
+    .qv-shade { position: absolute; inset: 0; background: rgba(23, 22, 21, .5); opacity: 0; transition: opacity .4s; }
+    .qv.open .qv-shade { opacity: 1; }
+    .qv-box { position: relative; display: grid; grid-template-columns: 1fr 1fr; width: min(940px, 100%); max-height: calc(100vh - 32px); max-height: calc(100svh - 32px); overflow: auto; background: #F8F5F0; opacity: 0; transform: translateY(30px) scale(.98); transition: opacity .4s, transform .6s cubic-bezier(.2, .8, .2, 1); }
+    .qv.open .qv-box { opacity: 1; transform: none; }
+    .qv-ph { aspect-ratio: 4 / 5; background: var(--card); }
+    .qv-ph img { width: 100%; height: 100%; object-fit: cover; }
+    .qv-body { display: flex; flex-direction: column; padding: 44px 36px 34px; }
+    .qv-cat { font-size: 12px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+    .qv-body h3 { margin: 10px 0 8px; font: 400 clamp(28px, 2.6vw, 36px)/1.08 var(--font-head); }
+    .qv-price { font-size: 20px; font-weight: 700; }
+    .qv-price s { margin-left: 10px; font-weight: 400; color: var(--muted); }
+    .qv-desc { margin: 18px 0 22px; color: var(--muted); }
+    .qv-label { margin-bottom: 10px; font-size: 13px; font-weight: 600; }
+    .qv-sizes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .qv-sizes button { min-width: 50px; height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 2px; background: none; font: 600 14px var(--font-body); cursor: pointer; transition: background-color .2s, color .2s, border-color .2s; }
+    .qv-sizes button:hover { border-color: var(--fg); }
+    .qv-sizes button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+    .qv-notes { display: grid; gap: 8px; margin-top: auto; padding-top: 24px; font-size: 13px; color: var(--muted); }
+    .qv-notes li { display: flex; gap: 10px; }
+    .qv-notes li::before { content: ""; flex: none; width: 6px; height: 6px; margin-top: 6px; border-radius: 50%; background: var(--accent); }
+    .qv-x { position: absolute; right: 12px; top: 12px; z-index: 2; width: 42px; height: 42px; border: 0; border-radius: 50%; background: #fff; font-size: 22px; cursor: pointer; }
+
+    /* ===== отзывы бегущей лентой ===== */
+    .reviews { padding: 110px 0 100px; overflow: hidden; }
+    .reviews-head { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 16px 30px; padding: 0 var(--pad); }
+    .reviews-head h2 { font: 400 clamp(38px, 5vw, 76px)/1 var(--font-head); }
+    .rating { display: flex; align-items: center; gap: 14px; }
+    .rating b { font: 400 54px/1 var(--font-head); }
+    .rating span { color: var(--muted); font-size: 14px; line-height: 1.4; }
+    .stars { color: #B8902A; letter-spacing: 3px; }
+    .rv-row { display: flex; width: max-content; gap: 18px; padding: 44px 0 6px; animation: rvmove 70s linear infinite; }
+    .reviews:hover .rv-row { animation-play-state: paused; }
+    @keyframes rvmove { to { transform: translateX(-50%); } }
+    .rv { display: flex; flex-direction: column; width: clamp(280px, 26vw, 360px); padding: 26px 26px 22px; border-radius: 16px; background: #FBF8F3; box-shadow: inset 0 0 0 1px var(--line); }
+    .rv p { margin: 14px 0 20px; font-size: 16px; line-height: 1.5; }
+    .rv .who { display: flex; align-items: center; gap: 12px; margin-top: auto; font-size: 14px; }
+    .rv .who i { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--c, var(--accent)); color: #fff; font-style: normal; font-weight: 700; }
+    .rv .who small { display: block; color: var(--muted); }
+    .rv .buy { display: inline-block; margin-top: 2px; font-size: 12px; color: var(--accent); }
+
+    /* ===== лента инстаграма ===== */
+    .insta { padding: 0 var(--pad) 110px; }
+    .insta-head { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 14px 30px; margin-bottom: 30px; }
+    .insta-head h2 { font: 400 clamp(32px, 3.6vw, 54px)/1 var(--font-head); }
+    .insta-head a { font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+    .insta-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+    .insta-grid a { position: relative; display: block; aspect-ratio: 1; overflow: hidden; }
+    .insta-grid img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.1s cubic-bezier(.2, .8, .2, 1); }
+    .insta-grid a::after { content: "♥ " attr(data-likes); position: absolute; inset: 0; display: grid; place-items: center; background: rgba(23, 22, 21, .42); color: #fff; font-weight: 700; opacity: 0; transition: opacity .35s; }
+    .insta-grid a:hover img { transform: scale(1.08); }
+    .insta-grid a:hover::after, .insta-grid a:focus-visible::after { opacity: 1; }
+
+    /* ===== доставка и оплата ===== */
+    .faq { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(30px, 6vw, 90px); padding: 110px var(--pad); background: #E7DFD3; }
+    .faq h2 { font: 400 clamp(38px, 4.6vw, 70px)/1 var(--font-head); }
+    .faq-lead { margin: 20px 0 28px; max-width: 24em; color: var(--muted); }
+    .pay { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pay span { padding: 8px 14px; border-radius: 999px; background: #F8F5F0; font-size: 13px; font-weight: 600; }
+    .faq details { border-bottom: 1px solid rgba(23, 22, 21, .16); }
+    .faq summary { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 24px 0; font: 400 clamp(19px, 1.6vw, 24px)/1.25 var(--font-head); cursor: pointer; list-style: none; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: "+"; flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(23, 22, 21, .25); font: 300 22px/1 var(--font-body); transition: transform .35s, background-color .3s, color .3s; }
+    .faq details[open] summary::after { transform: rotate(45deg); background: var(--fg); color: var(--bg); }
+    .faq details p { max-width: 38em; padding: 0 0 24px; color: var(--muted); }
+
+    /* ===== скидка за подписку ===== */
+    .sub { position: relative; display: grid; grid-template-columns: 1fr minmax(0, 460px); align-items: center; gap: 30px; padding: clamp(50px, 8vw, 90px) var(--pad); overflow: hidden; background: var(--accent); color: #F6F3EA; }
+    .sub::after { content: "−10%"; position: absolute; right: -2%; bottom: -26%; font: 400 clamp(160px, 24vw, 380px)/1 var(--font-head); color: rgba(255, 255, 255, .08); pointer-events: none; }
+    .sub h2 { position: relative; z-index: 1; font: 400 clamp(34px, 4.4vw, 66px)/1.02 var(--font-head); }
+    .sub p { position: relative; z-index: 1; margin-top: 14px; max-width: 28em; opacity: .82; }
+    .sub-form { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start; }
+    .sub-form .d-input { border-radius: 2px; border-color: rgba(246, 243, 234, .45); color: #fff; }
+    .sub-form .d-input::placeholder { color: rgba(246, 243, 234, .6); }
+    .sub-form .d-input:focus { border-color: #fff; }
+    .sub-form .btn { min-height: 52px; background: #F6F3EA; color: var(--accent); }
+    .sub-form .btn:hover { background: #171615; color: #fff; }
+    .sub-form .d-err { color: #FFD8D0; }
+    .sub-form small { grid-column: 1 / -1; font-size: 12px; opacity: .7; }
+
+    /* ===== подвал ===== */
+    footer { background: #171615; color: #BDB5AA; }
+    .foot { display: grid; grid-template-columns: 1.5fr repeat(3, minmax(0, 1fr)); gap: 40px; padding: 80px var(--pad) 50px; }
+    .foot .logo { color: #F3EFE9; }
+    .foot .about { margin-top: 20px; max-width: 22em; font-size: 15px; }
+    .foot h4 { margin-bottom: 16px; color: #F3EFE9; font: 600 12px/1 var(--font-body); letter-spacing: .16em; text-transform: uppercase; }
+    .foot li { margin-bottom: 10px; font-size: 15px; }
+    .foot a { text-decoration: none; }
+    .foot a:hover { color: #F3EFE9; }
+    .foot-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 22px var(--pad) 100px; border-top: 1px solid rgba(255, 255, 255, .08); font-size: 13px; color: #8B847A; }
 
     @media (max-width: 1000px) {
       .hdr { grid-template-columns: auto 1fr; }
@@ -194,12 +354,31 @@
       .sc-word { font-size: 30vw; }
       .sc-actions { width: 100%; }
       .sc-actions .btn { flex: 1; min-width: 0; }
+      .looks-wrap { grid-template-columns: 1fr; }
+      .faq { grid-template-columns: 1fr; }
+      .sub { grid-template-columns: 1fr; }
+      .foot { grid-template-columns: 1fr 1fr; }
+      .insta-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .qv-box { grid-template-columns: 1fr; }
+      .qv-ph { aspect-ratio: 1; }
+      .qv-body { padding: 24px 20px 26px; }
+      .rack-head p { font-size: 14px; }
+      .lineup { justify-content: flex-start; gap: 12px; height: auto; margin: 0 calc(var(--pad) * -1); padding: 26px 20vw 30px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+      .lineup::-webkit-scrollbar { display: none; }
+      .lineup::after { display: none; }
+      .look-card { flex: 0 0 60vw; max-width: none; height: auto; aspect-ratio: 3 / 4.3; margin: 0; scroll-snap-align: center; }
+      .look-card.on { transform: scale(1.05); }
+      .looks-wrap { margin-top: 30px; }
     }
     @media (max-width: 520px) {
       .logo { font-size: 22px; letter-spacing: .24em; }
       .look .sticker { width: 92px; height: 92px; font-size: 12px; right: 20px; top: 20px; }
       .prod h3 { font-size: 15px; }
-      footer { flex-direction: column; }
+      .sub-form { grid-template-columns: 1fr; }
+      .foot { grid-template-columns: 1fr; }
+      .foot-bottom { flex-direction: column; }
     }
   </style>
 </head>
@@ -213,10 +392,11 @@
 </div>
 
 <header class="hdr">
-  <nav aria-label="Каталог">
-    <a href="#catalog" data-jump="Сумки">Сумки</a>
-    <a href="#catalog" data-jump="Одежда">Одежда</a>
-    <a href="#catalog" data-jump="Аксессуары">Аксессуары</a>
+  <nav aria-label="Разделы магазина">
+    <a href="#new">Новинки</a>
+    <a href="#looks">Образы</a>
+    <a href="#catalog">Каталог</a>
+    <a href="#delivery">Доставка</a>
   </nav>
   <a class="logo" href="#top">AYLA</a>
   <button class="cart-btn" type="button" id="cartBtn" aria-label="Открыть корзину">
@@ -254,6 +434,40 @@
     <div data-r style="--d:.2s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>Оплата картой или при получении</div>
   </section>
 
+  <section class="rack-sec" id="new" aria-label="Новинки недели">
+    <div class="rack-stick">
+      <div class="rack-head">
+        <h2 class="lines"><span class="ln"><span>Новинки недели</span></span></h2>
+        <p id="rackHint">Проведите курсором по вешалке — вещи качнутся. Нажмите на вещь, чтобы выбрать размер.</p>
+      </div>
+      <div class="rack">
+        <div class="rail" aria-hidden="true"></div>
+        <div class="rack-track" id="rackTrack"></div>
+      </div>
+      <div class="rack-foot" aria-hidden="true"><span>Листайте</span><span class="rack-progress"><i id="rackBar"></i></span><span id="rackCount">9 новинок</span></div>
+    </div>
+  </section>
+
+  <section class="looks" id="looks" aria-label="Образы недели">
+    <div class="looks-head">
+      <h2 class="lines"><span class="ln"><span>Образы недели</span></span></h2>
+      <p>Стилист собрал пять образов на осень. Выберите понравившийся — покажем, из чего он состоит, и положим в корзину целиком.</p>
+    </div>
+    <div class="looks-wrap">
+      <div class="lineup" id="lineup" role="group" aria-label="Образы"></div>
+      <aside class="look-info" aria-live="polite">
+        <div class="look-swap" id="lookSwap">
+          <p class="kick" id="lookKick">Образ 1 из 5</p>
+          <h3 id="lookName">Город</h3>
+          <p class="note" id="lookNote"></p>
+          <ul class="look-items" id="lookItems"></ul>
+          <div class="look-total"><span>Весь образ</span><span><span id="lookSum">0 ₸</span> <small id="lookSave"></small></span></div>
+        </div>
+        <button class="btn" type="button" id="lookBuy">Купить образ целиком</button>
+      </aside>
+    </div>
+  </section>
+
   <section class="catalog" id="catalog">
     <div class="cat-head">
       <h2 class="lines"><span class="ln"><span>Каталог</span></span></h2>
@@ -261,6 +475,7 @@
         <button type="button" data-filter="all" aria-pressed="true">Все</button>
         <button type="button" data-filter="Сумки" aria-pressed="false">Сумки</button>
         <button type="button" data-filter="Одежда" aria-pressed="false">Одежда</button>
+        <button type="button" data-filter="Верхняя одежда" aria-pressed="false">Верхняя одежда</button>
         <button type="button" data-filter="Аксессуары" aria-pressed="false">Аксессуары</button>
       </div>
     </div>
@@ -275,11 +490,98 @@
       <a class="btn line" href="#catalog" data-r>К покупкам</a>
     </div>
   </section>
+  <section class="reviews" aria-label="Отзывы покупательниц">
+    <div class="reviews-head">
+      <h2 class="lines"><span class="ln"><span>Нас советуют</span></span><span class="ln"><span>подругам</span></span></h2>
+      <div class="rating" data-r><b>4,9</b><span><span class="stars" aria-hidden="true">★★★★★</span><br>1 240 отзывов в Kaspi и 2ГИС</span></div>
+    </div>
+    <div class="rv-row" id="rvRow"></div>
+  </section>
+
+  <section class="insta" aria-label="Мы в Instagram">
+    <div class="insta-head">
+      <h2 class="lines"><span class="ln"><span>Носят наши покупательницы</span></span></h2>
+      <a href="#top" data-r>@ayla.store · 38 тыс. подписчиков</a>
+    </div>
+    <div class="insta-grid">
+      <a href="#top" data-likes="2 418" data-r><img loading="lazy" alt="Сумка и аксессуары на белом столе" src="https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?auto=format&fit=crop&w=500&h=500&q=75"></a>
+      <a href="#top" data-likes="1 902" data-r style="--d:.06s"><img loading="lazy" alt="Девушка в жёлтом костюме" src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=500&h=500&q=75"></a>
+      <a href="#top" data-likes="3 127" data-r style="--d:.12s"><img loading="lazy" alt="Девушка в розовом платье в поле" src="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?auto=format&fit=crop&w=500&h=500&q=75"></a>
+      <a href="#top" data-likes="1 655" data-r style="--d:.18s"><img loading="lazy" alt="Платье с цветами у моря" src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=500&h=500&q=75"></a>
+      <a href="#top" data-likes="2 044" data-r style="--d:.24s"><img loading="lazy" alt="Вечернее платье цвета сливы" src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=500&h=500&q=75"></a>
+      <a href="#top" data-likes="1 389" data-r style="--d:.3s"><img loading="lazy" alt="Свитер с узором у озера" src="https://images.unsplash.com/photo-1475180098004-ca77a66827be?auto=format&fit=crop&w=500&h=500&q=75"></a>
+    </div>
+  </section>
+
+  <section class="faq" id="delivery" aria-label="Доставка и оплата">
+    <div>
+      <h2 class="lines"><span class="ln"><span>Доставка</span></span><span class="ln"><span>и оплата</span></span></h2>
+      <p class="faq-lead" data-r>Отвечаем в WhatsApp с 9:00 до 22:00 без выходных. Обычно — за пять минут.</p>
+      <div class="pay" data-r><span>Kaspi Pay</span><span>Kaspi Red</span><span>Visa / Mastercard</span><span>Наличными курьеру</span></div>
+    </div>
+    <div>
+      <details open data-r><summary>Сколько идёт доставка?</summary><p>По Алматы — в день заказа, если оформить до 15:00. По Казахстану — 1–3 дня курьерской службой или Казпочтой. От 30 000 ₸ доставка бесплатная.</p></details>
+      <details data-r><summary>Можно примерить перед оплатой?</summary><p>Да. В Алматы курьер подождёт 15 минут, пока вы примеряете. Платите только за то, что подошло, остальное он заберёт.</p></details>
+      <details data-r><summary>Как выбрать размер?</summary><p>В карточке товара есть замеры, а менеджер в WhatsApp пришлёт живые фото и подскажет по посадке. Можно заказать два размера и оставить один.</p></details>
+      <details data-r><summary>Если вещь не подойдёт?</summary><p>Обмен и возврат 14 дней. Курьер бесплатно заберёт вещь, деньги вернутся на карту или Kaspi в течение дня.</p></details>
+      <details data-r><summary>Есть рассрочка?</summary><p>Да, Kaspi Red на 3 месяца без переплат — выберите при оформлении заказа.</p></details>
+    </div>
+  </section>
+
+  <section class="sub" aria-label="Скидка за подписку">
+    <div>
+      <h2>−10% на первый заказ</h2>
+      <p>Оставьте номер — пришлём промокод в WhatsApp и будем показывать новинки раньше, чем они появятся на сайте.</p>
+    </div>
+    <form class="sub-form" data-wa-form="Подписка: −10% на первый заказ" novalidate>
+      <div class="d-field">
+        <input class="d-input" type="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __" aria-label="Телефон" data-label="Телефон" data-required>
+        <span class="d-err">Нужен номер из 10–11 цифр</span>
+      </div>
+      <button class="btn" type="submit">Получить −10%</button>
+      <small>Без спама: одно сообщение в неделю. Отписаться — одним словом «стоп».</small>
+    </form>
+  </section>
 </main>
 
 <footer>
-  <p>© 2026 Ayla Store · Instagram @ayla.store</p>
-  <p>Демо-сайт. Сделано в SiteCode</p>
+  <div class="foot">
+    <div>
+      <a class="logo" href="#top">AYLA</a>
+      <p class="about">Сумки из натуральной кожи и одежда на каждый день. Сами выбираем модели на фабриках Турции и Италии и проверяем каждую вещь до отправки.</p>
+    </div>
+    <div>
+      <h4>Магазин</h4>
+      <ul>
+        <li><a href="#new">Новинки</a></li>
+        <li><a href="#looks">Образы недели</a></li>
+        <li><a href="#catalog">Каталог</a></li>
+        <li><a href="#catalog" data-jump="Сумки">Сумки</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Покупателям</h4>
+      <ul>
+        <li><a href="#delivery">Доставка и оплата</a></li>
+        <li><a href="#delivery">Обмен и возврат</a></li>
+        <li><a href="#delivery">Рассрочка Kaspi Red</a></li>
+        <li><a href="#delivery">Как выбрать размер</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Шоурум</h4>
+      <ul>
+        <li>Алматы, пр. Достык, 97</li>
+        <li>Каждый день 10:00–21:00</li>
+        <li><a href="#top">WhatsApp: +7 700 000 00 00</a></li>
+        <li><a href="#top">Instagram: @ayla.store</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <p>© 2026 Ayla Store</p>
+    <p>Демо-сайт. Сделано в SiteCode</p>
+  </div>
 </footer>
 
 <div class="drawer" id="drawer" aria-hidden="true">
@@ -329,11 +631,40 @@
   </div>
 </div>
 
+<div class="qv" id="qv" aria-hidden="true">
+  <div class="qv-shade" data-qv-close></div>
+  <div class="qv-box" role="dialog" aria-modal="true" aria-labelledby="qvName">
+    <button class="qv-x" type="button" data-qv-close aria-label="Закрыть">×</button>
+    <div class="qv-ph"><img id="qvImg" alt=""></div>
+    <div class="qv-body">
+      <p class="qv-cat" id="qvCat"></p>
+      <h3 id="qvName"></h3>
+      <p class="qv-price" id="qvPrice"></p>
+      <p class="qv-desc" id="qvDesc"></p>
+      <div id="qvSizeWrap">
+        <p class="qv-label" id="qvSizeLabel">Размер</p>
+        <div class="qv-sizes" id="qvSizes" role="group" aria-labelledby="qvSizeLabel"></div>
+      </div>
+      <button class="btn" type="button" id="qvAdd">В корзину</button>
+      <ul class="qv-notes">
+        <li>Доставка по Казахстану 1–3 дня, по Алматы — сегодня</li>
+        <li>Примерка курьером: платите только за то, что подошло</li>
+        <li>Обмен и возврат 14 дней</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="d-modal" id="demoResult" role="dialog" aria-modal="true" aria-label="Заявка отправлена">
+  <div class="d-sheet"></div>
+</div>
+
 <script src="assets/demo.js"></script>
 <script>
   (() => {
     const { $, $$, money, openModal } = window.Demo;
-    const U = (id, w) => 'https://images.unsplash.com/photo-' + id + '?auto=format&fit=crop&w=' + (w || 700) + '&q=80';
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const U = (id, w, h) => 'https://images.unsplash.com/photo-' + id + '?auto=format&fit=crop&w=' + (w || 700) + (h ? '&h=' + h : '') + '&q=80';
     const PRODUCTS = [
       { id: 1, cat: 'Сумки', name: 'Сумка-портфель «Сирень»', price: 24900, img: '1605733513597-a8f8341084e6', badge: 'Хит' },
       { id: 2, cat: 'Одежда', name: 'Свитер «Карамель»', price: 19900, img: '1773747310662-e7cc9e681226', badge: 'Новинка' },
@@ -346,8 +677,25 @@
       { id: 9, cat: 'Одежда', name: 'Свитер «Ромашки»', price: 18900, img: '1760127537832-0bae1e09bfbb' },
       { id: 10, cat: 'Сумки', name: 'Сумка «Молоко»', price: 32000, img: '1615206928955-ce0ffbb7ca5a' },
       { id: 11, cat: 'Одежда', name: 'Блуза «Зефир»', price: 15900, img: '1777462985111-9da64fb2e6e6' },
-      { id: 12, cat: 'Аксессуары', name: 'Шоппер плетёный', price: 12900, img: '1524679813234-66a389fe1a42' }
+      { id: 12, cat: 'Аксессуары', name: 'Шоппер плетёный', price: 12900, img: '1524679813234-66a389fe1a42' },
+      { id: 13, cat: 'Верхняя одежда', name: 'Пальто «Бордо»', price: 64000, img: '1483985988355-763728e1935b', badge: 'Осень' },
+      { id: 14, cat: 'Верхняя одежда', name: 'Пальто «Пудра»', price: 58000, img: '1485462537746-965f33f7f6a7' },
+      { id: 15, cat: 'Верхняя одежда', name: 'Пальто «Небо»', price: 61000, img: '1539109136881-3be0616acf4b' },
+      { id: 16, cat: 'Верхняя одежда', name: 'Костюм «Молоко»', price: 54000, img: '1571513722275-4b41940f54b8' },
+      { id: 17, cat: 'Верхняя одежда', name: 'Пальто «Агат»', price: 69000, img: '1554412933-514a83d2f3c8', badge: 'Хит' },
+      { id: 18, cat: 'Одежда', name: 'Пончо «Сливки»', price: 16900, img: '1434389677669-e08b4cac3105', badge: 'Новинка' },
+      { id: 19, cat: 'Одежда', name: 'Футболка «База»', price: 6900, img: '1564584217132-2271feaeb3c5' }
     ];
+    const byId = (id) => PRODUCTS.find((x) => x.id === id);
+    const DESC = {
+      'Сумки': 'Натуральная кожа толщиной 1,4 мм, латунная фурнитура и подкладка из хлопка. Внутри карман на молнии и отделение для телефона.',
+      'Одежда': 'Мягкая пряжа без колючести, свободная посадка. Стирка при 30°, после стирки сохраняет форму.',
+      'Верхняя одежда': 'Шерсть с кашемиром и утеплитель на зиму до −15°. Подклад из вискозы, внутренние карманы на пуговице.',
+      'Аксессуары': 'Подходит к любой сумке из коллекции. Приходит в подарочной коробке с лентой.'
+    };
+    const SIZES = { 'Одежда': ['XS', 'S', 'M', 'L', 'XL'], 'Верхняя одежда': ['XS', 'S', 'M', 'L'] };
+
+    // ---------- каталог ----------
     const grid = $('#grid');
     PRODUCTS.forEach((p, i) => {
       const el = document.createElement('article');
@@ -364,7 +712,8 @@
       $('.pr', el).textContent = money(p.price);
       if (p.old) { const s = document.createElement('s'); s.textContent = money(p.old); $('.pr', el).appendChild(s); }
       $('.add', el).setAttribute('aria-label', 'Добавить в корзину: ' + p.name);
-      $('.add', el).addEventListener('click', () => add(p, img));
+      $('.add', el).addEventListener('click', (e) => { e.stopPropagation(); add(p, img); });
+      $('.ph', el).addEventListener('click', () => quick(p));
       grid.appendChild(el);
     });
     // анимация появления для карточек, добавленных скриптом
@@ -388,21 +737,22 @@
     $$('[data-filter]').forEach((b) => b.addEventListener('click', () => setFilter(b.dataset.filter)));
     $$('[data-jump]').forEach((a) => a.addEventListener('click', () => setFilter(a.dataset.jump)));
 
-    // корзина
+    // ---------- корзина ----------
     const cart = new Map();
     const cartBtn = $('#cartBtn');
     const drawer = $('#drawer');
     const total = () => Array.from(cart.values()).reduce((a, it) => a + it.p.price * it.q, 0);
     const count = () => Array.from(cart.values()).reduce((a, it) => a + it.q, 0);
-    function add(p, img) {
-      const it = cart.get(p.id) || { p, q: 0 };
+    function add(p, img, size) {
+      const key = p.id + (size ? '|' + size : '');
+      const it = cart.get(key) || { p, q: 0, size };
       it.q += 1;
-      cart.set(p.id, it);
+      cart.set(key, it);
       flyTo(img);
       setTimeout(render, 650);
     }
     function flyTo(img) {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      if (reduce || !img) return;
       const a = img.getBoundingClientRect();
       const b = cartBtn.getBoundingClientRect();
       const f = document.createElement('img');
@@ -431,16 +781,16 @@
         e.textContent = 'Корзина пока пустая. Добавьте что-нибудь красивое.';
         box.appendChild(e);
       }
-      cart.forEach((it, id) => {
+      cart.forEach((it, key) => {
         const row = document.createElement('div');
         row.className = 'cl';
         row.innerHTML = '<img alt=""><div><h4></h4><div class="q"><button type="button" aria-label="Меньше">−</button><span></span><button type="button" aria-label="Больше">+</button></div></div><b class="sum"></b>';
         $('img', row).src = U(it.p.img, 200);
-        $('h4', row).textContent = it.p.name;
+        $('h4', row).textContent = it.p.name + (it.size ? ', ' + it.size : '');
         $('.q span', row).textContent = it.q;
         $('.sum', row).textContent = money(it.p.price * it.q);
         const [minus, plus] = $$('.q button', row);
-        minus.addEventListener('click', () => { it.q -= 1; if (it.q <= 0) cart.delete(id); render(); });
+        minus.addEventListener('click', () => { it.q -= 1; if (it.q <= 0) cart.delete(key); render(); });
         plus.addEventListener('click', () => { it.q += 1; render(); });
         box.appendChild(row);
       });
@@ -455,74 +805,342 @@
     };
     cartBtn.addEventListener('click', () => openDrawer(true));
     $$('[data-close-drawer]').forEach((b) => b.addEventListener('click', () => openDrawer(false)));
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') openDrawer(false); });
     $('#checkout').addEventListener('click', () => { if (!cart.size) return; openDrawer(false); openModal('order'); });
-    // 3D-сцена кладёт сумку в корзину через этот вход
-    window.ShopAdd = (id, from) => { const p = PRODUCTS.find((x) => x.id === id); if (p) add(p, from); };
-    window.DemoExtraRows = () => {
+    window.ShopAdd = (id, from) => { const p = byId(id); if (p) add(p, from); };
+    window.DemoExtraRows = (form) => {
+      if (!form || !form.closest('#order')) return [];
       const rows = [];
-      cart.forEach((it) => rows.push([it.p.name + ' × ' + it.q, money(it.p.price * it.q)]));
+      cart.forEach((it) => rows.push([it.p.name + (it.size ? ', ' + it.size : '') + ' × ' + it.q, money(it.p.price * it.q)]));
       rows.push(['Итого', money(total())]);
       return rows;
     };
-    window.addEventListener('demo:sent', () => { cart.clear(); $('#cartCount').textContent = '0'; });
+    window.addEventListener('demo:sent', (e) => { if (e.detail && e.detail.form && e.detail.form.closest('#order')) { cart.clear(); $('#cartCount').textContent = '0'; } });
 
-    // витрина-карусель: подпись, цена и большое слово меняются вместе с сумкой
-    const cfl = $('#showcase .cfl');
-    if (cfl) {
-      const word = $('#scWord');
-      const name = $('#scName');
-      const price = $('#scPrice');
-      let curItem = null;
-      const show = (item) => {
-        if (!item || item === curItem) return;
-        const first = !curItem;
-        curItem = item;
-        const p = PRODUCTS.find((x) => x.id === Number(item.dataset.pid));
-        if (!p) return;
-        const apply = () => {
-          word.textContent = item.dataset.word;
-          name.textContent = p.name;
-          price.textContent = money(p.price);
-          word.classList.remove('swap');
-          name.classList.remove('swap');
-        };
-        if (first) { apply(); return; }
-        word.classList.add('swap');
-        name.classList.add('swap');
-        setTimeout(apply, 280);
-      };
-      cfl.addEventListener('cfl:change', (e) => show(e.detail.item));
-      show($('.cfl-item.on', cfl));
-      $('#scAdd').addEventListener('click', () => {
-        const p = curItem && PRODUCTS.find((x) => x.id === Number(curItem.dataset.pid));
-        if (p) add(p, $('img', curItem));
+    // ---------- быстрый просмотр: фото, размер, в корзину ----------
+    const qv = $('#qv');
+    let qvItem = null;
+    let qvSize = '';
+    let qvFrom = null;
+    function quick(p) {
+      qvItem = p;
+      qvSize = '';
+      const img = $('#qvImg');
+      img.src = U(p.img, 900, 1125);
+      img.alt = p.name;
+      $('#qvCat').textContent = p.cat;
+      $('#qvName').textContent = p.name;
+      const pr = $('#qvPrice');
+      pr.textContent = money(p.price);
+      if (p.old) { const s = document.createElement('s'); s.textContent = money(p.old); pr.appendChild(s); }
+      $('#qvDesc').textContent = DESC[p.cat] || '';
+      const sizes = SIZES[p.cat];
+      const box = $('#qvSizes');
+      box.textContent = '';
+      $('#qvSizeWrap').hidden = !sizes;
+      (sizes || []).forEach((s, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = s;
+        b.setAttribute('aria-pressed', i === 1 ? 'true' : 'false');
+        if (i === 1) qvSize = s;
+        b.addEventListener('click', () => {
+          qvSize = s;
+          $$('button', box).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        });
+        box.appendChild(b);
       });
+      qvFrom = document.activeElement;
+      qv.classList.add('open');
+      qv.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+      setTimeout(() => $('.qv-x', qv).focus(), 60);
     }
+    const closeQuick = () => {
+      if (!qv.classList.contains('open')) return;
+      qv.classList.remove('open');
+      qv.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+      if (qvFrom && qvFrom.focus) qvFrom.focus();
+    };
+    $$('[data-qv-close]', qv).forEach((b) => b.addEventListener('click', closeQuick));
+    $('#qvAdd').addEventListener('click', () => {
+      if (!qvItem) return;
+      add(qvItem, $('#qvImg'), qvSize);
+      setTimeout(closeQuick, 250);
+    });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { openDrawer(false); closeQuick(); } });
+
+    // ---------- новинки на вешалке ----------
+    const RACK = [18, 2, 4, 19, 7, 3, 9, 11, 12];
+    const track = $('#rackTrack');
+    const hangers = RACK.map((id, i) => {
+      const p = byId(id);
+      const b = document.createElement('button');
+      b.className = 'hang';
+      b.type = 'button';
+      b.setAttribute('aria-label', p.name + ', ' + money(p.price) + '. Открыть карточку');
+      // плечики: крючок цепляется за штангу; у сумок вместо плечиков ремешок
+      const bag = p.cat === 'Сумки' || p.cat === 'Аксессуары';
+      b.innerHTML = (bag
+        ? '<svg class="hook" viewBox="0 0 100 56" aria-hidden="true"><path d="M50 2 a7 7 0 0 0 -7 7" stroke="#2a2826" stroke-width="3.2"/><path d="M43 9 V14" stroke="#2a2826" stroke-width="3.2"/><path d="M30 56 C 30 26, 70 26, 70 56" stroke="#7A5A41" stroke-width="5"/><path d="M43 14 L50 30 L57 14" stroke="#7A5A41" stroke-width="2.4"/></svg>'
+        : '<svg class="hook" viewBox="0 0 100 56" aria-hidden="true"><path d="M50 22 V13 a7 7 0 1 0 -7 -7" stroke="#2a2826" stroke-width="3.2"/><path d="M50 22 L7 50 Q2 54 8 55 H92 Q98 54 93 50 Z" stroke="#7A5A41" stroke-width="4.6"/></svg>') +
+        '<span class="garment"><img loading="lazy" alt=""></span><span class="tag"><b></b><small></small></span>';
+      const img = $('img', b);
+      img.src = U(p.img, 520, 650);
+      $('.tag b', b).textContent = money(p.price);
+      $('.tag small', b).textContent = p.name;
+      if (i < 3) { const n = document.createElement('span'); n.className = 'new'; n.textContent = 'Новое'; $('.garment', b).appendChild(n); }
+      b.addEventListener('click', () => quick(p));
+      track.appendChild(b);
+      return { el: b, a: 0, v: 0, x: 0, w: 0, ph: Math.random() * 6 };
+    });
+    $('#rackCount').textContent = RACK.length + ' новинок';
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) $('#rackHint').textContent = 'Листайте — вешалка поедет, а вещи качнутся. Нажмите на вещь, чтобы выбрать размер.';
+    const rackSec = $('#new');
+    const rackEl = $('.rack', rackSec);
+    const bar = $('#rackBar');
+    let maxX = 0;
+    const measure = () => {
+      maxX = Math.max(0, track.scrollWidth - window.innerWidth);
+      rackSec.style.height = (window.innerHeight + maxX * 1.15 + 80) + 'px';
+      hangers.forEach((h) => { h.x = h.el.offsetLeft; h.w = h.el.offsetWidth; });
+    };
+    window.addEventListener('resize', measure);
+    window.addEventListener('load', measure);
+    measure();
+    // вещи за краем экрана подгружаем заранее, чтобы штанга не приезжала с пустыми карточками
+    const eager = new IntersectionObserver((es) => {
+      if (!es[0].isIntersecting) return;
+      $$('img', track).forEach((im) => { im.loading = 'eager'; });
+      eager.disconnect();
+    }, { rootMargin: '900px 0px' });
+    eager.observe(rackSec);
+    // качание: пружина с затуханием; толчок от движения штанги и от курсора
+    let tx = 0;
+    let lastTx = 0;
+    let lastV = 0;
+    let rackOn = false;
+    let rackT = performance.now();
+    let woke = false;
+    const ptr = { x: -1, y: -1, vx: 0, t: 0 };
+    rackEl.addEventListener('pointermove', (e) => {
+      const now = performance.now();
+      const dtp = Math.max(8, now - ptr.t);
+      if (ptr.x >= 0) ptr.vx = (e.clientX - ptr.x) / dtp;
+      ptr.x = e.clientX;
+      ptr.y = e.clientY;
+      ptr.t = now;
+      const r = track.getBoundingClientRect();
+      hangers.forEach((h) => {
+        const cx = r.left + h.x + h.w / 2;
+        const d = Math.abs(e.clientX - cx);
+        if (d < h.w * 0.6) h.v += ptr.vx * 55 * (1 - d / (h.w * 0.6));
+      });
+    }, { passive: true });
+    rackEl.addEventListener('pointerleave', () => { ptr.x = -1; });
+    const rackTick = (now) => {
+      if (!rackOn) return;
+      requestAnimationFrame(rackTick);
+      const dt = Math.min(0.05, (now - rackT) / 1000);
+      rackT = now;
+      const rect = rackSec.getBoundingClientRect();
+      const p = Math.min(1, Math.max(0, -rect.top / Math.max(1, rect.height - window.innerHeight)));
+      tx = -p * maxX;
+      track.style.transform = 'translate3d(' + tx.toFixed(1) + 'px,0,0)';
+      bar.style.setProperty('--p', p.toFixed(3));
+      const vel = dt > 0 ? (tx - lastTx) / dt : 0;
+      const acc = dt > 0 ? (vel - lastV) / dt : 0;
+      lastTx = tx;
+      lastV = vel;
+      hangers.forEach((h, i) => {
+        // штанга дёрнулась — вещи по инерции отстают и качаются
+        const drive = reduce ? 0 : Math.max(-900, Math.min(900, acc * 0.06));
+        const breeze = reduce ? 0 : Math.sin(now / 900 + h.ph) * 4;
+        h.v += (-62 * (h.a - breeze * 0.15) - 2.6 * h.v + drive) * dt;
+        h.a += h.v * dt;
+        h.a = Math.max(-24, Math.min(24, h.a));
+        h.el.style.transform = 'rotate(' + h.a.toFixed(2) + 'deg)';
+      });
+    };
+    new IntersectionObserver((es) => {
+      rackOn = es[0].isIntersecting;
+      if (rackOn) {
+        rackT = performance.now();
+        requestAnimationFrame(rackTick);
+        if (!woke && !reduce) { woke = true; hangers.forEach((h, i) => { h.v = 90 + i * 12; }); }
+      }
+    }, { rootMargin: '100px 0px' }).observe(rackSec);
+
+    // ---------- образы недели ----------
+    const LOOKS = [
+      { name: 'Город', img: '1483985988355-763728e1935b', note: 'Тёплое пальто цвета вина, строгая сумка и часы — на работу и на ужин после неё.', items: [13, 8, 6] },
+      { name: 'Пудра', img: '1485462537746-965f33f7f6a7', note: 'Нежный розовый слоями: пальто, вязаный кардиган и небольшая сумка через плечо.', items: [14, 4, 5] },
+      { name: 'Небо', img: '1539109136881-3be0616acf4b', note: 'Голубое пальто и сиреневая кожа — для прогулок в ясные холодные дни.', items: [15, 7, 1] },
+      { name: 'Молоко', img: '1571513722275-4b41940f54b8', note: 'Светлый костюм, лёгкая блуза и вместительная сумка — офис без скуки.', items: [16, 11, 10] },
+      { name: 'Агат', img: '1554412933-514a83d2f3c8', note: 'Чёрное пальто, карамельный свитер и сумка «Агат» — классика, которая не надоедает.', items: [17, 2, 8] }
+    ];
+    const lineup = $('#lineup');
+    const looksSec = $('#looks');
+    const cards = LOOKS.map((l, i) => {
+      const b = document.createElement('button');
+      b.className = 'look-card';
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Образ «' + l.name + '»');
+      b.innerHTML = '<img loading="lazy" alt=""><span></span>';
+      $('img', b).src = U(l.img, 460, 690);
+      $('img', b).alt = 'Образ «' + l.name + '»';
+      $('span', b).textContent = l.name;
+      lineup.appendChild(b);
+      return b;
+    });
+    let look = -1;
+    const mobileLine = () => window.matchMedia('(max-width: 760px)').matches;
+    const swap = $('#lookSwap');
+    const fillLook = (i) => {
+      const l = LOOKS[i];
+      $('#lookKick').textContent = 'Образ ' + (i + 1) + ' из ' + LOOKS.length;
+      $('#lookName').textContent = '«' + l.name + '»';
+      $('#lookNote').textContent = l.note;
+      const ul = $('#lookItems');
+      ul.textContent = '';
+      let sum = 0;
+      l.items.forEach((id) => {
+        const p = byId(id);
+        sum += p.price;
+        const li = document.createElement('li');
+        li.innerHTML = '<img alt=""><span></span><b></b>';
+        $('img', li).src = U(p.img, 120, 150);
+        $('span', li).textContent = p.name;
+        $('b', li).textContent = money(p.price);
+        ul.appendChild(li);
+      });
+      $('#lookSum').textContent = money(Math.round(sum * 0.95 / 100) * 100);
+      $('#lookSave').textContent = '−5% за образ';
+    };
+    const setLook = (i, scroll) => {
+      if (i === look) return;
+      const first = look < 0;
+      look = i;
+      cards.forEach((c, k) => { c.classList.toggle('on', k === i); c.setAttribute('aria-pressed', String(k === i)); });
+      const r = lineup.getBoundingClientRect();
+      const c = cards[i].getBoundingClientRect();
+      looksSec.style.setProperty('--lx', (c.left + c.width / 2 - looksSec.getBoundingClientRect().left) + 'px');
+      if (scroll && mobileLine()) cards[i].scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+      if (first) { fillLook(i); return; }
+      swap.classList.add('out');
+      setTimeout(() => { fillLook(i); swap.classList.remove('out'); }, 260);
+      void r;
+    };
+    cards.forEach((c, i) => {
+      c.addEventListener('click', () => setLook(i, true));
+      c.addEventListener('mouseenter', () => { if (!mobileLine()) setLook(i); });
+      c.addEventListener('focus', () => setLook(i));
+    });
+    // на телефоне образ выбирается пролистыванием ленты
+    let lineRaf = 0;
+    lineup.addEventListener('scroll', () => {
+      if (!mobileLine() || lineRaf) return;
+      lineRaf = requestAnimationFrame(() => {
+        lineRaf = 0;
+        const mid = lineup.getBoundingClientRect().left + lineup.clientWidth / 2;
+        let best = 0;
+        let bd = Infinity;
+        cards.forEach((c, k) => { const b = c.getBoundingClientRect(); const d = Math.abs(b.left + b.width / 2 - mid); if (d < bd) { bd = d; best = k; } });
+        setLook(best);
+      });
+    }, { passive: true });
+    setLook(2);
+    window.addEventListener('load', () => {
+      if (mobileLine()) cards[2].scrollIntoView({ block: 'nearest', inline: 'center' });
+      setTimeout(() => { const c = cards[look].getBoundingClientRect(); looksSec.style.setProperty('--lx', (c.left + c.width / 2 - looksSec.getBoundingClientRect().left) + 'px'); }, 100);
+    });
+    $('#lookBuy').addEventListener('click', () => {
+      const l = LOOKS[look];
+      l.items.forEach((id, k) => setTimeout(() => add(byId(id), $('img', cards[look]), SIZES[byId(id).cat] ? 'S' : ''), k * 180));
+    });
+
+    // ---------- отзывы ----------
+    const REVIEWS = [
+      ['Динара', 'Алматы', 'Сумка «Агат» пришла на следующий день. Кожа мягкая и совсем не пахнет химией, курьер подождал, пока я всё рассмотрю.', 'Сумка «Агат»', '#56622A'],
+      ['Айгерим', 'Астана', 'Заказала пальто сразу в двух размерах, оставила S — второй курьер забрал без вопросов. Сидит как на меня шили.', 'Пальто «Пудра»', '#9C6B7A'],
+      ['Мадина', 'Шымкент', 'Оплатила при получении, всё как на фото. Упаковка — отдельное удовольствие, коробку жалко выбрасывать.', 'Сумка «Молоко»', '#B07A3B'],
+      ['Алия', 'Алматы', 'Свитер «Облако» не колется, ношу прямо на футболку. Взяла второй в подарок маме.', 'Свитер «Облако»', '#5B7083'],
+      ['Камила', 'Караганда', 'Менеджер в WhatsApp помог подобрать сумку к пальто и прислал живые фото при дневном свете.', 'Сумка-портфель «Сирень»', '#7A6A9E'],
+      ['Жанна', 'Алматы', 'Вернула кардиган — не подошёл цвет. Деньги пришли на Kaspi в тот же день, без звонков и объяснительных.', 'Кардиган «Пудра»', '#8A5A44']
+    ];
+    const row = $('#rvRow');
+    const rvCard = (r, hidden) => {
+      const el = document.createElement('article');
+      el.className = 'rv';
+      if (hidden) el.setAttribute('aria-hidden', 'true');
+      el.innerHTML = '<span class="stars" aria-label="5 из 5">★★★★★</span><p></p><div class="who"><i></i><div><b></b><small></small><span class="buy"></span></div></div>';
+      $('p', el).textContent = r[2];
+      $('.who i', el).textContent = r[0].charAt(0);
+      $('.who i', el).style.setProperty('--c', r[4]);
+      $('.who b', el).textContent = r[0];
+      $('.who small', el).textContent = r[1];
+      $('.buy', el).textContent = 'Купила: ' + r[3];
+      return el;
+    };
+    REVIEWS.forEach((r) => row.appendChild(rvCard(r, false)));
+    REVIEWS.forEach((r) => row.appendChild(rvCard(r, true)));
+
+    // ---------- 3D-сумка: цвет кожи, фон и подпись меняются сразу, модель подхватывает событие ----------
+    const VARIANTS = [
+      { word: 'Лимон', name: 'Сумка «Лимон»', id: 3, bg: '#F3E6A6', fg: '#2A2610', img: '1640901555383-7335ec5a6476' },
+      { word: 'Сирень', name: 'Сумка-портфель «Сирень»', id: 1, bg: '#DED6EE', fg: '#231A2A', img: '1605733513597-a8f8341084e6' },
+      { word: 'Агат', name: 'Сумка «Агат»', id: 8, bg: '#C9C4BB', fg: '#17161A', img: '1618274181513-c5b7e595a2e7' },
+      { word: 'Туман', name: 'Кросс-боди «Туман»', id: 5, bg: '#E2E8EC', fg: '#1A2026', img: '1559563458-527698bf5295' },
+      { word: 'Молоко', name: 'Сумка «Молоко»', id: 10, bg: '#CDBBA2', fg: '#1E1A16', img: '1615206928955-ce0ffbb7ca5a' }
+    ];
+    const stage = $('#bagstage');
+    const bWord = $('#bWord');
+    const bName = $('#bName');
+    let vi = 0;
+    const setVariant = (i) => {
+      vi = i;
+      const v = VARIANTS[i];
+      $$('.bswatches button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === i)));
+      stage.style.setProperty('--bb', v.bg);
+      stage.style.setProperty('--bf', v.fg);
+      bWord.classList.add('swap');
+      bName.style.opacity = '0';
+      setTimeout(() => {
+        bWord.textContent = v.word;
+        bWord.classList.remove('swap');
+        bName.textContent = v.name;
+        $('#bPrice').textContent = money(byId(v.id).price);
+        bName.style.opacity = '1';
+      }, 260);
+      window.dispatchEvent(new CustomEvent('ayla:variant', { detail: i }));
+    };
+    $$('.bswatches button').forEach((b) => b.addEventListener('click', () => setVariant(Number(b.dataset.v))));
+    $('#bAdd').addEventListener('click', () => {
+      const v = VARIANTS[vi];
+      const c = $('#bag3d').getBoundingClientRect();
+      const narrow = window.innerWidth < 860;
+      const from = {
+        currentSrc: U(v.img, 200),
+        getBoundingClientRect: () => ({ left: c.left + c.width * (narrow ? 0.5 : 0.62) - 60, top: c.top + c.height * 0.45 - 60, width: 120, height: 120 })
+      };
+      add(byId(v.id), from);
+    });
+
     render();
     cartBtn.classList.remove('bump');
   })();
 </script>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
 <script type="module">
-  import { createStage, THREE, clamp, lerp, damp, small, still, canvasTexture, blobShadow } from './assets/kit3d.js';
+  import { createStage, THREE, clamp, lerp, small, canvasTexture, blobShadow, afterPaint } from './assets/kit3d.js';
   import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
-  const stage = document.getElementById('bagstage');
   const canvas = document.getElementById('bag3d');
-  const word = document.getElementById('bWord');
-  const nameEl = document.getElementById('bName');
-  const priceEl = document.getElementById('bPrice');
-  // цвет кожи, фон сцены, цвет текста, товар в каталоге
-  const VARIANTS = [
-    { word: 'Лимон', name: 'Сумка «Лимон»', price: '21 000 ₸', id: 3, leather: '#D9A40C', bg: '#F3E6A6', fg: '#2A2610', img: '1640901555383-7335ec5a6476' },
-    { word: 'Сирень', name: 'Сумка-портфель «Сирень»', price: '24 900 ₸', id: 1, leather: '#8E76BE', bg: '#DED6EE', fg: '#231A2A', img: '1605733513597-a8f8341084e6' },
-    { word: 'Агат', name: 'Сумка «Агат»', price: '39 000 ₸', id: 8, leather: '#0E0E11', bg: '#C9C4BB', fg: '#17161A', img: '1618274181513-c5b7e595a2e7' },
-    { word: 'Туман', name: 'Кросс-боди «Туман»', price: '18 500 ₸', id: 5, leather: '#A8B4BD', bg: '#E2E8EC', fg: '#1A2026', img: '1559563458-527698bf5295' },
-    { word: 'Молоко', name: 'Сумка «Молоко»', price: '32 000 ₸', id: 10, leather: '#EDE3D1', bg: '#CDBBA2', fg: '#1E1A16', img: '1615206928955-ce0ffbb7ca5a' }
-  ];
-  let vi = 0;
+  // цвет кожи для каждого варианта из витрины
+  const LEATHER = ['#D9A40C', '#8E76BE', '#0E0E11', '#A8B4BD', '#EDE3D1'];
 
+  // модель сумки начинает грузиться сразу, сцена — после первой отрисовки
+  const bagReq = fetch('assets/models/bag.bin');
+  await afterPaint();
   const st = createStage(canvas, { fov: small ? 34 : 26, exposure: 1.05 });
   const { scene, camera } = st;
   const key = new THREE.DirectionalLight(0xffffff, 2.4);
@@ -544,51 +1162,81 @@
       g.fill();
     }
   }, { data: true, repeat: [3, 3] });
-  const leather = new THREE.MeshPhysicalMaterial({ color: VARIANTS[0].leather, roughness: 0.46, sheen: 0.35, sheenRoughness: 0.5, sheenColor: new THREE.Color(VARIANTS[0].leather), clearcoat: 0.35, clearcoatRoughness: 0.4, bumpMap: grain, bumpScale: 0.9 });
-  const edgeMat = new THREE.MeshPhysicalMaterial({ color: 0x2a1d16, roughness: 0.5 });
-  const gold = new THREE.MeshStandardMaterial({ color: 0xD9B45A, metalness: 1, roughness: 0.22 });
+  const leather = new THREE.MeshPhysicalMaterial({ color: LEATHER[0], vertexColors: true, roughness: 0.5, sheen: 0.4, sheenRoughness: 0.5, sheenColor: new THREE.Color(LEATHER[0]), clearcoat: 0.22, clearcoatRoughness: 0.42, bumpMap: grain, bumpScale: 0.8 });
+  const handleMat = new THREE.MeshPhysicalMaterial({ color: LEATHER[0], roughness: 0.5, sheen: 0.4, sheenRoughness: 0.5, sheenColor: new THREE.Color(LEATHER[0]), clearcoat: 0.22, clearcoatRoughness: 0.42 });
+  const gold = new THREE.MeshStandardMaterial({ color: 0xD9B45A, metalness: 1, roughness: 0.2 });
 
-  // ---------- сумка: корпус-трапеция, клапан, застёжка, ручка ----------
+  // ---------- сумка: корпус с клапаном, кантом и складками заранее построен из гладких форм ----------
+  const loadBag = async (res) => {
+    const buf = await res.arrayBuffer();
+    const dv = new DataView(buf);
+    const nv = dv.getUint32(4, true);
+    const ni = dv.getUint32(8, true);
+    const c = [0, 1, 2].map((k) => dv.getFloat32(16 + k * 4, true));
+    const h = [3, 4, 5].map((k) => dv.getFloat32(16 + k * 4, true));
+    const pad = (v) => (v + 3) & ~3;
+    const nrmOff = 40 + pad(nv * 6);
+    const aoOff = nrmOff + pad(nv * 3);
+    const idxOff = aoOff + pad(nv);
+    const Pq = new Int16Array(buf, 40, nv * 3);
+    const Nq = new Int8Array(buf, nrmOff, nv * 3);
+    const A = new Uint8Array(buf, aoOff, nv);
+    const pos = new Float32Array(nv * 3);
+    const col = new Float32Array(nv * 3);
+    const uv = new Float32Array(nv * 2);
+    for (let k = 0; k < nv; k++) {
+      const x = Pq[k * 3] / 32767 * h[0] + c[0];
+      const y = Pq[k * 3 + 1] / 32767 * h[1] + c[1];
+      const z = Pq[k * 3 + 2] / 32767 * h[2] + c[2];
+      pos[k * 3] = x; pos[k * 3 + 1] = y; pos[k * 3 + 2] = z;
+      // тень в стыках и под клапаном запечена в модель
+      const o = 0.4 + 0.6 * A[k] / 255;
+      col[k * 3] = col[k * 3 + 1] = col[k * 3 + 2] = o;
+      // развёртка по трём сторонам — для фактуры кожи
+      const nx = Math.abs(Nq[k * 3]), ny = Math.abs(Nq[k * 3 + 1]), nz = Math.abs(Nq[k * 3 + 2]);
+      if (nz >= nx && nz >= ny) { uv[k * 2] = x; uv[k * 2 + 1] = y; } else if (nx >= ny) { uv[k * 2] = z; uv[k * 2 + 1] = y; } else { uv[k * 2] = x; uv[k * 2 + 1] = z; }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('normal', new THREE.BufferAttribute(Nq, 3, true));
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    g.setIndex(new THREE.BufferAttribute(nv > 65535 ? new Uint32Array(buf, idxOff, ni) : new Uint16Array(buf, idxOff, ni), 1));
+    g.computeBoundingSphere();
+    return g;
+  };
   const bag = new THREE.Group();
-  const bodyG = new RoundedBoxGeometry(1.9, 1.32, 0.68, 6, 0.16);
-  const bp = bodyG.attributes.position;
-  for (let i = 0; i < bp.count; i++) {
-    const y = bp.getY(i);
-    const k = lerp(1, 0.86, clamp((y + 0.66) / 1.32));
-    bp.setX(i, bp.getX(i) * k);
-    bp.setZ(i, bp.getZ(i) * lerp(1, 0.8, clamp((y + 0.66) / 1.32)));
-  }
-  bodyG.computeVertexNormals();
-  bag.add(new THREE.Mesh(bodyG, leather));
-  const flapG = new RoundedBoxGeometry(1.72, 0.74, 0.05, 4, 0.024);
-  const fp = flapG.attributes.position;
-  for (let i = 0; i < fp.count; i++) {
-    const y = fp.getY(i);
-    fp.setZ(i, fp.getZ(i) - 0.05 * (y - 0.37) * (y - 0.37));
-    fp.setX(i, fp.getX(i) * lerp(1.02, 0.9, clamp((y + 0.37) / 0.74)));
-  }
-  flapG.computeVertexNormals();
-  const flap = new THREE.Mesh(flapG, leather);
-  flap.position.set(0, 0.3, 0.3);
-  flap.rotation.x = -0.12;
-  bag.add(flap);
+  bag.add(new THREE.Mesh(await bagReq.then(loadBag), leather));
+  // поворотный замок на клапане
   const clasp = new THREE.Group();
-  const plate = new THREE.Mesh(new RoundedBoxGeometry(0.26, 0.16, 0.06, 4, 0.03), gold);
-  const loop = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.016, 10, 32), gold);
-  loop.position.y = -0.09;
-  clasp.add(plate, loop);
-  clasp.position.set(0, -0.02, 0.36);
+  const plate = new THREE.Mesh(new RoundedBoxGeometry(0.24, 0.14, 0.04, 4, 0.02), gold);
+  const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.05, 0.05, 24), gold);
+  knob.rotation.x = Math.PI / 2;
+  knob.position.z = 0.035;
+  const bar = new THREE.Mesh(new RoundedBoxGeometry(0.16, 0.035, 0.03, 3, 0.012), gold);
+  bar.position.z = 0.065;
+  clasp.add(plate, knob, bar);
+  clasp.position.set(0, 0.035, 0.352);
+  clasp.rotation.x = -0.07;
   bag.add(clasp);
-  const handle = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.05, 18, 64, Math.PI), leather);
-  handle.position.set(0, 0.62, 0);
-  handle.scale.set(1, 1.05, 1);
+  // ручка из скрученной кожи в золотых кольцах
+  const handle = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.046, 20, 72, Math.PI), handleMat);
+  handle.position.set(0, 0.76, 0);
+  handle.scale.set(1, 1.08, 1);
   bag.add(handle);
-  [-1, 1].forEach((s) => {
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.09, 0.08, 20), gold);
-    cap.position.set(s * 0.46, 0.66, 0);
-    bag.add(cap);
+  [-1, 1].forEach((sx) => {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.014, 12, 36), gold);
+    ring.position.set(sx * 0.42, 0.76, 0);
+    ring.rotation.y = Math.PI / 2;
+    bag.add(ring);
   });
-  bag.position.y = 0.15;
+  // металлические ножки на дне
+  [[-0.7, -0.2], [0.7, -0.2], [-0.7, 0.2], [0.7, 0.2]].forEach(([x, z]) => {
+    const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.035, 0.03, 16), gold);
+    foot.position.set(x, -0.675, z);
+    bag.add(foot);
+  });
+  bag.position.y = 0.12;
   scene.add(bag);
 
   // подставка и кольцо-портал
@@ -625,42 +1273,21 @@
   canvas.addEventListener('pointerup', end);
   canvas.addEventListener('pointercancel', end);
 
-  // ---------- смена цвета ----------
-  const target = new THREE.Color(VARIANTS[0].leather);
-  const setVariant = (i) => {
-    vi = i;
-    const v = VARIANTS[i];
-    document.querySelectorAll('.bswatches button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === i)));
-    target.set(v.leather);
-    stage.style.setProperty('--bb', v.bg);
-    stage.style.setProperty('--bf', v.fg);
-    word.classList.add('swap');
-    nameEl.style.opacity = '0';
-    setTimeout(() => {
-      word.textContent = v.word;
-      word.classList.remove('swap');
-      nameEl.textContent = v.name;
-      priceEl.textContent = v.price;
-      nameEl.style.opacity = '1';
-    }, 260);
-    spin = 1;
-  };
+  // ---------- смена цвета: кнопки обрабатывает интерфейс, сюда приходит только номер ----------
+  const target = new THREE.Color(LEATHER[0]);
   let spin = 0;
-  document.querySelectorAll('.bswatches button').forEach((b) => b.addEventListener('click', () => setVariant(Number(b.dataset.v))));
-  document.getElementById('bAdd').addEventListener('click', () => {
-    const v = VARIANTS[vi];
-    const r = canvas.getBoundingClientRect();
-    const from = {
-      currentSrc: 'https://images.unsplash.com/photo-' + v.img + '?auto=format&fit=crop&w=200&q=70',
-      getBoundingClientRect: () => ({ left: r.left + r.width * (small ? 0.5 : 0.62) - 60, top: r.top + r.height * 0.45 - 60, width: 120, height: 120 })
-    };
-    if (window.ShopAdd) window.ShopAdd(v.id, from);
-  });
+  window.addEventListener('ayla:variant', (e) => { target.set(LEATHER[e.detail] || LEATHER[0]); spin = 1; });
+
+  // шейдеры собираются заранее: сумка появляется без рывка
+  await st.ready();
+  canvas.classList.add('on');
 
   st.onTick((dt, t) => {
     const narrow = st.size.w < 860;
     leather.color.lerp(target, 1 - Math.exp(-dt * 6));
     leather.sheenColor.copy(leather.color);
+    handleMat.color.copy(leather.color);
+    handleMat.sheenColor.copy(leather.color);
     if (!drag) {
       vel *= Math.exp(-dt * 3);
       yaw += vel + (performance.now() - lastMove > 1500 ? dt * 0.35 : 0);
@@ -668,7 +1295,7 @@
     spin = Math.max(0, spin - dt * 1.4);
     // при смене цвета сумка делает лёгкий поворот, чтобы показать новую кожу
     bag.rotation.y = yaw + Math.sin(spin * Math.PI) * 0.6;
-    bag.position.y = 0.15 + Math.sin(t * 1.3) * 0.06;
+    bag.position.y = 0.12 + Math.sin(t * 1.3) * 0.06;
     bag.rotation.z = Math.sin(t * 0.9) * 0.025;
     portal.rotation.y = Math.sin(t * 0.3) * 0.15;
     shadow.scale.setScalar(1.05 - Math.sin(t * 1.3) * 0.04);

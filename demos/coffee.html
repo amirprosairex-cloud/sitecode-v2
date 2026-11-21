@@ -11,6 +11,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Yeseva+One&display=swap">
   <link rel="stylesheet" href="assets/demo.css">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/environments/RoomEnvironment.js">
+  <link rel="modulepreload" href="assets/ui.js">
+  <link rel="modulepreload" href="assets/kit3d.js">
   <style>
     :root {
       --bg: #EFE7DA; --fg: #2A1D16; --muted: #7A685B; --accent: #3F5A3C; --accent-fg: #F6F0E6;
@@ -616,42 +622,35 @@
     }
   })();
 </script>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
 <script type="module">
-  import { createStage, THREE, track, progressOf, sceneAt, smooth, clamp, lerp, damp, small, still, callouts, canvasTexture, blobShadow } from './assets/kit3d.js';
-
+  // интерфейс прокрутки: работает сразу, не дожидаясь 3D
+  import { scrollScenes } from './assets/ui.js';
   const show = document.getElementById('cshow');
   const stick = document.getElementById('cstick');
-  const canvas = document.getElementById('cup3d');
-  const scenes = Array.from(show.querySelectorAll('.cscene'));
-  const word = document.getElementById('cWord');
   const big = show.querySelector('.cbig');
-  const bars = Array.from(show.querySelectorAll('.cbar i'));
-  const hint = document.getElementById('cHint');
-  const MARKS = [0, 0.18, 0.46, 0.72];
-  const WORDS = ['DALA', 'Слои', 'Обжарка', 'Навынос'];
   // фон и текст каждой сцены: сливки → карамель → эспрессо → зелёный DALA
   const COLORS = [['#EFE7DA', '#2A1D16'], ['#E6B56E', '#2E1A0C'], ['#2A1D16', '#F3EADC'], ['#3F5A3C', '#F6F0E6']];
-
-  let cur = -1;
-  const ui = () => {
-    const p = progressOf(show);
-    const i = sceneAt(p, MARKS);
-    if (i !== cur) {
-      cur = i;
-      scenes.forEach((s, k) => s.classList.toggle('on', k === i));
-      word.classList.add('swap');
-      setTimeout(() => { word.textContent = WORDS[i]; word.classList.remove('swap'); }, 260);
+  scrollScenes(show, {
+    marks: [0, 0.18, 0.46, 0.72],
+    words: ['DALA', 'Слои', 'Обжарка', 'Навынос'],
+    word: document.getElementById('cWord'),
+    scenes: Array.from(show.querySelectorAll('.cscene')),
+    bars: Array.from(show.querySelectorAll('.cbar i')),
+    hint: document.getElementById('cHint'),
+    onScene: (i) => {
       stick.style.setProperty('--cb', COLORS[i][0]);
       stick.style.setProperty('--cf', COLORS[i][1]);
       big.classList.toggle('on', i === 3);
     }
-    bars.forEach((b, k) => b.style.setProperty('--f', clamp((p - MARKS[k]) / ((MARKS[k + 1] ?? 1) - MARKS[k])).toFixed(3)));
-    hint.style.opacity = p > 0.03 ? '0' : '.7';
-  };
-  window.addEventListener('scroll', ui, { passive: true });
-  ui();
+  });
+</script>
+<script type="module">
+  import { createStage, THREE, track, progressOf, smooth, clamp, lerp, damp, small, still, callouts, canvasTexture, blobShadow, afterPaint } from './assets/kit3d.js';
 
+  const show = document.getElementById('cshow');
+  const canvas = document.getElementById('cup3d');
+
+  await afterPaint();
   const st = createStage(canvas, { fov: small ? 38 : 28, exposure: 1.05 });
   const { scene, camera } = st;
   const key = new THREE.DirectionalLight(0xfff4e6, 2.2);
@@ -820,6 +819,9 @@
     if (!sx && !sy) { camera.clearViewOffset(); return; }
     camera.setViewOffset(W * (1 + 2 * Math.abs(sx)), H * (1 + 2 * Math.abs(sy)), sx > 0 ? 0 : 2 * Math.abs(sx) * W, sy > 0 ? 2 * sy * H : 0, W, H);
   };
+  // шейдеры собираются заранее, чтобы стакан появился без рывка
+  await st.ready();
+
   st.onTick((dt, t) => {
     p = damp(p, progressOf(show), 6, dt);
     intro = Math.min(1, intro + dt / 1.6);

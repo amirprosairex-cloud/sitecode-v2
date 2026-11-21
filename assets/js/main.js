@@ -79,96 +79,54 @@
   // буквы «Code» в большом слове: их заменяют кубики при прокрутке
   $$('.hero-word .ch').forEach((s, i) => { if (i >= 4) s.classList.add('cc'); });
 
-  /* ---------- Интро ---------- */
+  /* ---------- Интро: логотип пишется светом и тает в сайт ---------- */
+  const shader = window.SCShader;
+  // кубики начинают собираться, пока логотип стоит на месте, — без рывков в анимации
+  const bootCubes = () => {
+    if (window.__scBoot) return;
+    window.__scBoot = true;
+    window.dispatchEvent(new Event('sc:boot'));
+  };
   function ready() {
     if (root.classList.contains('is-ready')) return;
     root.classList.add('is-ready');
     const title = $('.hero-title');
     if (title) title.classList.add('is-in');
+    bootCubes();
     window.__scReady = true;
     window.dispatchEvent(new Event('sc:ready'));
+    // живой фон первого экрана проявляется вместе с текстом
+    const sky = $('.hero-sky');
+    if (sky && shader && shader.ok) shader.sky(sky, $('.hero'));
   }
 
   function runIntro() {
     const intro = $('#intro');
     if (!intro) return ready();
-    if (reduce || session.get('sc-intro')) {
+    if (reduce || session.get('sc-intro') || !shader || !shader.ok) {
       intro.remove();
       return ready();
     }
     session.set('sc-intro', '1');
     root.classList.add('intro-on');
-
-    const sign = $('.sign-text', intro);
-    const rect = $('#signRect', intro);
-    const line = $('.sign-line', intro);
-    const pen = $('.intro-pen', intro);
-    const cursor = $('.intro-cursor', intro);
-    const penTool = $('.tool-pen', intro);
-    const board = $('.intro-board', intro);
-    const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-    let finished = false;
-    let raf = 0;
-
-    const finish = () => {
-      if (finished) return;
-      finished = true;
-      cancelAnimationFrame(raf);
-      intro.classList.add('is-out');
+    const ctl = shader.intro(intro, {
+      hold: bootCubes,
+      out: () => {
+        intro.classList.add('is-out');
+        root.classList.remove('intro-on');
+        ready();
+      },
+      done: () => intro.remove()
+    });
+    if (!ctl) {
+      intro.remove();
       root.classList.remove('intro-on');
-      ready();
-      setTimeout(() => intro.remove(), 1200);
-    };
-    intro.addEventListener('pointerdown', finish);
-    window.addEventListener('keydown', finish, { once: true });
-    window.addEventListener('wheel', finish, { once: true, passive: true });
-
-    const start = () => {
-      if (finished) return;
-      const t0 = performance.now();
-      let box = null;
-      try { box = sign.getBBox(); } catch (e) { box = { x: 80, y: 40, width: 480, height: 140 }; }
-      const svg = sign.ownerSVGElement;
-
-      setTimeout(() => intro.classList.add('is-tools'), 40);
-      setTimeout(() => {
-        const r = penTool.getBoundingClientRect();
-        cursor.style.opacity = '1';
-        cursor.style.transform = 'translate(' + (r.left + r.width * 0.5) + 'px,' + (r.top + r.height * 0.55) + 'px)';
-      }, 280);
-      setTimeout(() => penTool.classList.add('is-active'), 760);
-
-      const tick = (now) => {
-        const t = now - t0;
-        const p = clamp((t - 800) / 1300);
-        const e = ease(p);
-        rect.setAttribute('width', (box.x + box.width * e + 16).toFixed(1));
-        sign.style.strokeDashoffset = (900 * (1 - clamp((t - 760) / 1450))).toFixed(1);
-        sign.style.fillOpacity = clamp((t - 1650) / 600).toFixed(3);
-        line.style.strokeDashoffset = (1 - ease(clamp((t - 1950) / 450))).toFixed(3);
-
-        if (p > 0 && p < 1) {
-          const m = svg.getScreenCTM();
-          const b = board.getBoundingClientRect();
-          if (m) {
-            const pt = new DOMPoint(box.x + box.width * e, box.y + box.height * (0.56 + 0.2 * Math.sin(p * 27))).matrixTransform(m);
-            pen.style.opacity = '1';
-            pen.style.transform = 'translate(' + (pt.x - b.left) + 'px,' + (pt.y - b.top) + 'px)';
-          }
-          cursor.style.opacity = '0';
-        } else if (p >= 1) {
-          pen.style.opacity = '0';
-        }
-        if (t > 2650) { finish(); return; }
-        raf = requestAnimationFrame(tick);
-      };
-      raf = requestAnimationFrame(tick);
-    };
-
-    const fontReady = document.fonts && document.fonts.load
-      ? Promise.race([document.fonts.load('176px Sacramento'), new Promise((r) => setTimeout(r, 900))])
-      : Promise.resolve();
-    fontReady.then(start, start);
+      return ready();
+    }
+    intro.addEventListener('pointerdown', ctl.skip);
+    window.addEventListener('keydown', ctl.skip, { once: true });
+    window.addEventListener('wheel', ctl.skip, { once: true, passive: true });
+    window.addEventListener('touchmove', ctl.skip, { once: true, passive: true });
   }
   runIntro();
 
@@ -556,6 +514,8 @@
     }, { passive: true });
     const said = new Set();
     const sections = $$('[data-bot]');
+    // на телефоне приветствие на первом экране закрыло бы кнопки — бот заговорит со следующего раздела
+    if (window.innerWidth < 760) { const h = $('.hero[data-bot]'); if (h) said.add(h); }
     const sio = new IntersectionObserver((es) => {
       es.forEach((e) => {
         if (!e.isIntersecting || said.has(e.target)) return;

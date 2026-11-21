@@ -11,6 +11,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap">
   <link rel="stylesheet" href="assets/demo.css">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/environments/RoomEnvironment.js">
+  <link rel="modulepreload" href="assets/ui.js">
+  <link rel="modulepreload" href="assets/kit3d.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/geometries/RoundedBoxGeometry.js">
+  <link rel="preload" href="assets/models/tooth.bin" as="fetch" crossorigin>
+  <link rel="preload" href="assets/models/crown.bin" as="fetch" crossorigin>
   <style>
     :root {
       --bg: #F4F9F8; --fg: #0B2C31; --muted: #557277; --accent: #0E9E95; --accent-fg: #FFF; --soft: #DFF1EE; --warm: #FFB86B;
@@ -554,40 +563,29 @@
     });
   })();
 </script>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
 <script type="module">
-  import { createStage, THREE, track, progressOf, sceneAt, smooth, clamp, lerp, damp, small, still, callouts, canvasTexture } from './assets/kit3d.js';
+  // интерфейс прокрутки: работает сразу, не дожидаясь 3D
+  import { scrollScenes } from './assets/ui.js';
+  const show = document.getElementById('tshow');
+  const hdr = document.querySelector('.hdr');
+  scrollScenes(show, {
+    marks: [0, 0.14, 0.34, 0.58, 0.8],
+    words: ['Улыбка', 'Лечение', 'Внутри', 'Вместе', 'Гарантия'],
+    word: document.getElementById('tWord'),
+    scenes: Array.from(show.querySelectorAll('.tscene')),
+    bars: Array.from(show.querySelectorAll('.tbar i')),
+    hint: document.getElementById('tHint'),
+    onProgress: () => hdr.classList.toggle('dark', show.getBoundingClientRect().bottom > 70)
+  });
+</script>
+<script type="module">
+  import { createStage, THREE, track, progressOf, smooth, clamp, lerp, damp, small, still, callouts, canvasTexture, afterPaint } from './assets/kit3d.js';
   import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
   const show = document.getElementById('tshow');
   const canvas = document.getElementById('tooth3d');
-  const scenes = Array.from(show.querySelectorAll('.tscene'));
-  const word = document.getElementById('tWord');
-  const bars = Array.from(show.querySelectorAll('.tbar i'));
-  const hint = document.getElementById('tHint');
-  const hdr = document.querySelector('.hdr');
-  const WORDS = ['Улыбка', 'Лечение', 'Внутри', 'Вместе', 'Гарантия'];
-  const MARKS = [0, 0.14, 0.34, 0.58, 0.8];
 
-  let cur = -1;
-  const ui = () => {
-    const p = progressOf(show);
-    const i = sceneAt(p, MARKS);
-    if (i !== cur) {
-      cur = i;
-      scenes.forEach((s, k) => s.classList.toggle('on', k === i));
-      word.classList.add('swap');
-      setTimeout(() => { word.textContent = WORDS[i]; word.classList.remove('swap'); }, 260);
-    }
-    bars.forEach((b, k) => b.style.setProperty('--f', clamp((p - MARKS[k]) / ((MARKS[k + 1] ?? 1) - MARKS[k])).toFixed(3)));
-    hint.style.opacity = p > 0.03 ? '0' : '1';
-    const r = show.getBoundingClientRect();
-    hdr.classList.toggle('dark', r.bottom > 70);
-    return p;
-  };
-  window.addEventListener('scroll', ui, { passive: true });
-  ui();
-
+  await afterPaint();
   const st = createStage(canvas, { fov: small ? 40 : 30, exposure: 1.05 });
   const { scene, camera } = st;
   const key = new THREE.DirectionalLight(0xffffff, 2.2);
@@ -597,65 +595,66 @@
   rim.position.set(4, 1, -3);
   scene.add(rim);
 
-  // ---------- геометрия коронки: бочонок с бугорками и фиссурой сверху ----------
-  const crownGeo = () => {
-    const g = new THREE.SphereGeometry(1, 128, 96);
-    const p = g.attributes.position;
-    const v = new THREE.Vector3();
-    const cusps = [[0.44, 0.36], [-0.44, 0.36], [0.44, -0.36], [-0.44, -0.36]];
-    for (let i = 0; i < p.count; i++) {
-      v.fromBufferAttribute(p, i);
-      let { x, y, z } = v;
-      const phi = Math.atan2(z, x);
-      const sq = 1 / Math.pow(Math.pow(Math.abs(Math.cos(phi)), 4) + Math.pow(Math.abs(Math.sin(phi)), 4), 0.25);
-      const bulge = 1 + 0.08 * (1 - y * y);
-      x *= sq * 0.92 * bulge * 1.08;
-      z *= sq * 0.92 * bulge * 0.96;
-      let ny = y * (y > 0 ? 0.62 : 0.78);
-      if (y > 0.1) {
-        let h = 0;
-        cusps.forEach(([cx, cz]) => { h += Math.exp(-((x - cx) ** 2 + (z - cz) ** 2) / 0.06); });
-        const fiss = Math.exp(-(x * x) / 0.01) * 0.7 + Math.exp(-(z * z) / 0.014) * 0.45;
-        ny += (0.17 * h - 0.13 * fiss) * smooth(0.1, 0.7, y);
-      }
-      if (y < 0) {
-        const s = 1 - 0.3 * smooth(0, -1, y);
-        x *= s;
-        z *= s;
-      }
-      p.setXYZ(i, x, ny, z);
+  // ---------- модель зуба: заранее построена из гладких форм (коронка, бугорки, борозды, два корня) ----------
+  const loadBin = async (url) => {
+    const buf = await (await fetch(url)).arrayBuffer();
+    const dv = new DataView(buf);
+    const nv = dv.getUint32(4, true);
+    const ni = dv.getUint32(8, true);
+    const c = [0, 1, 2].map((i) => dv.getFloat32(16 + i * 4, true));
+    const h = [3, 4, 5].map((i) => dv.getFloat32(16 + i * 4, true));
+    const pad = (v) => (v + 3) & ~3;
+    const posOff = 40;
+    const nrmOff = posOff + pad(nv * 6);
+    const aoOff = nrmOff + pad(nv * 3);
+    const idxOff = aoOff + pad(nv);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Int16Array(buf, posOff, nv * 3), 3, true));
+    g.setAttribute('normal', new THREE.BufferAttribute(new Int8Array(buf, nrmOff, nv * 3), 3, true));
+    g.setIndex(new THREE.BufferAttribute(nv > 65535 ? new Uint32Array(buf, idxOff, ni) : new Uint16Array(buf, idxOff, ni), 1));
+    // цвет: белая эмаль коронки, тёплый корень, тень в бороздах запечена в модель
+    const ao = new Uint8Array(buf, aoOff, nv);
+    const col = new Float32Array(nv * 3);
+    const pos = g.attributes.position;
+    const enamelC = new THREE.Color(0xF6F3EA);
+    const rootC = new THREE.Color(0xEADCC0);
+    const groove = new THREE.Color(0xC9B391);
+    const tmp = new THREE.Color();
+    for (let i = 0; i < nv; i++) {
+      const y = pos.getY(i) * h[1] + c[1];
+      const o = ao[i] / 255;
+      tmp.copy(rootC).lerp(enamelC, smooth(-0.12, 0.08, y)).lerp(groove, (1 - o) * 0.4).multiplyScalar(0.62 + 0.38 * o);
+      col[i * 3] = tmp.r; col[i * 3 + 1] = tmp.g; col[i * 3 + 2] = tmp.b;
     }
-    g.computeVertexNormals();
-    return g;
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    g.computeBoundingSphere();
+    const m = new THREE.Mesh(g);
+    m.scale.set(h[0], h[1], h[2]);
+    m.position.set(c[0], c[1], c[2]);
+    const wrap = new THREE.Group();
+    wrap.add(m);
+    return { wrap, mesh: m };
   };
-  const enamel = new THREE.MeshPhysicalMaterial({ color: 0xF5F1E6, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.12, sheen: 0.5, sheenRoughness: 0.4, sheenColor: new THREE.Color(0xffffff) });
-  const dentin = new THREE.MeshPhysicalMaterial({ color: 0xEADFC4, roughness: 0.42, clearcoat: 0.3 });
-  const zirconia = new THREE.MeshPhysicalMaterial({ color: 0xFBFAF6, roughness: 0.14, clearcoat: 1, clearcoatRoughness: 0.06 });
+  const [toothM, crownM] = await Promise.all([loadBin('assets/models/tooth.bin'), loadBin('assets/models/crown.bin')]);
+  // эмаль: глянец с мягким бархатом, чтобы зуб выглядел живым, а не пластиковым
+  const enamel = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.26, clearcoat: 0.85, clearcoatRoughness: 0.12, sheen: 0.4, sheenRoughness: 0.4, sheenColor: new THREE.Color(0xfff3dc), specularIntensity: 0.7 });
+  const zirconia = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.14, clearcoat: 1, clearcoatRoughness: 0.05, sheen: 0.3, sheenColor: new THREE.Color(0xffffff) });
   const titan = new THREE.MeshStandardMaterial({ color: 0xC4C9D0, metalness: 1, roughness: 0.26 });
   const titanDark = new THREE.MeshStandardMaterial({ color: 0x9FA6B0, metalness: 1, roughness: 0.32 });
+  toothM.mesh.material = enamel;
+  crownM.mesh.material = zirconia;
 
-  // натуральный зуб: коронка и два корня
+  // натуральный зуб
   const tooth = new THREE.Group();
-  const crownG = crownGeo();
-  tooth.add(new THREE.Mesh(crownG, enamel));
-  const rootG = new THREE.CylinderGeometry(0.36, 0.07, 1.9, 32, 16);
-  rootG.translate(0, -0.95, 0);
-  [-1, 1].forEach((s) => {
-    const r = new THREE.Mesh(rootG, dentin);
-    r.position.set(s * 0.4, -0.4, 0);
-    r.rotation.z = s * 0.13;
-    r.scale.set(1.15, 1, 0.9);
-    tooth.add(r);
-    const tip = new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 12), dentin);
-    tip.position.set(s * 0.4 + s * 0.25, -2.27, 0);
-    tooth.add(tip);
-  });
-  tooth.position.y = 0.65;
+  const toothInner = toothM.wrap;
+  toothInner.scale.setScalar(small ? 1.0 : 1.12);
+  tooth.add(toothInner);
+  tooth.position.y = 0.45;
   scene.add(tooth);
-
   // имплант: коронка, абатмент и винт
   const implant = new THREE.Group();
-  const iCrown = new THREE.Mesh(crownG, zirconia);
+  const iCrown = crownM.wrap;
+  iCrown.scale.setScalar(1.5);
   const V2 = THREE.Vector2;
   const abutPts = [[0, 0.62], [0.2, 0.62], [0.24, 0.58], [0.27, 0.15], [0.36, 0.08], [0.38, 0], [0.3, -0.06], [0.22, -0.1], [0.2, -0.42], [0, -0.42]].map(([a, b]) => new V2(a, b));
   // точки идут снизу вверх, иначе грани токарной фигуры смотрят внутрь
@@ -697,7 +696,7 @@
   const coEls = Array.from(show.querySelectorAll('.co'));
   const W3 = () => new THREE.Vector3();
   const anchors = {
-    crown: () => iCrown.getWorldPosition(W3()).add(new THREE.Vector3(-0.85, 0.15, 0)),
+    crown: () => iCrown.getWorldPosition(W3()).add(new THREE.Vector3(-0.85, 0.7, 0)),
     abut: () => abut.getWorldPosition(W3()).add(new THREE.Vector3(0.3, 0.2, 0)),
     screw: () => screw.getWorldPosition(W3()).add(new THREE.Vector3(-0.35, -0.9, 0))
   };
@@ -732,6 +731,9 @@
     if (!sx && !sy) { camera.clearViewOffset(); return; }
     camera.setViewOffset(W * (1 + 2 * Math.abs(sx)), H * (1 + 2 * Math.abs(sy)), sx > 0 ? 0 : 2 * Math.abs(sx) * W, sy > 0 ? 2 * sy * H : 0, W, H);
   };
+  // шейдеры собираются заранее, чтобы зуб появился без рывка
+  await st.ready();
+
   st.onTick((dt, t) => {
     p = damp(p, progressOf(show), 6, dt);
     intro = Math.min(1, intro + dt / 1.6);
@@ -742,15 +744,16 @@
     const tv = track(TOOTH, p) * ti;
     tooth.visible = tv > 0.01;
     tooth.scale.setScalar(Math.max(0.001, tv));
-    tooth.rotation.y = t * 0.35 + p * 5;
-    tooth.rotation.x = Math.sin(t * 0.7) * 0.06;
-    tooth.position.y = 0.65 + Math.sin(t * 1.1) * 0.06 + (1 - ti) * -1.5;
+    // покачивается щёчной стороной к зрителю: так видны и бугорки, и оба корня
+    tooth.rotation.y = -0.35 + Math.sin(t * 0.45) * 0.55 + p * 4.2;
+    tooth.rotation.x = 0.22 + Math.sin(t * 0.7) * 0.05;
+    tooth.position.y = 0.45 + Math.sin(t * 1.1) * 0.06 + (1 - ti) * -1.5;
 
     const iv = track(IMPL, p);
     implant.visible = iv > 0.01;
     implant.scale.setScalar(Math.max(0.001, iv));
     const sp = track(SPLIT, p);
-    iCrown.position.y = 1.0 + sp * 1.05;
+    iCrown.position.y = 0.8 + sp * (narrow ? 0.78 : 1.05);
     abut.position.y = 0.42 + sp * 0.4;
     screw.position.y = 0.0 - sp * 0.5;
     const c = track(CAM, p);
@@ -764,9 +767,9 @@
     jaw.position.y = (1 - jv) * -3.2;
     jaw.scale.setScalar(Math.max(0.001, jv));
     jaw.rotation.y = ang + Math.sin(t * 0.5) * 0.12;
-    const dist = c[2] * (narrow ? 1.5 : 1);
+    const dist = c[2] * (narrow ? 1.62 : 1);
     camera.position.set(Math.sin(ang) * dist, c[1] - st.pointer.y * 0.25 + (narrow ? 0.4 : 0), Math.cos(ang) * dist);
-    camera.lookAt(0, c[3], 0);
+    camera.lookAt(0, c[3] + (narrow ? 0.45 : 0), 0);
     shiftView(narrow ? 0 : c[4], narrow ? 0.18 : 0);
 
     drawCo(smooth(0.43, 0.47, p) * (1 - smooth(0.54, 0.58, p)));

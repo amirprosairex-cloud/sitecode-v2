@@ -4,52 +4,46 @@
    ========================================================= */
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+import { small, still, damp } from './ui.js';
 
 export { THREE };
-export const small = window.matchMedia('(max-width: 760px)').matches;
-export const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-export const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+export * from './ui.js';
 
-export const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
-export const lerp = (a, b, t) => a + (b - a) * t;
-export const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
-export const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-export const easeOut = (t) => 1 - Math.pow(1 - clamp(t), 3);
-export const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
-
-/* Ключевые кадры: [[t, значение], ...], значение — число или массив чисел */
-export function track(keys, t) {
-  if (t <= keys[0][0]) return keys[0][1];
-  for (let i = 1; i < keys.length; i++) {
-    if (t <= keys[i][0]) {
-      const [t0, v0] = keys[i - 1];
-      const [t1, v1] = keys[i];
-      const k = ease(clamp((t - t0) / Math.max(1e-6, t1 - t0)));
-      return Array.isArray(v0) ? v0.map((a, j) => a + (v1[j] - a) * k) : v0 + (v1 - v0) * k;
-    }
-  }
-  return keys[keys.length - 1][1];
+/* Студия для отражений: тёмная комната и яркие софтбоксы — лак и хром получают «живые» блики */
+export function studioScene(accent = 0xffffff) {
+  const s = new THREE.Scene();
+  s.add(new THREE.Mesh(new THREE.SphereGeometry(30, 24, 12), new THREE.MeshBasicMaterial({ color: 0x0b0b0d, side: THREE.BackSide })));
+  const panel = (w, h, pos, rot, k, color = 0xffffff) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(k), side: THREE.DoubleSide }));
+    m.position.set(pos[0], pos[1], pos[2]);
+    m.rotation.set(rot[0], rot[1], rot[2]);
+    s.add(m);
+  };
+  panel(16, 6, [0, 10, 0], [Math.PI / 2, 0, 0], 2.6);
+  panel(1.6, 12, [-10, 4, 0], [0, Math.PI / 2, 0], 3.4);
+  panel(1.6, 12, [10, 4, 0], [0, -Math.PI / 2, 0], 3.4);
+  panel(14, 1.4, [0, 2.6, -12], [0, 0, 0], 2.2);
+  panel(14, 1.4, [0, 2.6, 12], [0, Math.PI, 0], 1.6);
+  panel(7, 1.2, [9, 0.8, -7], [0, -Math.PI / 3, 0], 2.4, accent);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshBasicMaterial({ color: 0x202024 }));
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -1.5;
+  s.add(floor);
+  return s;
 }
 
-/* Прогресс высокой секции с липким экраном: 0 — верх секции у верха окна, 1 — конец */
-export function progressOf(section) {
-  const r = section.getBoundingClientRect();
-  return clamp(-r.top / Math.max(1, r.height - window.innerHeight));
-}
-
-/* Номер активной сцены по прогрессу и границам */
-export function sceneAt(p, marks) {
-  let i = 0;
-  while (i < marks.length - 1 && p >= marks[i + 1]) i++;
-  return i;
-}
-
-/* Сцена: рендерер, окружение-студия, камера, цикл кадров только пока холст виден */
+/* Сцена: рендерер, окружение, камера, цикл кадров только пока холст виден.
+   Рисовать начинает только после ready(): шейдеры собираются заранее, анимация не дёргается.
+   Чёткость подстраивается под мощность устройства, чтобы держать плавные 60 кадров. */
 export function createStage(canvas, opts = {}) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, opts.maxDpr || (small ? 1.5 : 1.6)));
+  // ?hq — полная чёткость без подстройки (для снимков-постеров)
+  const hq = new URLSearchParams(location.search).has('hq');
+  const maxDpr = hq ? (window.devicePixelRatio || 1) : Math.min(window.devicePixelRatio || 1, opts.maxDpr || (small ? 1.3 : 1.5));
+  const minDpr = hq ? maxDpr : (opts.minDpr || 0.75);
+  let dpr = maxDpr;
+  renderer.setPixelRatio(dpr);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = opts.exposure ?? 1;
@@ -58,9 +52,6 @@ export function createStage(canvas, opts = {}) {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   }
   const scene = new THREE.Scene();
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-  if (opts.envIntensity != null) scene.environmentIntensity = opts.envIntensity;
   const camera = new THREE.PerspectiveCamera(opts.fov ?? 35, 1, 0.05, 300);
 
   const ticks = [];
@@ -77,6 +68,42 @@ export function createStage(canvas, opts = {}) {
   new ResizeObserver(resize).observe(canvas);
   resize();
 
+  // окружение и предварительная сборка шейдеров
+  let started = false;
+  const ready = async () => {
+    if (opts.env !== false) {
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmrem.fromScene(opts.envScene || new RoomEnvironment(), 0.04).texture;
+      pmrem.dispose();
+      if (opts.envIntensity != null) scene.environmentIntensity = opts.envIntensity;
+    }
+    try { await renderer.compileAsync(scene, camera); } catch (e) { /* старые браузеры соберут при первом кадре */ }
+    started = true;
+  };
+
+  // подстройка чёткости по реальной скорости кадров
+  let acc = 0;
+  let frames = 0;
+  let cool = 0;
+  const adapt = (dt) => {
+    acc += dt;
+    frames += 1;
+    cool = Math.max(0, cool - dt);
+    if (acc < 1 || cool > 0) return;
+    const avg = acc / frames;
+    acc = 0;
+    frames = 0;
+    let next = dpr;
+    if (avg > 0.024) next = Math.max(minDpr, dpr - 0.2);
+    else if (avg < 0.0145 && dpr < maxDpr) next = Math.min(maxDpr, dpr + 0.1);
+    if (next !== dpr) {
+      dpr = next;
+      renderer.setPixelRatio(dpr);
+      resize();
+      cool = 1.5;
+    }
+  };
+
   // курсор в диапазоне −1..1, сглаженный
   const pointer = { x: 0, y: 0, tx: 0, ty: 0, cx: -1, cy: -1, inside: false };
   window.addEventListener('pointermove', (e) => {
@@ -92,19 +119,21 @@ export function createStage(canvas, opts = {}) {
   let time = 0;
   const loop = (now) => {
     requestAnimationFrame(loop);
-    const dt = Math.min(0.05, (now - last) / 1000);
+    const raw = (now - last) / 1000;
+    const dt = Math.min(0.05, raw);
     last = now;
-    if (!visible || document.hidden) return;
+    if (!visible || document.hidden || !started) return;
     time += still ? 0 : dt;
     pointer.x = damp(pointer.x, pointer.tx, 4, dt);
     pointer.y = damp(pointer.y, pointer.ty, 4, dt);
     for (let i = 0; i < ticks.length; i++) ticks[i](dt, time);
     renderer.render(scene, camera);
+    if (raw < 0.2) adapt(raw);
   };
   requestAnimationFrame(loop);
 
   return {
-    THREE, renderer, scene, camera, pointer, size,
+    THREE, renderer, scene, camera, pointer, size, ready,
     onTick: (f) => ticks.push(f),
     onResize: (f) => { resizers.push(f); f(size); },
     /* экранные координаты точки сцены — для подписей с линиями */
@@ -118,10 +147,14 @@ export function createStage(canvas, opts = {}) {
   };
 }
 
-/* Загрузка GLB (со сжатием Draco) */
+/* Загрузка GLB (со сжатием Draco): загрузчик подтягивается только там, где есть модели */
 let loader = null;
-export function loadModel(url) {
+export async function loadModel(url) {
   if (!loader) {
+    const [{ GLTFLoader }, { DRACOLoader }] = await Promise.all([
+      import('three/addons/loaders/GLTFLoader.js'),
+      import('three/addons/loaders/DRACOLoader.js')
+    ]);
     const draco = new DRACOLoader();
     draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/libs/draco/gltf/');
     loader = new GLTFLoader();

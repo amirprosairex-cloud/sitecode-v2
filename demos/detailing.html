@@ -11,7 +11,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400;0,500;0,600;0,700;1,800&family=Russo+One&display=swap">
   <link rel="stylesheet" href="assets/demo.css">
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/environments/RoomEnvironment.js">
+  <link rel="modulepreload" href="assets/ui.js">
+  <link rel="modulepreload" href="assets/kit3d.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/loaders/GLTFLoader.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/utils/BufferGeometryUtils.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/loaders/DRACOLoader.js">
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/libs/draco/gltf/draco_wasm_wrapper.js" as="fetch" crossorigin>
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/libs/draco/gltf/draco_decoder.wasm" as="fetch" crossorigin>
   <link rel="preload" href="assets/models/car.glb" as="fetch" crossorigin>
   <style>
     :root {
@@ -50,7 +60,10 @@
     #car3d.on { opacity: 1; }
     .loader { position: absolute; left: 50%; top: 52%; display: flex; align-items: center; gap: 12px; transform: translate(-50%, -50%); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); transition: opacity .5s; }
     .loader i { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .15); border-top-color: var(--accent); animation: spin .8s linear infinite; }
-    .loaded .loader { opacity: 0; }
+    .loaded .loader, .poster .loader { opacity: 0; }
+    .show-poster { position: absolute; inset: 0; pointer-events: none; transition: opacity .9s ease .1s; }
+    .show-poster img { width: 100%; height: 100%; object-fit: cover; object-position: 65.5% 50%; }
+    .loaded .show-poster { opacity: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .scene { position: absolute; left: var(--pad); top: 52%; z-index: 3; width: min(450px, 36vw); opacity: 0; visibility: hidden; transform: translateY(-50%) translateY(30px); transition: opacity .5s, transform .8s cubic-bezier(.2, .8, .2, 1), visibility 0s .8s; }
@@ -191,6 +204,8 @@
       .chips button { width: 38px; height: 38px; }
       .show-hint { display: none; }
       .show-bar { bottom: 22px; }
+      .show-poster img { object-position: 50% 50%; }
+      .loader { top: 30%; }
       .co { padding: 7px 10px; font-size: 12px; }
       .co b { font-size: 12px; }
     }
@@ -219,6 +234,10 @@
       <div class="show-bg" aria-hidden="true"></div>
       <p class="show-word" aria-hidden="true"><span id="showWord">Gloss</span></p>
       <div class="show-fallback" aria-hidden="true"><img src="https://images.unsplash.com/photo-1567808291548-fc3ee04dbcf0?auto=format&fit=crop&w=2000&q=80" alt=""></div>
+      <picture class="show-poster" aria-hidden="true">
+        <source media="(max-width: 760px)" srcset="assets/posters/detailing-m.webp">
+        <img src="assets/posters/detailing-d.webp" alt="" fetchpriority="high">
+      </picture>
       <canvas id="car3d" aria-hidden="true"></canvas>
       <p class="loader" aria-hidden="true"><i></i>Выкатываем машину</p>
 
@@ -425,77 +444,76 @@
 </div>
 
 <script src="assets/demo.js"></script>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
 <script type="module">
-  import { createStage, loadModel, THREE, track, progressOf, sceneAt, smooth, clamp, lerp, damp, small, still, easeOut, blobShadow, callouts } from './assets/kit3d.js';
+  // интерфейс прокрутки: работает сразу, не дожидаясь 3D
+  import { scrollScenes } from './assets/ui.js';
+  const show = document.getElementById('show');
+  scrollScenes(show, {
+    marks: [0, 0.11, 0.29, 0.46, 0.66, 0.81],
+    words: ['Gloss', 'Полировка', 'Керамика', 'Детали', 'Вместе', 'Цвет'],
+    word: document.getElementById('showWord'),
+    scenes: Array.from(show.querySelectorAll('.scene')),
+    bars: Array.from(show.querySelectorAll('.show-bar i')),
+    hint: document.getElementById('showHint')
+  });
+  const poster = document.querySelector('.show-poster img');
+  const posterOk = () => document.documentElement.classList.add('poster');
+  if (poster.complete && poster.naturalWidth) posterOk(); else poster.addEventListener('load', posterOk);
+</script>
+<script type="module">
+  import { createStage, loadModel, THREE, track, progressOf, smooth, clamp, lerp, damp, small, still, easeOut, callouts, afterPaint, studioScene } from './assets/kit3d.js';
 
   const show = document.getElementById('show');
-  const stick = show.querySelector('.show-stick');
   const canvas = document.getElementById('car3d');
-  const scenes = Array.from(show.querySelectorAll('.scene'));
-  const word = document.getElementById('showWord');
-  const bars = Array.from(show.querySelectorAll('.show-bar i'));
-  const hint = document.getElementById('showHint');
-  const WORDS = ['Gloss', 'Полировка', 'Керамика', 'Детали', 'Вместе', 'Цвет'];
-  const MARKS = [0, 0.11, 0.29, 0.46, 0.66, 0.81];
 
+  // 3D начинает работу только после того, как страница нарисована
+  await afterPaint();
   let st;
   try {
-    st = createStage(canvas, { fov: small ? 46 : 30, exposure: 0.95 });
+    st = createStage(canvas, { fov: small ? 46 : 30, exposure: 0.92, envScene: studioScene(0xff6a2a) });
   } catch (e) {
     document.documentElement.classList.add('no-webgl');
   }
-
-  // ---------- сцены интерфейса и большое слово ----------
-  let curScene = -1;
-  const setScene = (i) => {
-    if (i === curScene) return;
-    curScene = i;
-    scenes.forEach((s, k) => s.classList.toggle('on', k === i));
-    word.classList.add('swap');
-    setTimeout(() => { word.textContent = WORDS[i]; word.classList.remove('swap'); }, 260);
-  };
-  const uiTick = () => {
-    const p = progressOf(show);
-    setScene(sceneAt(p, MARKS));
-    bars.forEach((b, k) => {
-      const a = MARKS[k];
-      const z = k + 1 < MARKS.length ? MARKS[k + 1] : 1;
-      b.style.setProperty('--f', clamp((p - a) / (z - a)).toFixed(3));
-    });
-    hint.style.opacity = p > 0.03 ? '0' : '1';
-    return p;
-  };
-  window.addEventListener('scroll', uiTick, { passive: true });
-  uiTick();
 
   if (st) {
     const { scene, camera } = st;
     const gltf = await loadModel('assets/models/car.glb');
     const root = gltf.scene;
     scene.add(root);
-    document.documentElement.classList.add('loaded');
-    canvas.classList.add('on');
 
-    // материалы: лак с прозрачным слоем, хром дисков, тонированные стёкла
-    const paint = new THREE.MeshPhysicalMaterial({ color: 0xE64A19, metalness: 0.85, roughness: 0.55, clearcoat: 0, clearcoatRoughness: 0.04 });
-    const chrome = new THREE.MeshStandardMaterial({ color: 0x55585f, metalness: 1, roughness: 0.2 });
-    const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x0c0c10, metalness: 0.5, roughness: 0.04, transparent: true, opacity: 0.6 });
+    // материалы как в автосалоне: металлик под прозрачным лаком, хромированные диски, тонированные стёкла
+    const paint = new THREE.MeshPhysicalMaterial({ color: 0xE64A19, metalness: 0.7, roughness: 0.55, clearcoat: 0.1, clearcoatRoughness: 0.03 });
+    const chrome = new THREE.MeshStandardMaterial({ color: 0xe8e9ec, metalness: 1, roughness: 0.08 });
+    const darkChrome = new THREE.MeshStandardMaterial({ color: 0x2a2b30, metalness: 1, roughness: 0.18 });
+    const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x0a0a0d, metalness: 0.9, roughness: 0.02, transparent: true, opacity: 0.62 });
     root.getObjectByName('body').material = paint;
-    ['rim_fl', 'rim_fr', 'rim_rr', 'rim_rl', 'trim'].forEach((n) => { const o = root.getObjectByName(n); if (o) o.material = chrome; });
+    ['rim_fl', 'rim_fr', 'rim_rr', 'rim_rl'].forEach((n) => { const o = root.getObjectByName(n); if (o) o.material = chrome; });
+    ['trim', 'chrome'].forEach((n) => { const o = root.getObjectByName(n); if (o) o.material = darkChrome; });
+    // спицы дисков — тёмный хром, жёлтые значки и колпачки убираем в графит
+    const graphite = new THREE.MeshStandardMaterial({ color: 0x70747d, metalness: 1, roughness: 0.26 });
+    root.traverse((o) => {
+      if (!o.isMesh) return;
+      if (/^wheel(_\d)?$/.test(o.name) || /^centre/.test(o.name)) o.material = graphite;
+      if (o.name === 'yellow_trim') o.material = darkChrome;
+    });
     const glass = root.getObjectByName('glass');
     glass.material = glassMat;
+    const sunKey = new THREE.DirectionalLight(0xffffff, 1.6);
+    sunKey.position.set(-4, 6, 3);
+    scene.add(sunKey);
 
     const main = root.getObjectByName('main');
     const steer = root.getObjectByName('steering_wheel');
     const wheels = ['wheel_fl', 'wheel_fr', 'wheel_rl', 'wheel_rr'].map((n) => root.getObjectByName(n));
     root.updateMatrixWorld(true);
 
-    // перевод смещения из мира в локальные координаты родителя
-    const m3 = new THREE.Matrix3();
+    // перевод смещения из мира в локальные координаты родителя (родители не вращаются — считаем один раз)
+    const inv = new Map();
+    const tmpV = new THREE.Vector3();
     const localDir = (obj, v) => {
-      m3.setFromMatrix4(new THREE.Matrix4().copy(obj.parent.matrixWorld).invert());
-      return v.clone().applyMatrix3(m3);
+      let m = inv.get(obj);
+      if (!m) { m = new THREE.Matrix3().setFromMatrix4(new THREE.Matrix4().copy(obj.parent.matrixWorld).invert()); inv.set(obj, m); }
+      return tmpV.copy(v).applyMatrix3(m);
     };
     const parts = [main, steer, glass, ...wheels].map((o) => ({ o, rest: o.position.clone(), side: 0 }));
     const P = new Map(parts.map((p) => [p.o, p]));
@@ -504,15 +522,35 @@
       P.get(w).side = Math.sign(c.x) || 1;
       P.get(w).front = c.z < 0;
     });
+    const offV = new THREE.Vector3();
     const setOffset = (o, x, y, z) => {
       const p = P.get(o);
-      o.position.copy(p.rest).add(localDir(o, new THREE.Vector3(x, y, z)));
+      o.position.copy(p.rest).add(localDir(o, offV.set(x, y, z)));
     };
 
-    const shadow = blobShadow(1, 0.75);
-    shadow.scale.set(1.45, 2.75, 1);
-    shadow.position.y = 0.005;
-    scene.add(shadow);
+    // настоящая контактная тень под машиной (карта затенения модели → прозрачность)
+    const aoImg = await new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = 'assets/models/car_ao.png'; });
+    let shadow;
+    if (aoImg) {
+      const c = document.createElement('canvas');
+      c.width = aoImg.width;
+      c.height = aoImg.height;
+      const g = c.getContext('2d');
+      g.drawImage(aoImg, 0, 0);
+      const d = g.getImageData(0, 0, c.width, c.height);
+      for (let i = 0; i < d.data.length; i += 4) {
+        const a = 255 - d.data[i];
+        d.data[i] = d.data[i + 1] = d.data[i + 2] = 0;
+        d.data[i + 3] = a;
+      }
+      g.putImageData(d, 0, 0);
+      const tex = new THREE.CanvasTexture(c);
+      shadow = new THREE.Mesh(new THREE.PlaneGeometry(0.655 * 4, 1.3 * 4), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false, opacity: 0.95 }));
+      shadow.rotation.x = -Math.PI / 2;
+      shadow.position.y = 0.002;
+      shadow.renderOrder = 2;
+      scene.add(shadow);
+    }
 
     // ---------- подписи частей в сцене «Каждая деталь» ----------
     const coEls = Array.from(show.querySelectorAll('.co'));
@@ -553,8 +591,8 @@
     // ---------- камера по ключевым кадрам: машина поворачивается вслед за прокруткой ----------
     // угол, дистанция, высота, точка взгляда, сдвиг кадра вправо
     const CAM = [
-      [0.00, [2.3, 8.0, 1.45, 0.5, 0.17]],
-      [0.11, [2.3, 8.0, 1.45, 0.5, 0.17]],
+      [0.00, [2.3, 8.7, 1.5, 0.5, 0.155]],
+      [0.11, [2.3, 8.7, 1.5, 0.5, 0.155]],
       [0.22, [1.6, 7.6, 1.0, 0.55, 0.17]],
       [0.33, [0.85, 7.2, 2.4, 0.5, 0.17]],
       [0.42, [0.5, 7.6, 2.7, 0.5, 0.15]],
@@ -565,12 +603,15 @@
       [1.00, [-2.7, 7.7, 1.4, 0.5, 0.17]]
     ];
     const EXPLODE = [[0, 0], [0.47, 0], [0.56, 1], [0.64, 1], [0.73, 0], [1, 0]];
-    const GLOSS = [[0, 0], [0.11, 0], [0.27, 1], [1, 1]];
+    // на первом экране машина уже блестит; в сцене полировки тускнеет («до») и полируется прокруткой («после»)
+    const GLOSS = [[0, 1], [0.08, 1], [0.13, 0], [0.27, 1], [1, 1]];
     const SWEEP = [[0, 0], [0.11, 0], [0.45, 1], [1, 1]];
 
     const glossBar = document.getElementById('gloss');
     const glossVal = document.getElementById('glossVal');
-    let intro = still ? 1 : 0;
+    // машина уже стоит на постере: живая модель подменяет его без сборки, по лаку пробегает блик
+    let intro = 1;
+    let arrive = still ? 1 : 0;
     let p = 0;
     let ex = 0;
     let lastGl = -1;
@@ -583,9 +624,15 @@
     };
     st.onResize(() => { camera.fov = st.size.w < 760 ? 46 : 30; camera.updateProjectionMatrix(); });
 
+    // шейдеры и отражения готовим заранее — сборка машины начнётся без рывков
+    await st.ready();
+    document.documentElement.classList.add('loaded');
+    canvas.classList.add('on');
+
     st.onTick((dt, t) => {
       p = damp(p, progressOf(show), 6, dt);
       intro = Math.min(1, intro + dt / 2.2);
+      arrive = Math.min(1, arrive + dt / 2.6);
       const narrow = st.size.w < 760;
 
       // сборка при загрузке: кузов опускается, колёса закатываются с боков
@@ -608,10 +655,10 @@
       color.lerp(target, 1 - Math.exp(-dt * 5));
       dull.copy(color).multiplyScalar(0.62);
       paint.color.copy(dull).lerp(color, g);
-      paint.roughness = lerp(0.58, matte ? 0.55 : 0.32, g);
-      paint.clearcoat = matte ? lerp(paint.clearcoat, 0.05, 0.1) : g;
-      paint.metalness = matte ? 0.2 : 0.85;
-      if (scene.environmentRotation) scene.environmentRotation.y = track(SWEEP, p) * Math.PI * 2 + Math.sin(t * 0.2) * 0.15;
+      paint.roughness = lerp(0.6, matte ? 0.55 : 0.3, g);
+      paint.clearcoat = matte ? lerp(paint.clearcoat, 0.05, 0.1) : lerp(0.1, 1, g);
+      paint.metalness = matte ? 0.2 : 0.7;
+      if (scene.environmentRotation) scene.environmentRotation.y = track(SWEEP, p) * Math.PI * 2 + Math.sin(t * 0.2) * 0.15 + (1 - easeOut(arrive)) * 2.4;
       const gl = Math.round(lerp(23, 100, g));
       if (gl !== lastGl) {
         lastGl = gl;

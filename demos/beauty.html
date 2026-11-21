@@ -11,6 +11,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Manrope:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="assets/demo.css">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/environments/RoomEnvironment.js">
+  <link rel="modulepreload" href="assets/ui.js">
+  <link rel="modulepreload" href="assets/kit3d.js">
   <style>
     :root {
       --bg: #F6EDE9; --fg: #2E1F27; --muted: #8A7480; --accent: #A84462; --accent-fg: #FFF; --rose: #E9C9CF; --gold: #C59B6D;
@@ -81,7 +87,8 @@
     .pcard p { margin: 14px 0 20px; color: rgba(251, 239, 242, .76); }
     .pprice { display: flex; align-items: center; gap: 14px; padding-top: 16px; border-top: 1px solid rgba(255, 220, 230, .16); }
     .pprice span { font-size: 14px; opacity: .7; }
-    .pprice b { margin-left: auto; font: 600 26px/1 var(--font-head); }
+    .pprice b { margin-left: auto; font: 600 26px/1 var(--font-head); white-space: nowrap; }
+    .pprice span { white-space: nowrap; }
     .pprice .btn { min-height: 46px; padding: 0 20px; }
     .pbar { position: absolute; left: var(--pad); right: var(--pad); bottom: 26px; z-index: 3; display: flex; gap: 6px; }
     .pbar i { flex: 1; height: 2px; background: rgba(255, 220, 230, .16); overflow: hidden; }
@@ -96,6 +103,8 @@
       .pcard { padding: 20px 18px; }
       .pcard h2 { font-size: 32px; }
       .pcard p { font-size: 14px; margin: 8px 0 14px; }
+      .pprice { gap: 10px; }
+      .pprice b { font-size: 21px; }
       .phint { display: none; }
       .pword { font-size: 46vw; bottom: auto; top: 90px; right: -4vw; }
     }
@@ -462,184 +471,205 @@
     }
   })();
 </script>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
 <script type="module">
-  import { createStage, THREE, progressOf, sceneAt, clamp, smooth, damp, ease, small, still } from './assets/kit3d.js';
+  // интерфейс прокрутки: работает сразу, не дожидаясь 3D
+  import { scrollScenes } from './assets/ui.js';
+  const show = document.getElementById('pshow');
+  const hdr = document.querySelector('.hdr');
+  scrollScenes(show, {
+    marks: [0, 0.25, 0.5, 0.75],
+    scenes: Array.from(show.querySelectorAll('.pscene')),
+    bars: Array.from(show.querySelectorAll('.pbar i')),
+    hint: document.getElementById('pHint'),
+    onProgress: () => hdr.classList.toggle('dark', show.getBoundingClientRect().bottom > 70)
+  });
+</script>
+<script type="module">
+  import { createStage, THREE, progressOf, smooth, damp, small, still, afterPaint } from './assets/kit3d.js';
 
   const show = document.getElementById('pshow');
   const canvas = document.getElementById('dust3d');
-  const scenes = Array.from(show.querySelectorAll('.pscene'));
-  const bars = Array.from(show.querySelectorAll('.pbar i'));
-  const hint = document.getElementById('pHint');
-  const hdr = document.querySelector('.hdr');
-  const MARKS = [0, 0.25, 0.5, 0.75];
 
-  let cur = -1;
-  const ui = () => {
-    const p = progressOf(show);
-    const i = sceneAt(p, MARKS);
-    if (i !== cur) { cur = i; scenes.forEach((s, k) => s.classList.toggle('on', k === i)); }
-    bars.forEach((b, k) => b.style.setProperty('--f', clamp((p - MARKS[k]) / ((MARKS[k + 1] ?? 1) - MARKS[k])).toFixed(3)));
-    hint.style.opacity = p > 0.03 ? '0' : '1';
-    hdr.classList.toggle('dark', show.getBoundingClientRect().bottom > 70);
-  };
-  window.addEventListener('scroll', ui, { passive: true });
-  ui();
-
-  // ---------- точки из фотографии: контуры и светлые места становятся частицами ----------
+  // ---------- фото из светящихся точек: каждая точка берёт цвет своего кусочка снимка ----------
+  // портрет, окрашивание, маникюр, уход за лицом — по сценам
   const PHOTOS = ['1546877625-cb8c71916608', '1560869713-bf165a9cfac1', '1632345031435-8727f6897d53', '1570172619644-dfd03ed5d881'];
-  const N = small ? 9000 : 20000;
-  const W = 180;
-  const H = 225;
+  const COLS = small ? 104 : 150;
+  const ROWS = Math.round(COLS * 1.25);
+  const N = COLS * ROWS;
   const loadImg = (id) => new Promise((res, rej) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
+    img.decoding = 'async';
     img.onload = () => res(img);
     img.onerror = rej;
-    img.src = 'https://images.unsplash.com/photo-' + id + '?auto=format&fit=crop&w=' + W * 2 + '&h=' + H * 2 + '&q=70';
+    img.src = 'https://images.unsplash.com/photo-' + id + '?auto=format&fit=crop&w=' + COLS * 2 + '&h=' + ROWS * 2 + '&q=75';
   });
+  // цвет и яркость каждой клетки сетки, чуть сочнее оригинала
   const sample = (img) => {
     const c = document.createElement('canvas');
-    c.width = W;
-    c.height = H;
+    c.width = COLS;
+    c.height = ROWS;
     const g = c.getContext('2d', { willReadFrequently: true });
-    g.drawImage(img, 0, 0, W, H);
-    const d = g.getImageData(0, 0, W, H).data;
-    const L = new Float32Array(W * H);
-    for (let i = 0; i < W * H; i++) L[i] = (d[i * 4] * 0.3 + d[i * 4 + 1] * 0.59 + d[i * 4 + 2] * 0.11) / 255;
-    // вес точки: контур (оператор Собеля) плюс немного яркости, по краям кадра слабее
-    const wgt = new Float32Array(W * H);
-    for (let y = 1; y < H - 1; y++) {
-      for (let x = 1; x < W - 1; x++) {
-        const i = y * W + x;
-        const gx = L[i - W + 1] + 2 * L[i + 1] + L[i + W + 1] - L[i - W - 1] - 2 * L[i - 1] - L[i + W - 1];
-        const gy = L[i + W - 1] + 2 * L[i + W] + L[i + W + 1] - L[i - W - 1] - 2 * L[i - W] - L[i - W + 1];
-        const e = Math.min(1, Math.hypot(gx, gy) * 1.6);
-        const cx = (x / W - 0.5) * 2;
-        const cy = (y / H - 0.5) * 2;
-        const fall = Math.max(0, 1 - (cx * cx * 0.9 + cy * cy * 0.6));
-        const w = (Math.pow(e, 0.8) * 0.5 + Math.pow(L[i], 1.6) * 0.55) * fall;
-        wgt[i] = w;
-      }
-    }
-    const out = new Float32Array(N * 4);
-    for (let k = 0; k < N; k++) {
-      let i = 0;
-      // быстрый выбор по весу: случайная выборка с отбрасыванием
-      for (let tries = 0; tries < 40; tries++) {
-        i = (Math.random() * W * H) | 0;
-        if (Math.random() * 0.6 < wgt[i]) break;
-      }
-      const x = i % W;
-      const y = (i / W) | 0;
-      const jx = x + Math.random() - 0.5;
-      const jy = y + Math.random() - 0.5;
-      out[k * 4] = (jx / W - 0.5) * 3.2;
-      out[k * 4 + 1] = (0.5 - jy / H) * 4.0;
-      out[k * 4 + 2] = (L[i] - 0.5) * 0.6 + (Math.random() - 0.5) * 0.08;
-      out[k * 4 + 3] = Math.min(1, L[i] * 0.6 + wgt[i] * 1.2);
+    g.imageSmoothingQuality = 'high';
+    g.drawImage(img, 0, 0, COLS, ROWS);
+    const d = g.getImageData(0, 0, COLS, ROWS).data;
+    const out = new Uint8Array(N * 4);
+    for (let i = 0; i < N; i++) {
+      let r = d[i * 4] / 255;
+      let gg = d[i * 4 + 1] / 255;
+      let b = d[i * 4 + 2] / 255;
+      const l = r * 0.3 + gg * 0.59 + b * 0.11;
+      r = l + (r - l) * 1.18;
+      gg = l + (gg - l) * 1.18;
+      b = l + (b - l) * 1.18;
+      out[i * 4] = Math.max(0, Math.min(255, ((r - 0.5) * 1.08 + 0.52) * 255));
+      out[i * 4 + 1] = Math.max(0, Math.min(255, ((gg - 0.5) * 1.08 + 0.52) * 255));
+      out[i * 4 + 2] = Math.max(0, Math.min(255, ((b - 0.5) * 1.08 + 0.52) * 255));
+      out[i * 4 + 3] = Math.round(l * 255);
     }
     return out;
   };
 
-  const st = createStage(canvas, { fov: 30, exposure: 1 });
+  // снимки начинают грузиться сразу, 3D-сцена — после первой отрисовки
+  const reqs = PHOTOS.map((id) => loadImg(id).then(sample));
+  await afterPaint();
+  const st = createStage(canvas, { fov: 30, exposure: 1, env: false });
   const { scene, camera } = st;
-  let targets;
-  try {
-    const imgs = await Promise.all(PHOTOS.map(loadImg));
-    targets = imgs.map(sample);
-  } catch (e) {
-    targets = null;
-  }
-  if (targets) {
+
+  let first;
+  try { first = await reqs[0]; } catch (e) { first = null; }
+  if (first) {
     const geo = new THREE.BufferGeometry();
-    const seeds = new Float32Array(N);
-    for (let i = 0; i < N; i++) seeds[i] = Math.random();
-    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 3), 3));
-    targets.forEach((tg, k) => geo.setAttribute('aT' + k, new THREE.BufferAttribute(tg, 4)));
-    geo.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1));
+    const grid = new Float32Array(N * 3);
+    const rnd = new Float32Array(N * 4);
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        const i = y * COLS + x;
+        // лёгкий разброс убирает муар от ровной сетки
+        grid[i * 3] = (x + 0.5 + (Math.random() - 0.5) * 0.35) / COLS - 0.5;
+        grid[i * 3 + 1] = 0.5 - (y + 0.5 + (Math.random() - 0.5) * 0.35) / ROWS;
+      }
+    }
+    for (let i = 0; i < N * 4; i++) rnd[i] = Math.random();
+    geo.setAttribute('position', new THREE.BufferAttribute(grid, 3));
+    geo.setAttribute('aRand', new THREE.BufferAttribute(rnd, 4));
+    const cols = [0, 1, 2, 3].map((k) => {
+      const a = new THREE.BufferAttribute(first.slice(), 4, true);
+      geo.setAttribute('aC' + k, a);
+      return a;
+    });
+    reqs.slice(1).forEach((r, k) => r.then((data) => { cols[k + 1].array.set(data); cols[k + 1].needsUpdate = true; }).catch(() => {}));
+
     const mat = new THREE.ShaderMaterial({
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
       uniforms: {
-        uT: { value: 0 }, uS: { value: 0 }, uIntro: { value: still ? 1 : 0 },
-        uMouse: { value: new THREE.Vector3(99, 99, 0) }, uPx: { value: Math.min(window.devicePixelRatio || 1, 1.6) * (small ? 30 : 30) },
-        uA: { value: new THREE.Color('#B4476A') }, uB: { value: new THREE.Color('#FFE6D2') }
+        uMix: { value: 0 }, uTime: { value: 0 }, uIntro: { value: still ? 1 : 0 },
+        uSize: { value: new THREE.Vector2(3, 3.75) }, uDepth: { value: 0.55 },
+        uPx: { value: 500 }, uDot: { value: 0.02 }, uMouse: { value: new THREE.Vector3(9, 9, 0) }
       },
-      vertexShader: `
-        attribute vec4 aT0; attribute vec4 aT1; attribute vec4 aT2; attribute vec4 aT3; attribute float aSeed;
-        uniform float uT; uniform float uS; uniform float uIntro; uniform vec3 uMouse; uniform float uPx;
-        varying float vL; varying float vA;
-        vec3 h3(float n) { return fract(sin(vec3(n, n + 1.7, n + 3.1)) * vec3(43758.5453, 22578.1459, 19642.3490)) - .5; }
+      vertexShader: /* glsl */`
+        attribute vec4 aRand; attribute vec4 aC0; attribute vec4 aC1; attribute vec4 aC2; attribute vec4 aC3;
+        uniform float uMix, uTime, uIntro, uDepth, uPx, uDot;
+        uniform vec2 uSize; uniform vec3 uMouse;
+        varying vec3 vCol; varying float vA;
+        vec4 pick(float i) { return i < .5 ? aC0 : (i < 1.5 ? aC1 : (i < 2.5 ? aC2 : aC3)); }
         void main() {
-          vec4 t = aT0;
-          t = mix(t, aT1, clamp(uS, 0., 1.));
-          t = mix(t, aT2, clamp(uS - 1., 0., 1.));
-          t = mix(t, aT3, clamp(uS - 2., 0., 1.));
-          vec3 p = t.xyz;
-          vec3 r = h3(aSeed * 91.7);
-          // между услугами частицы закручиваются вихрем
-          float f = fract(uS);
-          float m = sin(f * 3.14159) * step(.001, f) * step(f, .999);
-          float a = uT * .6 + aSeed * 6.283;
-          p += vec3(cos(a) * (1.2 + r.x), sin(a * 1.3) * (.8 + r.y), r.z * 2.) * m * .9;
-          // появление: частицы слетаются из облака
-          vec3 cloud = normalize(r + .001) * (3.5 + r.x * 4.);
-          p = mix(cloud, p, uIntro);
-          p.z += sin(uT * 1.4 + aSeed * 30.) * .02;
-          // курсор раздвигает частицы
+          vec2 g = position.xy;
+          float m = clamp(uMix, 0., 3.);
+          float i0 = min(floor(m), 2.);
+          float f = m - i0;
+          // переход бежит волной по диагонали снимка
+          float w = (g.x + .5) * .45 + (.5 - g.y) * .35 + aRand.x * .2;
+          float lt = smoothstep(w * .6, w * .6 + .4, f);
+          vec4 c = mix(pick(i0), pick(i0 + 1.), lt);
+          float burst = sin(lt * 3.14159);
+          vec3 p = vec3(g * uSize, (c.a - .5) * uDepth);
+          // вихрь: точка взлетает, делает виток и садится уже в новый снимок
+          float a0 = aRand.x * 6.283;
+          float ang = burst * (1.6 + aRand.y * 2.2) * (aRand.z > .5 ? 1. : -1.) + a0;
+          float rad = burst * (.4 + aRand.w * 1.15);
+          p.x += (cos(ang) - cos(a0)) * rad;
+          p.z += sin(ang) * rad * 1.3;
+          p.y += burst * (aRand.y - .35) * 1.1;
+          // появление: точки слетаются из облака
+          float il = smoothstep(aRand.x * .55, aRand.x * .55 + .45, uIntro);
+          vec3 cloud = (aRand.yzw - .5) * vec3(10., 8., 7.);
+          p = mix(cloud, p, il);
+          p.z += sin(uTime * 1.3 + aRand.y * 40.) * .012;
+          // курсор мягко раздвигает точки и тянет их к зрителю
           vec2 d = p.xy - uMouse.xy;
-          float dl = length(d);
-          p.xy += normalize(d + 1e-4) * smoothstep(.75, 0., dl) * .38;
+          float push = smoothstep(.85, 0., length(d)) * uMouse.z;
+          p.xy += normalize(d + 1e-4) * push * .28;
+          p.z += push * .45;
           vec4 mv = modelViewMatrix * vec4(p, 1.);
-          gl_PointSize = uPx * (.55 + t.w * .9) / -mv.z;
           gl_Position = projectionMatrix * mv;
-          vL = t.w;
-          vA = .5 + .9 * t.w;
+          gl_PointSize = uPx * uDot * (.6 + .62 * c.a) * (1. + burst * .5 + (1. - il) * 1.5) / -mv.z;
+          vCol = c.rgb;
+          // мягкий овал: снимок растворяется в тёмном фоне
+          vec2 q = g * vec2(1.95, 1.62);
+          vA = smoothstep(1.0, .62, length(q)) * (.25 + .75 * il) * (1. - burst * .3);
         }`,
-      fragmentShader: `
-        uniform vec3 uA; uniform vec3 uB;
-        varying float vL; varying float vA;
+      fragmentShader: /* glsl */`
+        varying vec3 vCol; varying float vA;
         void main() {
           vec2 c = gl_PointCoord - .5;
           float d = length(c);
-          float s = smoothstep(.5, .0, d);
-          gl_FragColor = vec4(mix(uA, uB, vL) * s * vA, s * vA);
+          float a = smoothstep(.5, .3, d) * vA;
+          if (a < .01) discard;
+          gl_FragColor = vec4(vCol * (1.02 + .22 * (1. - d * 2.)), a);
         }`
     });
     const pts = new THREE.Points(geo, mat);
     pts.frustumCulled = false;
     scene.add(pts);
 
+    // размеры и место портрета: справа на компьютере, сверху на телефоне
+    const DIST = 9;
+    const lay = { x: 0, y: 0 };
+    st.onResize((sz) => {
+      const vh = 2 * DIST * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+      const vw = vh * sz.w / sz.h;
+      const narrow = sz.w < 760;
+      let hgt = vh * (narrow ? 0.47 : 0.8);
+      const maxW = vw * (narrow ? 0.92 : 0.5);
+      if (hgt * 0.8 > maxW) hgt = maxW / 0.8;
+      mat.uniforms.uSize.value.set(hgt * 0.8, hgt);
+      mat.uniforms.uDot.value = hgt / ROWS;
+      lay.x = narrow ? 0 : vw * 0.17;
+      lay.y = narrow ? vh * 0.19 : -vh * 0.01;
+    });
+
     const ray = new THREE.Raycaster();
     const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
     const ndc = new THREE.Vector2();
     const hit = new THREE.Vector3();
     let s = 0;
+    let push = 0;
+    await st.ready();
     st.onTick((dt, t) => {
-      const narrow = st.size.w < 760;
-      mat.uniforms.uT.value = t;
-      mat.uniforms.uIntro.value = Math.min(1, mat.uniforms.uIntro.value + dt / 2.6);
-      // сцена с паузами: портрет держится, затем быстро перетекает в следующий
-      const p = progressOf(show) * 4;
-      const k = Math.min(3, Math.floor(p));
-      const fr = p - k;
-      const target = k + smooth(0.55, 0.95, fr);
-      s = damp(s, Math.min(3, target), 5, dt);
-      mat.uniforms.uS.value = s;
-      pts.position.x = narrow ? 0 : 1.25;
-      pts.position.y = narrow ? 1.25 : 0;
-      pts.rotation.y = st.pointer.x * 0.18;
-      pts.rotation.x = st.pointer.y * 0.08;
-      camera.position.set(0, 0, narrow ? 12.5 : 7.4);
+      const u = mat.uniforms;
+      u.uTime.value = t;
+      u.uIntro.value = Math.min(1, u.uIntro.value + dt / 2.4);
+      u.uPx.value = st.renderer.getPixelRatio() * st.size.h / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
+      // снимок держится, пока открыта его услуга, и перетекает на границе сцен
+      const k = progressOf(show) * 4;
+      let target = 0;
+      for (let b = 1; b <= 3; b++) target += smooth(b - 0.38, b + 0.12, k);
+      s = damp(s, target, 4, dt);
+      u.uMix.value = s;
+      pts.position.set(lay.x, lay.y, 0);
+      pts.rotation.y = st.pointer.x * 0.22 + Math.sin(t * 0.3) * 0.05;
+      pts.rotation.x = st.pointer.y * 0.1;
+      camera.position.set(0, 0, DIST);
       camera.lookAt(0, 0, 0);
-      // курсор в координатах частиц
+      // курсор в координатах портрета
       ndc.set(st.pointer.cx / st.size.w * 2 - 1, -(st.pointer.cy / st.size.h) * 2 + 1);
       ray.setFromCamera(ndc, camera);
-      if (ray.ray.intersectPlane(plane, hit)) {
-        mat.uniforms.uMouse.value.set(hit.x - pts.position.x, hit.y - pts.position.y, 0);
-      }
+      const over = st.pointer.cx >= 0 && ray.ray.intersectPlane(plane, hit);
+      push = damp(push, over ? 1 : 0, 6, dt);
+      if (over) u.uMouse.value.set(hit.x - lay.x, hit.y - lay.y, push);
+      else u.uMouse.value.z = push;
     });
   }
 </script>

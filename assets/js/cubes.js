@@ -20,9 +20,11 @@ function hasWebGL() {
   }
 }
 
-if (!canvas || reduceMotion || !hasWebGL()) {
-  root.classList.add('no-cubes');
-} else {
+// сцена собирается по сигналу: во время заставки — пока логотип стоит, без неё — сразу
+let booted = false;
+const go = () => {
+  if (booted) return;
+  booted = true;
   try {
     boot();
   } catch (err) {
@@ -30,6 +32,14 @@ if (!canvas || reduceMotion || !hasWebGL()) {
     root.classList.add('no-cubes');
     root.classList.remove('cubes-on');
   }
+};
+if (!canvas || reduceMotion || !hasWebGL()) {
+  root.classList.add('no-cubes');
+} else if (window.__scBoot || window.__scReady) {
+  go();
+} else {
+  window.addEventListener('sc:boot', go, { once: true });
+  window.addEventListener('sc:ready', go, { once: true });
 }
 
 function boot() {
@@ -83,7 +93,10 @@ function boot() {
 
   /* ---------- Сцена ---------- */
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, small ? 1.75 : 2));
+  // чёткость: на старте умеренная, дальше подстраивается под скорость кадров
+  const maxDpr = Math.min(window.devicePixelRatio || 1, small ? 1.5 : 1.75);
+  let dpr = maxDpr;
+  renderer.setPixelRatio(dpr);
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.NeutralToneMapping !== undefined ? THREE.NeutralToneMapping : THREE.ACESFilmicToneMapping;
@@ -682,6 +695,30 @@ function boot() {
   let last = performance.now();
   let enter = 0;
   let started = false;
+  let lastRaw = performance.now();
+  // если кадры тяжёлые, снижаем чёткость; когда легко — возвращаем
+  let acc = 0;
+  let frames = 0;
+  let cool = 0;
+  const adapt = (raw) => {
+    if (raw > 0.2) return;
+    acc += raw;
+    frames += 1;
+    cool = Math.max(0, cool - raw);
+    if (acc < 1 || cool > 0) return;
+    const avg = acc / frames;
+    acc = 0;
+    frames = 0;
+    let next = dpr;
+    if (avg > 0.022) next = Math.max(1, dpr - 0.25);
+    else if (avg < 0.0135 && dpr < maxDpr) next = Math.min(maxDpr, dpr + 0.125);
+    if (next !== dpr) {
+      dpr = next;
+      renderer.setPixelRatio(dpr);
+      renderer.setSize(view.w, view.h, false);
+      cool = 1.5;
+    }
+  };
 
   function frame(now) {
     requestAnimationFrame(frame);
@@ -689,6 +726,8 @@ function boot() {
     last = now;
     if (!visible || document.hidden) return;
     time += dt;
+    adapt((now - lastRaw) / 1000);
+    lastRaw = now;
 
     const target = window.scrollY;
     sy += (target - sy) * (1 - Math.exp(-dt * 7));
@@ -798,11 +837,17 @@ function boot() {
     root.classList.remove('cubes-on');
   });
 
-  /* ---------- Старт ---------- */
+  /* ---------- Старт: шейдеры собираются заранее, первый кадр без рывка ---------- */
   layout();
-  root.classList.add('cubes-on');
-  root.classList.remove('no-cubes');
-  if (window.__scReady) started = true;
-  else window.addEventListener('sc:ready', () => { started = true; }, { once: true });
-  requestAnimationFrame(frame);
+  const kick = () => {
+    root.classList.add('cubes-on');
+    root.classList.remove('no-cubes');
+    last = performance.now();
+    lastRaw = last;
+    if (window.__scReady) started = true;
+    else window.addEventListener('sc:ready', () => { started = true; }, { once: true });
+    requestAnimationFrame(frame);
+  };
+  if (renderer.compileAsync) renderer.compileAsync(scene, camera).then(kick, kick);
+  else kick();
 }

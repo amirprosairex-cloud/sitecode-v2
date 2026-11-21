@@ -11,7 +11,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Nunito:wght@700;800;900&display=swap">
   <link rel="stylesheet" href="assets/demo.css">
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/environments/RoomEnvironment.js">
+  <link rel="modulepreload" href="assets/ui.js">
+  <link rel="modulepreload" href="assets/kit3d.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/loaders/GLTFLoader.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/utils/BufferGeometryUtils.js">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/loaders/DRACOLoader.js">
   <link rel="preload" href="assets/models/robot.glb" as="fetch" crossorigin>
   <style>
     :root {
@@ -426,9 +434,8 @@
     });
   })();
 </script>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
 <script type="module">
-  import { createStage, loadModel, THREE, clamp, lerp, damp, small, still, blobShadow, canvasTexture } from './assets/kit3d.js';
+  import { createStage, loadModel, THREE, clamp, lerp, damp, small, still, blobShadow, canvasTexture, afterPaint } from './assets/kit3d.js';
   import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
   const canvas = document.getElementById('robot3d');
@@ -437,6 +444,9 @@
   const spots = Array.from(document.querySelectorAll('[data-spot]'));
   const heroSpot = spots.find((s) => s.dataset.spot === 'hero');
 
+  // модель робота начинает грузиться сразу, а 3D-сцена — после первой отрисовки страницы
+  const robotReq = loadModel('assets/models/robot.glb');
+  await afterPaint();
   const st = createStage(canvas, { fov: 22, exposure: 1.05, maxDpr: 1.5 });
   const { scene, camera } = st;
   const sun = new THREE.DirectionalLight(0xffffff, 1.6);
@@ -510,7 +520,7 @@
   floaters.forEach((f, i) => { f.o.rotation.set(f.r[0], f.r[1], f.r[2]); f.ph = i * 1.3; props.add(f.o); });
 
   // ---------- робот ----------
-  const gltf = await loadModel('assets/models/robot.glb');
+  const gltf = await robotReq;
   const robot = gltf.scene;
   robot.traverse((o) => {
     if (!o.isMesh) return;
@@ -525,8 +535,6 @@
   shadow.scale.set(1.6, 0.9, 1);
   shadow.rotation.x = 0;
   scene.add(shadow);
-  canvas.classList.add('on');
-
   const mixer = new THREE.AnimationMixer(robot);
   const clips = {};
   gltf.animations.forEach((c) => { clips[c.name] = c; });
@@ -643,6 +651,10 @@
   const headLook = new THREE.Quaternion();
   const lookEuler = new THREE.Euler();
   let headSaved = false;
+  // шейдеры собираются заранее, робот появляется без рывка
+  await st.ready();
+  canvas.classList.add('on');
+
   st.onTick((dt, t) => {
     // поворот головы добавляется поверх анимации и не накапливается от кадра к кадру
     if (head && headSaved) head.quaternion.copy(headBase);
