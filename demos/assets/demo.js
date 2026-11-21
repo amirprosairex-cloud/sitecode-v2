@@ -500,11 +500,12 @@
     badge.innerHTML = '<a class="home" href="../index.html#works">Демо от SiteCode</a><a class="want" target="_blank" rel="noopener">Хочу такой сайт</a><button type="button" aria-label="Скрыть">×</button>';
     $('.want', badge).href = scLink('Здравствуйте! Посмотрел демо-сайт ' + brand + '. Хочу такой сайт для своего бизнеса.');
     $('button', badge).addEventListener('click', () => {
-      badge.classList.remove('show');
+      badge.classList.remove('is-shown');
       try { window.sessionStorage.setItem('sc-badge-hidden', '1'); } catch (e) { /* ничего */ }
     });
     body.appendChild(badge);
-    setTimeout(() => badge.classList.add('show'), 1800);
+    // свой класс: слово «show» уже занято секциями в демо и ломало вёрстку
+    setTimeout(() => badge.classList.add('is-shown'), 1800);
   }
 
   window.Demo = { openModal, money, scLink, $, $$ };

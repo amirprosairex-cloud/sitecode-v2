@@ -180,10 +180,10 @@
   const stepsEl = $('#steps');
   const stepItems = $$('.step');
   const marquee = $('.marquee-track');
-  const backdrop = $('#backdrop');
+  const night = $('#night');
   const anatomy = $('#anatomy');
   const storyStage = $('.story-stage');
-  const m = { vh: window.innerHeight, storyTop: 0, worksTop: 0, stepsTop: 0, stepsH: 1, mqW: 0 };
+  const m = { vh: window.innerHeight, storyTop: 0, storyH: 1, worksTop: 0, stepsTop: 0, stepsH: 1, mqW: 0 };
   const docTop = (el) => el.getBoundingClientRect().top + window.scrollY;
 
   function measureShifts() {
@@ -199,13 +199,14 @@
   function measure() {
     m.vh = window.innerHeight;
     m.storyTop = docTop(story);
+    m.storyH = Math.max(1, story.offsetHeight);
     m.worksTop = docTop(works);
     m.stepsTop = docTop(stepsEl);
     m.stepsH = Math.max(1, stepsEl.offsetHeight);
     m.mqW = marquee ? marquee.scrollWidth / 2 : 0;
-    if (backdrop && storyStage) {
-      backdrop.style.setProperty('--gx', ((storyStage.offsetLeft + storyStage.offsetWidth / 2) / window.innerWidth * 100).toFixed(1) + '%');
-      backdrop.style.setProperty('--gy', ((storyStage.offsetTop + storyStage.offsetHeight / 2) / window.innerHeight * 100).toFixed(1) + '%');
+    if (night && storyStage) {
+      night.style.setProperty('--gx', ((storyStage.offsetLeft + storyStage.offsetWidth / 2) / window.innerWidth * 100).toFixed(1) + '%');
+      night.style.setProperty('--gy', ((storyStage.offsetTop + storyStage.offsetHeight / 2) / window.innerHeight * 100).toFixed(1) + '%');
     }
     measureShifts();
     placeAnatomy();
@@ -218,24 +219,29 @@
     img.addEventListener('error', () => { img.style.visibility = 'hidden'; });
   });
 
-  /* ---------- Сцена: на истории «гаснет свет» ---------- */
-  const PAPER = [231, 235, 241];
-  const NIGHT = [9, 15, 44];
+  /* ---------- Сцена: тёмная панель истории поднимается снизу вместе с разделом ---------- */
   const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
   let lastNight = -1;
-  if (backdrop) root.classList.add('night-ready');
+  let lastClip = '';
+  if (night) root.classList.add('night-ready');
   function updateScene(y) {
-    if (!backdrop) return;
+    if (!night) return;
     const vh = m.vh;
-    let k = smooth(m.storyTop - vh * 0.32, m.storyTop + vh * 0.04, y);
-    // когда блок с примерами полностью закрыл историю, фон снова светлый (для заявки внизу)
-    k *= 1 - smooth(m.worksTop - vh * 0.15, m.worksTop, y);
-    if (Math.abs(k - lastNight) < 0.002) return;
+    const top = m.storyTop - y;
+    const bottom = top + m.storyH;
+    const t = clamp(top, 0, vh);
+    const b = clamp(vh - bottom, 0, vh);
+    // у верхнего края скругление, пока панель поднимается; на весь экран — без углов
+    const r = Math.round((vh < 700 || window.innerWidth < 760 ? 28 : 44) * clamp(top / 90));
+    const clip = 'inset(' + t.toFixed(0) + 'px 0 ' + b.toFixed(0) + 'px 0 round ' + r + 'px ' + r + 'px 0 0)';
+    if (clip !== lastClip) {
+      lastClip = clip;
+      night.style.clipPath = clip;
+    }
+    const k = smooth(0.25, 1, 1 - t / vh);
+    if (Math.abs(k - lastNight) < 0.004) return;
     lastNight = k;
-    const c = PAPER.map((p, i) => Math.round(p + (NIGHT[i] - p) * k));
-    backdrop.style.backgroundColor = 'rgb(' + c.join(',') + ')';
-    backdrop.style.setProperty('--glow', k.toFixed(3));
-    root.style.setProperty('--night', k.toFixed(3));
+    night.style.setProperty('--glow', k.toFixed(3));
   }
 
   /* ---------- Подписи «из чего состоит сайт» ---------- */
@@ -246,9 +252,12 @@
   function placeAnatomy() {
     if (!anatomy || !anchors) return;
     const vw = window.innerWidth;
-    const off = vw >= 901
+    // на средних экранах подписи слева не залезают на текст истории
+    const off = vw >= 1240
       ? [[-20, -74], [-175, -40], [-175, 40], [40, -84], [0, 96]]
-      : [[0, -46], [-40, -28], [-30, 44], [10, -50], [0, 60]];
+      : vw >= 901
+        ? [[-10, -74], [-120, -44], [40, 74], [40, -84], [60, 104]]
+        : [[0, -46], [-40, -28], [-30, 44], [10, -50], [0, 60]];
     let svg = '';
     anats.forEach((el, k) => {
       const a = anchors[Number(el.dataset.a)];

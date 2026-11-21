@@ -273,14 +273,19 @@ h1, h2, h3, p, dl, dd { margin: 0; }
 
 /* ---------- Фон-сцена: на истории «гаснет свет» ---------- */
 .backdrop { position: fixed; inset: 0; z-index: 0; background: var(--paper); pointer-events: none; }
-.backdrop::after {
+/* тёмная панель поднимается вместе с верхним краем истории: текст на ней виден сразу, без пустого места */
+.night {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: #090F2C;
+  clip-path: inset(100% 0 0 0);
+  will-change: clip-path;
+}
+.night::after {
   content: ""; position: absolute; inset: 0;
   background: radial-gradient(55% 50% at var(--gx, 70%) var(--gy, 48%), rgba(68, 112, 255, .42), rgba(68, 112, 255, 0) 72%);
   opacity: var(--glow, 0);
 }
 .night-ready .story { color: #EEF2FF; }
-/* светлый текст истории проявляется вместе с темнотой фона */
-.night-ready .story-steps, .night-ready .story-bars { opacity: calc(var(--night, 1) * 1); }
 .night-ready .story-step p:last-child { color: rgba(226, 233, 255, .74); }
 .night-ready .story-num { color: #8FA8FF; }
 .night-ready .story-bars i { background: rgba(255, 255, 255, .16); }
@@ -683,10 +688,11 @@ h1, h2, h3, p, dl, dd { margin: 0; }
   .hero-facts { position: relative; z-index: 2; order: 5; }
   .hero-hint { display: none; }
 
-  .story-sticky { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: 10px; padding: 74px var(--pad) 64px; }
-  .story-stage { grid-column: 1; grid-row: 1; }
-  .story-steps { grid-column: 1; grid-row: 2; min-height: 230px; }
-  .story-step { top: auto; bottom: 0; transform: translateY(30px); }
+  /* на телефоне текст сверху: он первым въезжает вместе с тёмной панелью, сайт из кубиков собирается под ним */
+  .story-sticky { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 10px; padding: 78px var(--pad) 64px; }
+  .story-stage { grid-column: 1; grid-row: 2; }
+  .story-steps { grid-column: 1; grid-row: 1; min-height: 210px; }
+  .story-step { top: 0; bottom: auto; transform: translateY(24px); }
   .story-step.is-active { transform: none; }
   .story-step h2 { margin-bottom: 12px; }
   .story-step p:last-child { font-size: 16px; }
