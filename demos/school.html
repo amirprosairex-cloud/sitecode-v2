@@ -100,8 +100,6 @@
     .courses-head { display: grid; grid-template-columns: 1fr minmax(0, 26em) 170px; align-items: end; gap: 30px; margin-bottom: 54px; }
     .courses-head .robot-spot { width: 170px; height: 220px; }
     .course-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
-    .course { position: relative; display: flex; flex-direction: column; min-height: 400px; padding: 28px 24px 24px; border: 3px solid var(--fg); border-radius: 30px; background: var(--c, #fff); box-shadow: 6px 6px 0 var(--fg); transition: transform .4s cubic-bezier(.2, 1.4, .4, 1), box-shadow .4s; }
-    .course:hover { transform: translate(-4px, -6px) rotate(-1.5deg); box-shadow: 10px 12px 0 var(--fg); }
     .course .emoji { display: grid; place-items: center; width: 64px; height: 64px; margin-bottom: 22px; border: 2.5px solid var(--fg); border-radius: 20px; background: #fff; font-size: 30px; }
     .course h3 { font: 900 26px/1.05 var(--font-head); letter-spacing: -.02em; }
     .course .meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0; }
@@ -110,8 +108,6 @@
     .course .bottom { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 20px; }
     .course .price { font: 900 22px/1 var(--font-head); }
     .course .price small { display: block; font: 500 13px var(--font-body); }
-    .course button { width: 52px; height: 52px; border: 2.5px solid var(--fg); border-radius: 16px; background: #fff; font-size: 22px; font-weight: 900; cursor: pointer; transition: transform .3s; }
-    .course button:hover { transform: rotate(-10deg) scale(1.08); }
 
     /* расписание */
     .schedule { position: relative; padding: 110px var(--pad); background: var(--fg); color: #fff; }
@@ -199,6 +195,72 @@
       .say { max-width: 190px; font-size: 14px; }
       footer { flex-direction: column; }
     }
+
+    /* ===== тетрадь в клетку: линии тянутся к курсору, как к магниту ===== */
+    .lattice { position: absolute; inset: 0; z-index: -2; display: block; width: 100%; height: 100%; pointer-events: none; }
+    .hero h1 .ln { display: block; }
+
+    /* ===== курсы: карточку можно потянуть и перевернуть, на обороте программа ===== */
+    .course { position: relative; display: grid; perspective: 1100px; touch-action: pan-y; cursor: grab; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .course.drag { cursor: grabbing; }
+    .c-in { position: relative; display: grid; transform-style: preserve-3d; transform: rotateX(var(--tx, 0deg)) rotateY(calc(var(--ry, 0deg) + var(--ty, 0deg))); transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
+    .course.flip .c-in { transition: transform .85s cubic-bezier(.25, 1.35, .4, 1); }
+    .course.drag .c-in { transition: none; }
+    .c-face { display: flex; flex-direction: column; min-height: 420px; padding: 28px 24px 24px; border: 3px solid var(--fg); border-radius: 30px; background: var(--c, #fff); box-shadow: 6px 6px 0 var(--fg); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+    .c-face::after { content: ""; position: absolute; inset: 0; border-radius: 27px; background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, .6), rgba(255, 255, 255, 0) 55%); opacity: var(--go, 0); transition: opacity .35s; pointer-events: none; }
+    .c-front { position: relative; }
+    .c-back { position: absolute; inset: 0; transform: rotateY(180deg); background: #fff; }
+    .c-front .bottom button { width: 52px; height: 52px; border: 2.5px solid var(--fg); border-radius: 16px; background: #fff; font-size: 22px; font-weight: 900; cursor: pointer; transition: transform .3s; }
+    .c-front .bottom button:hover { transform: rotate(-10deg) scale(1.08); }
+    .c-turn { position: absolute; right: 16px; top: 16px; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; border: 2.5px solid var(--fg); border-radius: 50%; background: #fff; font: 900 20px/1 var(--font-head); cursor: pointer; transition: transform .45s cubic-bezier(.2, 1.4, .4, 1); }
+    .c-turn:hover { transform: rotate(-180deg); }
+    .c-back .c-k { display: inline-flex; align-self: flex-start; padding: 6px 12px; border-radius: 999px; background: var(--c); font: 900 13px/1 var(--font-head); }
+    .c-back h3 { margin: 14px 0 14px; padding-right: 40px; }
+    .c-back ul { display: grid; gap: 10px; margin-bottom: 16px; font-size: 15px; font-weight: 600; }
+    .c-back li { display: flex; gap: 10px; align-items: baseline; }
+    .c-back li::before { content: ""; flex: none; width: 12px; height: 12px; border: 2px solid var(--fg); border-radius: 4px; background: var(--c); transform: translateY(1px) rotate(12deg); }
+    .c-back dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: auto 0 16px; padding-top: 14px; border-top: 2px dashed var(--line); font-size: 14px; }
+    .c-back dt { color: var(--muted); }
+    .c-back dd { margin: 0; font-weight: 700; }
+    .c-back .btn { width: 100%; min-height: 50px; }
+    @media (prefers-reduced-motion: reduce) { .c-in, .course.flip .c-in { transition: none !important; } }
+
+    /* ===== тест: три вопроса, робот подбирает курс и даёт скидку ===== */
+    .quiz { padding: 20px var(--pad) 130px; }
+    .quiz-box { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 250px; align-items: end; gap: 30px; padding: clamp(28px, 4vw, 60px); border: 3px solid var(--fg); border-radius: 36px; background: var(--lilac); box-shadow: 10px 10px 0 var(--fg); overflow: hidden; isolation: isolate; }
+    .quiz-box::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: radial-gradient(rgba(26, 26, 34, .16) 2px, transparent 2.5px); background-size: 26px 26px; -webkit-mask-image: linear-gradient(110deg, transparent 40%, #000); mask-image: linear-gradient(110deg, transparent 40%, #000); }
+    .quiz-k { display: inline-block; margin-bottom: 18px; padding: 8px 14px; border: 2px solid var(--fg); border-radius: 999px; background: #fff; font: 800 14px/1 var(--font-head); }
+    .quiz .h2 { max-width: 11em; }
+    .q-steps { display: flex; gap: 8px; margin: 28px 0 24px; }
+    .q-steps i { width: 34px; height: 12px; border: 2px solid var(--fg); border-radius: 999px; background: #fff; transition: background-color .3s, width .4s cubic-bezier(.2, 1.4, .4, 1); }
+    .q-steps i.on { width: 58px; background: var(--sun); }
+    .q-card { min-height: 190px; animation: qin .55s cubic-bezier(.2, 1.25, .4, 1) both; }
+    @keyframes qin { from { opacity: 0; transform: translateX(46px) rotate(2deg); } }
+    .q-n { margin-bottom: 8px; font-weight: 600; color: rgba(26, 26, 34, .7); }
+    .q-card h3 { margin-bottom: 18px; font: 900 clamp(26px, 2.6vw, 38px)/1.08 var(--font-head); letter-spacing: -.02em; }
+    .q-opts { display: flex; flex-wrap: wrap; gap: 10px; }
+    .q-opts button { min-height: 54px; padding: 0 20px; border: 2.5px solid var(--fg); border-radius: 16px; background: #fff; color: var(--fg); font: 800 16px/1.1 var(--font-head); cursor: pointer; box-shadow: 3px 3px 0 var(--fg); transition: transform .2s, box-shadow .2s, background-color .2s; }
+    .q-opts button:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--fg); background: var(--sun); }
+    .q-opts button.pick { background: var(--sun); transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--fg); }
+    .q-opts button:disabled { cursor: default; }
+    .q-sub { max-width: 34em; font-size: 17px; }
+    .q-deal { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 20px 0 26px; }
+    .q-deal s { font: 800 22px/1 var(--font-head); color: rgba(26, 26, 34, .55); }
+    .q-deal b { font: 900 clamp(38px, 3.6vw, 54px)/1 var(--font-head); letter-spacing: -.02em; }
+    .q-deal .code { padding: 9px 13px; border: 2.5px dashed var(--fg); border-radius: 12px; background: #fff; font: 900 16px/1 var(--font-head); letter-spacing: .06em; }
+    .q-act { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; }
+    .q-again { padding: 6px 0; border: 0; background: none; color: var(--fg); font: 800 16px/1 var(--font-head); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; cursor: pointer; }
+    .quiz .robot-spot { width: 250px; height: 320px; }
+    .confetti { position: absolute; z-index: 3; width: 12px; height: 8px; border-radius: 2px; pointer-events: none; }
+    @media (max-width: 1060px) {
+      .quiz-box { grid-template-columns: 1fr; gap: 10px; }
+      .quiz .robot-spot { justify-self: end; width: 150px; height: 190px; }
+    }
+    @media (max-width: 600px) {
+      .c-face { min-height: 390px; }
+      .q-opts button { flex: 1 1 calc(50% - 10px); padding: 0 12px; font-size: 15px; }
+      .q-card { min-height: 0; }
+    }
   </style>
 </head>
 <body data-brand="Bilim Center">
@@ -210,6 +272,7 @@
   </a>
   <nav class="nav" aria-label="Меню">
     <a href="#courses">Курсы</a>
+    <a href="#quiz">Подбор курса</a>
     <a href="#schedule">Расписание</a>
     <a href="#teachers">Преподаватели</a>
   </nav>
@@ -222,9 +285,10 @@
 
 <main id="top">
   <section class="hero">
+    <canvas class="lattice" aria-hidden="true"></canvas>
     <svg class="doodle d1" viewBox="0 0 160 80" fill="none" aria-hidden="true"><path d="M4 60 C 30 10, 50 10, 60 40 S 90 70, 100 30 S 140 0, 156 30" stroke="#FF7A59" stroke-width="5" stroke-linecap="round"/></svg>
     <div>
-      <h1 class="lines" data-now><span class="ln"><span>Учим так,</span></span><span class="ln"><span>что хочется</span></span><span class="ln"><span><span class="mark">прийти ещё</span></span></span></h1>
+      <h1 class="ink" data-now><span class="ln"><span>Учим так,</span></span><span class="ln"><span>что хочется</span></span><span class="ln"><span><span class="mark">прийти ещё</span></span></span></h1>
       <p class="lead" data-r data-now style="--d:.45s">Английский, математика и подготовка к IELTS для детей и взрослых. Маленькие группы до 8 человек и первый урок бесплатно.</p>
       <div style="display:flex;flex-wrap:wrap;gap:14px;--d:.6s" data-r data-now>
         <a class="btn" href="#trial">Записаться на пробный</a>
@@ -249,14 +313,46 @@
   <section class="courses" id="courses">
     <div class="courses-head">
       <h2 class="h2 lines"><span class="ln"><span>Курсы</span></span></h2>
-      <p class="lead" data-r>Подберём группу по уровню после бесплатного тестирования.</p>
-      <div class="robot-spot" data-spot="courses" data-move="ThumbsUp" data-say="Выбирай курс — подберём группу по уровню"></div>
+      <p class="lead" data-r>Подберём группу по уровню после бесплатного тестирования. Потяните или нажмите карточку — на обороте программа.</p>
+      <div class="robot-spot" data-spot="courses" data-move="ThumbsUp" data-say="Потяни карточку — на обороте программа|Выбирай курс — подберём группу по уровню"></div>
     </div>
     <div class="course-grid">
-      <article class="course" style="--c:var(--sky)" data-r><span class="emoji">💬</span><h3>Английский для детей</h3><div class="meta"><span>7–12 лет</span><span>2 раза в неделю</span></div><p>Говорим с первого урока: игры, песни, мини-проекты.</p><div class="bottom"><p class="price">28 000 ₸<small>в месяц</small></p><button type="button" data-open="book" data-preset='{"course":"Английский для детей"}' aria-label="Записаться на английский для детей">→</button></div></article>
-      <article class="course" style="--c:var(--lilac);--d:.08s" data-r><span class="emoji">🎓</span><h3>IELTS 7.0</h3><div class="meta"><span>от 16 лет</span><span>3 раза в неделю</span></div><p>Пробные экзамены каждый месяц и разбор каждого эссе.</p><div class="bottom"><p class="price">45 000 ₸<small>в месяц</small></p><button type="button" data-open="book" data-preset='{"course":"IELTS"}' aria-label="Записаться на IELTS">→</button></div></article>
-      <article class="course" style="--c:var(--mint)" data-r><span class="emoji">📐</span><h3>Математика 5–9 класс</h3><div class="meta"><span>10–15 лет</span><span>2 раза в неделю</span></div><p>Закрываем пробелы и готовим к олимпиадам и НИШ.</p><div class="bottom"><p class="price">26 000 ₸<small>в месяц</small></p><button type="button" data-open="book" data-preset='{"course":"Математика"}' aria-label="Записаться на математику">→</button></div></article>
-      <article class="course" style="--c:var(--coral)" data-r><span class="emoji">🧸</span><h3>Подготовка к школе</h3><div class="meta"><span>5–6 лет</span><span>3 раза в неделю</span></div><p>Чтение, счёт и внимание — без стресса и зубрёжки.</p><div class="bottom"><p class="price">24 000 ₸<small>в месяц</small></p><button type="button" data-open="book" data-preset='{"course":"Подготовка к школе"}' aria-label="Записаться на подготовку к школе">→</button></div></article>
+      <article class="course" style="--c:var(--sky)" data-r>
+        <div class="c-in">
+          <div class="c-face c-front"><button class="c-turn" type="button" aria-label="Перевернуть: программа курса">↻</button><span class="emoji">💬</span><h3>Английский для детей</h3><div class="meta"><span>7–12 лет</span><span>2 раза в неделю</span></div><p>Говорим с первого урока: игры, песни, мини-проекты.</p><div class="bottom"><p class="price">28 000 ₸<small>в месяц</small></p><button type="button" data-open="book" data-preset='{"course":"Английский для детей"}' aria-label="Записаться на английский для детей">→</button></div></div>
+          <div class="c-face c-back"><button class="c-turn" type="button" aria-label="Перевернуть обратно">↻</button><span class="c-k">Программа</span><h3>Английский для детей</h3><ul><li>Говорим с первого урока</li><li>Песни, игры и мини-проекты</li><li>Отчёт родителям каждый месяц</li></ul><dl><dt>Ведёт</dt><dd>Лаура</dd><dt>Когда</dt><dd>Пн, Ср, Пт · 15:00</dd></dl><button class="btn" type="button" data-open="book" data-preset='{"course":"Английский для детей"}'>Записаться</button></div>
+        </div>
+      </article>
+      <article class="course" style="--c:var(--lilac);--d:.08s" data-r>
+        <div class="c-in">
+          <div class="c-face c-front"><button class="c-turn" type="button" aria-label="Перевернуть: программа курса">↻</button><span class="emoji">🎓</span><h3>IELTS 7.0</h3><div class="meta"><span>от 16 лет</span><span>3 раза в неделю</span></div><p>Пробные экзамены каждый месяц и разбор каждого эссе.</p><div class="bottom"><p class="price">45 000 ₸<small>в месяц</small></p><button type="button" data-open="book" data-preset='{"course":"IELTS"}' aria-label="Записаться на IELTS">→</button></div></div>
+          <div class="c-face c-back"><button class="c-turn" type="button" aria-label="Перевернуть обратно">↻</button><span class="c-k">Программа</span><h3>IELTS 7.0</h3><ul><li>Пробный экзамен каждый месяц</li><li>Разбор каждого эссе</li><li>Speaking-клуб по субботам</li></ul><dl><dt>Ведёт</dt><dd>Айгуль</dd><dt>Когда</dt><dd>Пн, Ср, Пт · 19:00</dd></dl><button class="btn" type="button" data-open="book" data-preset='{"course":"IELTS"}'>Записаться</button></div>
+        </div>
+      </article>
+      <article class="course" style="--c:var(--mint);--d:.16s" data-r>
+        <div class="c-in">
+          <div class="c-face c-front"><button class="c-turn" type="button" aria-label="Перевернуть: программа курса">↻</button><span class="emoji">📐</span><h3>Математика 5–9 класс</h3><div class="meta"><span>10–15 лет</span><span>2 раза в неделю</span></div><p>Закрываем пробелы и готовим к олимпиадам и НИШ.</p><div class="bottom"><p class="price">26 000 ₸<small>в месяц</small></p><button type="button" data-open="book" data-preset='{"course":"Математика"}' aria-label="Записаться на математику">→</button></div></div>
+          <div class="c-face c-back"><button class="c-turn" type="button" aria-label="Перевернуть обратно">↻</button><span class="c-k">Программа</span><h3>Математика 5–9 класс</h3><ul><li>Закрываем пробелы по темам</li><li>Олимпиадные задачи</li><li>Подготовка к НИШ и БИЛ</li></ul><dl><dt>Ведёт</dt><dd>Тимур</dd><dt>Когда</dt><dd>Пн, Ср, Пт · 17:00</dd></dl><button class="btn" type="button" data-open="book" data-preset='{"course":"Математика"}'>Записаться</button></div>
+        </div>
+      </article>
+      <article class="course" style="--c:var(--coral);--d:.24s" data-r>
+        <div class="c-in">
+          <div class="c-face c-front"><button class="c-turn" type="button" aria-label="Перевернуть: программа курса">↻</button><span class="emoji">🧸</span><h3>Подготовка к школе</h3><div class="meta"><span>5–6 лет</span><span>3 раза в неделю</span></div><p>Чтение, счёт и внимание — без стресса и зубрёжки.</p><div class="bottom"><p class="price">24 000 ₸<small>в месяц</small></p><button type="button" data-open="book" data-preset='{"course":"Подготовка к школе"}' aria-label="Записаться на подготовку к школе">→</button></div></div>
+          <div class="c-face c-back"><button class="c-turn" type="button" aria-label="Перевернуть обратно">↻</button><span class="c-k">Программа</span><h3>Подготовка к школе</h3><ul><li>Чтение по слогам и счёт до 100</li><li>Внимание и усидчивость</li><li>Без оценок и стресса</li></ul><dl><dt>Ведёт</dt><dd>Сауле</dd><dt>Когда</dt><dd>Вт, Чт, Сб · 10:00</dd></dl><button class="btn" type="button" data-open="book" data-preset='{"course":"Подготовка к школе"}'>Записаться</button></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="quiz" id="quiz">
+    <div class="quiz-box" data-r>
+      <div>
+        <p class="quiz-k">Тест на 30 секунд</p>
+        <h2 class="h2">Какой курс вам подойдёт?</h2>
+        <div class="q-steps" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div id="quizQ" aria-live="polite"></div>
+      </div>
+      <div class="robot-spot" data-spot="quiz" data-move="Wave" data-say="Ответь на 3 вопроса — подберу курс и дам скидку 15%|Я не кусаюсь, честно 🤖|Нажимай на ответы слева"></div>
     </div>
   </section>
 
@@ -432,6 +528,398 @@
       f.addEventListener('click', () => f.classList.toggle('turned'));
       f.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); f.classList.toggle('turned'); } });
     });
+  })();
+</script>
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- тетрадь в клетку: линии тянутся к курсору, без курсора магнит гуляет сам ----------
+  (() => {
+    const hero = document.querySelector('.hero');
+    const cv = hero && hero.querySelector('.lattice');
+    if (!cv) return;
+    const g = cv.getContext('2d');
+    let W = 1;
+    let H = 1;
+    let dpr = 1;
+    let cell = 30;
+    const m = { x: 0, y: 0, tx: 0, ty: 0, s: 0, ts: 0 };
+    let lastMove = -1e9;
+    let on = false;
+    let raf = 0;
+    const draw = () => {
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.clearRect(0, 0, W, H);
+      const R = Math.min(260, Math.max(150, W * 0.17));
+      const R2 = R * R;
+      const k = 0.5 * m.s;
+      const pull = (x, y, out) => {
+        const dx = m.x - x;
+        const dy = m.y - y;
+        const d2 = dx * dx + dy * dy;
+        if (k <= 0.001 || d2 >= R2) { out[0] = x; out[1] = y; return 0; }
+        const f = 1 - Math.sqrt(d2) / R;
+        const a = f * f * k;
+        out[0] = x + dx * a;
+        out[1] = y + dy * a;
+        return f;
+      };
+      const p = [0, 0];
+      const line = (x0, y0, x1, y1, step) => {
+        // прямой участок, если до магнита далеко; иначе — по точкам
+        const near = k > 0.001 && Math.abs((x0 === x1 ? x0 - m.x : y0 - m.y)) < R;
+        if (!near) { g.moveTo(x0, y0); g.lineTo(x1, y1); return; }
+        if (x0 === x1) {
+          const a = Math.max(y0, m.y - R);
+          const b = Math.min(y1, m.y + R);
+          g.moveTo(x0, y0);
+          for (let y = a; y <= b; y += step) { pull(x0, y, p); g.lineTo(p[0], p[1]); }
+          g.lineTo(x1, y1);
+        } else {
+          const a = Math.max(x0, m.x - R);
+          const b = Math.min(x1, m.x + R);
+          g.moveTo(x0, y0);
+          for (let x = a; x <= b; x += step) { pull(x, y0, p); g.lineTo(p[0], p[1]); }
+          g.lineTo(x1, y1);
+        }
+      };
+      const ox = (W % cell) / 2;
+      const oy = (H % cell) / 2;
+      g.lineWidth = 1;
+      g.strokeStyle = 'rgba(64, 146, 220, .24)';
+      g.beginPath();
+      for (let x = ox; x <= W; x += cell) line(x, 0, x, H, 7);
+      for (let y = oy; y <= H; y += cell) line(0, y, W, y, 7);
+      g.stroke();
+      // красная линия полей, как в школьной тетради
+      if (W > 760) {
+        g.strokeStyle = 'rgba(255, 92, 92, .42)';
+        g.lineWidth = 1.5;
+        g.beginPath();
+        const mx = ox + cell * Math.max(1, Math.round(Math.min(72, W * 0.045) / cell)) - cell * 0.5;
+        line(mx, 0, mx, H, 6);
+        g.stroke();
+      }
+      // в зоне магнита пересечения загораются цветными точками
+      if (k > 0.01) {
+        const cols = ['255, 122, 89', '255, 204, 51', '92, 214, 166'];
+        for (let x = ox; x <= W; x += cell) {
+          if (Math.abs(x - m.x) > R) continue;
+          for (let y = oy; y <= H; y += cell) {
+            if (Math.abs(y - m.y) > R) continue;
+            const f = pull(x, y, p);
+            if (f <= 0.05) continue;
+            const c = cols[(Math.round(x / cell) + Math.round(y / cell)) % 3];
+            g.fillStyle = 'rgba(' + c + ',' + Math.min(1, f * 1.6 * m.s).toFixed(3) + ')';
+            g.beginPath();
+            g.arc(p[0], p[1], 1.2 + f * 3.2, 0, 6.2832);
+            g.fill();
+          }
+        }
+      }
+    };
+    const size = () => {
+      W = hero.clientWidth || 1;
+      H = hero.clientHeight || 1;
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      cell = W < 600 ? 24 : 30;
+      cv.width = Math.round(W * dpr);
+      cv.height = Math.round(H * dpr);
+      draw();
+    };
+    const loop = (now) => {
+      raf = 0;
+      if (!on) return;
+      if (!document.hidden) {
+        // курсор недавно двигался — магнит у курсора, иначе плавно гуляет по экрану
+        if (now - lastMove > 2600) {
+          const t = now / 1000;
+          m.tx = W * (0.5 + 0.34 * Math.sin(t * 0.37));
+          m.ty = H * (0.52 + 0.3 * Math.sin(t * 0.53 + 1.2));
+          m.ts = 0.75;
+        }
+        const first = m.s === 0 && m.x === 0;
+        m.x = first ? m.tx : m.x + (m.tx - m.x) * 0.12;
+        m.y = first ? m.ty : m.y + (m.ty - m.y) * 0.12;
+        m.s += (m.ts - m.s) * 0.06;
+        draw();
+      }
+      raf = requestAnimationFrame(loop);
+    };
+    new ResizeObserver(size).observe(hero);
+    size();
+    if (reduceMotion) return;
+    hero.addEventListener('pointermove', (e) => {
+      const r = hero.getBoundingClientRect();
+      m.tx = e.clientX - r.left;
+      m.ty = e.clientY - r.top;
+      m.ts = 1;
+      lastMove = performance.now();
+    }, { passive: true });
+    hero.addEventListener('pointerleave', () => { lastMove = performance.now() - 2000; m.ts = 0.4; });
+    new IntersectionObserver((es) => {
+      on = es[0].isIntersecting;
+      if (on && !raf) raf = requestAnimationFrame(loop);
+    }).observe(hero);
+  })();
+
+  // ---------- заголовок проступает, как чернила на бумаге ----------
+  (() => {
+    const h1 = document.querySelector('.hero h1');
+    if (!h1 || reduceMotion) return;
+    const lines = Array.from(h1.querySelectorAll('.ln'));
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('width', '0');
+    svg.setAttribute('height', '0');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.style.position = 'absolute';
+    const fx = lines.map((ln, i) => {
+      const f = document.createElementNS(NS, 'filter');
+      f.id = 'ink' + i;
+      f.setAttribute('x', '-8%');
+      f.setAttribute('y', '-40%');
+      f.setAttribute('width', '116%');
+      f.setAttribute('height', '180%');
+      f.setAttribute('color-interpolation-filters', 'sRGB');
+      const add = (tag, attrs) => {
+        const el = document.createElementNS(NS, tag);
+        Object.keys(attrs).forEach((a) => el.setAttribute(a, attrs[a]));
+        return el;
+      };
+      const turb = add('feTurbulence', { type: 'fractalNoise', baseFrequency: '0.018 0.05', numOctaves: '2', seed: String(4 + i * 7), result: 'n' });
+      const disp = add('feDisplacementMap', { in: 'SourceGraphic', in2: 'n', scale: '46', xChannelSelector: 'R', yChannelSelector: 'G', result: 'd' });
+      const blur = add('feGaussianBlur', { in: 'd', stdDeviation: '10', result: 'b' });
+      const ct = add('feComponentTransfer', { in: 'b' });
+      ct.appendChild(add('feFuncA', { type: 'linear', slope: '7', intercept: '-2.4' }));
+      f.append(turb, disp, blur, ct);
+      svg.appendChild(f);
+      ln.style.filter = 'url(#ink' + i + ')';
+      ln.style.opacity = '0';
+      return { ln, disp, blur, end: false };
+    });
+    document.body.appendChild(svg);
+    const t0 = performance.now() + 200;
+    const DUR = 1600;
+    const GAP = 240;
+    const step = (now) => {
+      let done = true;
+      fx.forEach((o, i) => {
+        if (o.end) return;
+        const p = Math.min(1, Math.max(0, (now - t0 - i * GAP) / DUR));
+        const e = 1 - Math.pow(1 - p, 3);
+        o.ln.style.opacity = Math.min(1, p * 3.5).toFixed(3);
+        o.disp.setAttribute('scale', (46 * (1 - e)).toFixed(2));
+        o.blur.setAttribute('stdDeviation', (10 * (1 - e) + 0.01).toFixed(2));
+        if (p >= 1) { o.end = true; o.ln.style.filter = ''; o.ln.style.opacity = ''; } else done = false;
+      });
+      if (done) svg.remove(); else requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  })();
+
+  // ---------- карточки курсов: тянешь — поворачивается, отпускаешь — встаёт нужной стороной ----------
+  (() => {
+    document.querySelectorAll('.course').forEach((card) => {
+      const inner = card.querySelector('.c-in');
+      const faces = [card.querySelector('.c-front'), card.querySelector('.c-back')];
+      if (!inner || !faces[1]) return;
+      let rot = 0;
+      let drag = null;
+      let justDragged = false;
+      let flipT = 0;
+      const setSide = () => {
+        const back = (((Math.round(rot / 180) % 2) + 2) % 2) === 1;
+        faces[0].inert = back;
+        faces[1].inert = !back;
+      };
+      setSide();
+      const flipTo = (r) => {
+        rot = r;
+        card.classList.add('flip');
+        inner.style.setProperty('--ry', rot + 'deg');
+        inner.style.setProperty('--tx', '0deg');
+        inner.style.setProperty('--ty', '0deg');
+        setSide();
+        clearTimeout(flipT);
+        flipT = setTimeout(() => card.classList.remove('flip'), 850);
+        window.dispatchEvent(new CustomEvent('bilim:flip'));
+      };
+      const tilt = (e) => {
+        if (e.pointerType !== 'mouse' || card.classList.contains('flip')) return;
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        inner.style.setProperty('--ty', (px * 12).toFixed(2) + 'deg');
+        inner.style.setProperty('--tx', (-py * 9).toFixed(2) + 'deg');
+        card.style.setProperty('--gx', ((px + 0.5) * 100).toFixed(1) + '%');
+        card.style.setProperty('--gy', ((py + 0.5) * 100).toFixed(1) + '%');
+        card.style.setProperty('--go', '1');
+      };
+      card.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0 || e.target.closest('button, a')) return;
+        const now = performance.now();
+        drag = { x: e.clientX, y: e.clientY, lx: e.clientX, lt: now, v: 0, moved: false, id: e.pointerId };
+      });
+      card.addEventListener('pointermove', (e) => {
+        if (!drag) { tilt(e); return; }
+        const dx = e.clientX - drag.x;
+        if (!drag.moved) {
+          if (Math.abs(dx) < 7) return;
+          if (Math.abs(e.clientY - drag.y) > Math.abs(dx)) { drag = null; return; }
+          drag.moved = true;
+          try { card.setPointerCapture(drag.id); } catch (err) { /* указатель уже отпущен */ }
+          card.classList.add('drag');
+          card.classList.remove('flip');
+          inner.style.setProperty('--tx', '0deg');
+          inner.style.setProperty('--ty', '0deg');
+        }
+        const now = performance.now();
+        drag.v = drag.v * 0.6 + ((e.clientX - drag.lx) / Math.max(1, now - drag.lt)) * 0.4;
+        drag.lx = e.clientX;
+        drag.lt = now;
+        inner.style.setProperty('--ry', (rot + dx * 0.6).toFixed(1) + 'deg');
+      });
+      const end = (e, cancel) => {
+        if (!drag) return;
+        const d = drag;
+        drag = null;
+        card.classList.remove('drag');
+        if (!d.moved) return;
+        justDragged = true;
+        setTimeout(() => { justDragged = false; }, 0);
+        if (cancel) { flipTo(rot); return; }
+        const now = rot + (e.clientX - d.x) * 0.6;
+        // бросок: учитываем скорость пальца, но не больше одного оборота за раз
+        let r = Math.round((now + d.v * 160) / 180) * 180;
+        r = Math.max(rot - 180, Math.min(rot + 180, r));
+        flipTo(r);
+      };
+      card.addEventListener('pointerup', (e) => end(e, false));
+      card.addEventListener('pointercancel', (e) => end(e, true));
+      card.addEventListener('pointerleave', (e) => {
+        if (drag) return;
+        if (e.pointerType === 'mouse') {
+          inner.style.setProperty('--tx', '0deg');
+          inner.style.setProperty('--ty', '0deg');
+          card.style.setProperty('--go', '0');
+        }
+      });
+      card.addEventListener('click', (e) => {
+        if (justDragged) return;
+        if (e.target.closest('.c-turn')) { flipTo(rot + 180); return; }
+        if (e.target.closest('button, a')) return;
+        flipTo(rot + 180);
+      });
+    });
+  })();
+
+  // ---------- тест: три вопроса, робот подбирает курс и даёт скидку 15% ----------
+  (() => {
+    const box = document.getElementById('quizQ');
+    if (!box) return;
+    const quizBox = box.closest('.quiz-box');
+    const steps = Array.from(document.querySelectorAll('.q-steps i'));
+    const Q = [
+      ['Кто будет учиться?', [['kid', 'Ребёнок 5–6 лет'], ['pupil', 'Школьник 7–12'], ['teen', 'Подросток 13–17'], ['adult', 'Взрослый']]],
+      ['Что важнее всего?', [['speak', 'Заговорить на английском'], ['exam', 'Сдать экзамен'], ['grades', 'Подтянуть математику'], ['school', 'Подготовиться к школе']]],
+      ['Когда удобно заниматься?', [['Утро', 'Утром'], ['После школы', 'После школы'], ['Вечер', 'Вечером']]]
+    ];
+    const C = {
+      'Английский для детей': ['Английский для детей', 28000, 'Пн, Ср, Пт · 15:00', 'английский'],
+      'IELTS': ['IELTS 7.0', 45000, 'Пн, Ср, Пт · 19:00', 'IELTS'],
+      'Математика': ['Математика 5–9 класс', 26000, 'Пн, Ср, Пт · 17:00', 'математика'],
+      'Подготовка к школе': ['Подготовка к школе', 24000, 'Вт, Чт, Сб · 10:00', 'подготовка к школе']
+    };
+    const SAY = ['Понял! 👍', 'Записываю…'];
+    const money = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₸';
+    const pick = (who, goal) => {
+      if (goal === 'school') return 'Подготовка к школе';
+      if (who === 'kid') return goal === 'speak' ? 'Английский для детей' : 'Подготовка к школе';
+      if (goal === 'grades') return 'Математика';
+      if (goal === 'exam') return who === 'pupil' ? 'Математика' : 'IELTS';
+      return who === 'pupil' ? 'Английский для детей' : 'IELTS';
+    };
+    let ans = [];
+    let deal = null;
+    // скидка попадает в сообщение для WhatsApp вместе с записью
+    window.DemoExtraRows = (form) => (deal && form.closest('#book') ? [['Скидка', '−15% на первый месяц, промокод BILIM15']] : []);
+    const emit = (detail) => window.dispatchEvent(new CustomEvent('bilim:quiz', { detail }));
+    const el = (tag, cls, text) => {
+      const n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (text) n.textContent = text;
+      return n;
+    };
+    const confetti = (host) => {
+      if (reduceMotion || !host.animate) return;
+      const hb = quizBox.getBoundingClientRect();
+      const r = host.getBoundingClientRect();
+      const cols = ['#FFCC33', '#FF7A59', '#5CD6A6', '#8CD0FF', '#FFFFFF', '#1A1A22'];
+      for (let k = 0; k < 40; k++) {
+        const s = el('i', 'confetti');
+        s.style.background = cols[k % cols.length];
+        s.style.left = (r.left - hb.left + Math.min(r.width, 420) * 0.35).toFixed(0) + 'px';
+        s.style.top = (r.top - hb.top + 70).toFixed(0) + 'px';
+        quizBox.appendChild(s);
+        const a = Math.random() * Math.PI * 2;
+        const v = 140 + Math.random() * 300;
+        const dx = Math.cos(a) * v;
+        const dy = Math.sin(a) * v * 0.55 - 130;
+        const spin = (Math.random() < 0.5 ? -1 : 1) * (360 + Math.random() * 540);
+        s.animate([
+          { transform: 'translate(0, 0) rotate(0deg) scale(.6)', opacity: 1 },
+          { transform: 'translate(' + dx.toFixed(0) + 'px, ' + dy.toFixed(0) + 'px) rotate(' + (spin * 0.5).toFixed(0) + 'deg) scale(1)', opacity: 1, offset: 0.5 },
+          { transform: 'translate(' + (dx * 1.25).toFixed(0) + 'px, ' + (dy + 300).toFixed(0) + 'px) rotate(' + spin.toFixed(0) + 'deg) scale(1)', opacity: 0 }
+        ], { duration: 1500 + Math.random() * 700, easing: 'cubic-bezier(.2, .7, .4, 1)' }).onfinish = () => s.remove();
+      }
+    };
+    const render = (focus) => {
+      const i = ans.length;
+      steps.forEach((s, k) => s.classList.toggle('on', k <= i));
+      box.textContent = '';
+      const card = el('div', 'q-card');
+      if (i < Q.length) {
+        const [title, opts] = Q[i];
+        const wrap = el('div', 'q-opts');
+        opts.forEach(([v, label]) => {
+          const b = el('button', '', label);
+          b.type = 'button';
+          b.addEventListener('click', () => {
+            b.classList.add('pick');
+            wrap.querySelectorAll('button').forEach((x) => { x.disabled = true; });
+            ans.push(v);
+            emit({ step: ans.length, say: SAY[ans.length - 1] || '' });
+            setTimeout(() => render(true), reduceMotion ? 0 : 420);
+          });
+          wrap.appendChild(b);
+        });
+        card.append(el('p', 'q-n', 'Вопрос ' + (i + 1) + ' из ' + Q.length), el('h3', '', title), wrap);
+      } else {
+        const key = pick(ans[0], ans[1]);
+        const c = C[key];
+        deal = { key, slot: ans[2] };
+        const d = el('div', 'q-deal');
+        d.append(el('s', '', money(c[1])), el('b', '', money(c[1] * 0.85)), el('span', 'code', 'BILIM15'));
+        const act = el('div', 'q-act');
+        const go = el('button', 'btn', 'Записаться со скидкой');
+        go.type = 'button';
+        go.addEventListener('click', () => window.Demo.openModal('book', { course: key, slot: deal.slot }));
+        const again = el('button', 'q-again', 'Пройти заново');
+        again.type = 'button';
+        again.addEventListener('click', () => { ans = []; deal = null; render(true); });
+        act.append(go, again);
+        card.append(el('p', 'q-n', 'Готово! Вот что подойдёт'), el('h3', '', 'Курс «' + c[0] + '»'), el('p', 'q-sub', c[2] + ', группа до 8 человек. Первый месяц — на 15% дешевле:'), d, act);
+        emit({ done: true, say: 'Твой курс — ' + c[3] + '! Скидка 15% твоя 🎉' });
+        requestAnimationFrame(() => confetti(card));
+      }
+      box.appendChild(card);
+      if (focus) {
+        const first = card.querySelector('button');
+        if (first) first.focus({ preventScroll: true });
+      }
+    };
+    render(false);
   })();
 </script>
 <script type="module">
@@ -643,6 +1131,22 @@
     speak('Ура! Ждём вас на уроке 🎉', 5000);
     fadeBase('Dance', 0.3);
     setTimeout(() => fadeBase('Idle', 0.5), 5200);
+  });
+  // тест: робот кивает на каждый ответ и танцует, когда выдаёт скидку
+  window.addEventListener('bilim:quiz', (e) => {
+    const d = e.detail || {};
+    surpriseT = 0.7;
+    if (d.done) {
+      if (d.say) speak(d.say, 5200);
+      fadeBase('Dance', 0.3);
+      setTimeout(() => { if (base === actions.Dance) fadeBase('Idle', 0.5); }, 5200);
+    } else if (d.step) {
+      playEmote(d.step % 2 ? 'Yes' : 'ThumbsUp');
+      if (d.say) speak(d.say, 1800);
+    }
+  });
+  window.addEventListener('bilim:flip', () => {
+    if (active && active.dataset.spot === 'courses' && !emote) playEmote('Yes');
   });
 
   const look = new THREE.Vector2();
