@@ -208,3 +208,49 @@ export function brushWipe(canvas) {
     }
   };
 }
+
+/* ---------- Ленты света: мягкие полосы тёплого света медленно текут, как в титрах кино ---------- */
+const RIBBON_FS = `
+  uniform vec2 uRes;
+  uniform float uTime;
+  uniform vec3 uCol;
+  uniform vec3 uBase;
+  varying vec2 vUv;
+  float band(vec2 p, float y0, float amp, float fr, float ph, float w) {
+    float y = y0 + amp * sin(p.x * fr + ph) + amp * .45 * sin(p.x * fr * 2.3 - ph * 1.4);
+    float d = p.y - y;
+    return exp(-d * d / (w * w));
+  }
+  void main() {
+    float asp = uRes.x / uRes.y;
+    vec2 p = vec2(vUv.x * asp, vUv.y);
+    float t = uTime * .12;
+    vec3 col = uBase;
+    for (int i = 0; i < 4; i++) {
+      float fi = float(i);
+      float b = band(p, .28 + fi * .16, .07 + fi * .015, 1.4 + fi * .35, t * (1. + fi * .3) + fi * 1.7, .012 + fi * .006);
+      float glow = band(p, .28 + fi * .16, .07 + fi * .015, 1.4 + fi * .35, t * (1. + fi * .3) + fi * 1.7, .09 + fi * .02);
+      // по ленте бежит яркое пятно
+      float run = exp(-pow(mod(p.x - t * (1.6 + fi * .4) * asp * .5, asp + .8) - .4, 2.) * 6.);
+      col += uCol * (b * (.35 + .9 * run) + glow * .07) * (.55 + .15 * fi);
+    }
+    col *= .65 + .35 * smoothstep(1.2, .2, length((vUv - vec2(.5, .45)) * vec2(asp, 1.)));
+    col += (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233)) + uTime) * 43758.5453) - .5) * .02;
+    gl_FragColor = vec4(col, 1.);
+  }
+`;
+
+export function lightRibbons(canvas, opts = {}) {
+  const S = setup(canvas, RIBBON_FS);
+  if (!S) return null;
+  const { gl, u } = S;
+  const col = opts.color || [0.79, 0.64, 0.37];
+  const base = opts.base || [0.06, 0.055, 0.05];
+  run(canvas, S, { maxPx: opts.maxPx || 4e5, zone: opts.zone }, (now, dt, time) => {
+    gl.uniform1f(u('uTime'), time || 0);
+    gl.uniform3f(u('uCol'), col[0], col[1], col[2]);
+    gl.uniform3f(u('uBase'), base[0], base[1], base[2]);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  });
+  return true;
+}
