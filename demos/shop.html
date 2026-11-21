@@ -114,6 +114,7 @@
     .bbuy { display: flex; align-items: center; gap: 22px; padding-top: 20px; border-top: 1px solid color-mix(in srgb, var(--bf) 18%, transparent); }
     .bname { font: 400 22px/1.15 var(--font-head); transition: opacity .3s; }
     .bprice { margin-top: 4px; font-weight: 700; }
+    .bprice s { margin-left: 10px; font-weight: 500; opacity: .5; }
     .bbuy .btn { margin-left: auto; background: var(--bf); color: var(--bb); }
     .bdrag { position: absolute; right: var(--pad); bottom: 28px; z-index: 2; display: flex; align-items: center; gap: 10px; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; opacity: .65; }
     .bdrag i { width: 34px; height: 18px; border-radius: 9px; border: 1.5px solid currentColor; position: relative; }
@@ -380,6 +381,44 @@
       .foot { grid-template-columns: 1fr; }
       .foot-bottom { flex-direction: column; }
     }
+
+    /* ===== образы недели: на компьютере карточки стоят коридором, выбранная выходит вперёд ===== */
+    @media (min-width: 761px) {
+      .lineup { perspective: 1300px; perspective-origin: 50% 35%; }
+      .look-card, .look-card.on { transform: translateZ(var(--z, 0px)) rotateY(var(--r, 0deg)) scale(var(--s, 1)); }
+    }
+
+    /* ===== «всё в пакете»: покупки лежат в крафтовом пакете и падают в него при открытии корзины ===== */
+    .bagviz { position: relative; flex: none; height: 168px; margin: 10px 24px 0; border-bottom: 1px solid var(--line); }
+    .bv-items { position: absolute; left: 50%; bottom: 86px; z-index: 1; width: 214px; height: 80px; transform: translateX(-50%); }
+    .bv-items img { position: absolute; left: var(--x); bottom: 0; width: 60px; height: 76px; object-fit: cover; border: 3px solid #fff; border-radius: 4px; box-shadow: 0 8px 16px -8px rgba(0, 0, 0, .45); transform: rotate(var(--rot)); }
+    .bv-items img.drop { animation: bvdrop .75s cubic-bezier(.3, 1.35, .5, 1) both; animation-delay: var(--dl, 0s); }
+    @keyframes bvdrop { 0% { opacity: 0; transform: translateY(-150px) rotate(calc(var(--rot) * -4)); } 25% { opacity: 1; } 100% { opacity: 1; transform: rotate(var(--rot)); } }
+    .bv-bag { position: absolute; left: 50%; bottom: 14px; z-index: 2; display: grid; place-items: center; width: 236px; height: 108px; transform: translateX(-50%); border-radius: 2px 2px 8px 8px; background: linear-gradient(180deg, #C4A57A 0 9px, #D8BF98 9px 100%); box-shadow: inset 0 -18px 28px -18px rgba(96, 64, 30, .5), 0 18px 26px -18px rgba(40, 25, 10, .55); }
+    .bv-bag::before, .bv-bag::after { content: ""; position: absolute; top: -40px; width: 54px; height: 50px; border: 3px solid #8E6B43; border-bottom: 0; border-radius: 30px 30px 0 0; }
+    .bv-bag::before { left: 44px; }
+    .bv-bag::after { right: 44px; }
+    .bv-bag span { font: 400 26px/1 var(--font-head); letter-spacing: .34em; color: #6B4E2E; }
+    .bv-bag.thud { animation: thud .5s cubic-bezier(.3, 1.6, .5, 1); }
+    @keyframes thud { 40% { transform: translateX(-50%) scale(1.04, .95); } }
+    .bv-count { position: absolute; right: 0; bottom: 14px; font-size: 12px; color: var(--muted); }
+    @media (max-height: 700px) { .bagviz { height: 132px; transform-origin: top; } .bv-items { bottom: 70px; } .bv-bag { height: 86px; } .bv-bag::before, .bv-bag::after { top: -32px; height: 40px; } }
+
+    /* ===== чек при оформлении: печатается строка за строкой, скидка на первый заказ ===== */
+    .rcpt { position: relative; margin: 6px 0 22px; padding-top: 7px; }
+    .rcpt::before { content: ""; position: absolute; left: 0; right: 0; top: 0; z-index: 1; height: 12px; border-radius: 6px; background: #2A2826; box-shadow: inset 0 3px 4px rgba(0, 0, 0, .6); }
+    .rcpt-paper { position: relative; margin: 0 12px; padding: 20px 18px 28px; background: #FFFEF9; color: #2A2826; font: 500 13px/1.55 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; box-shadow: 0 14px 24px -18px rgba(0, 0, 0, .5); -webkit-mask: linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat, conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 14px 8px repeat-x; mask: linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat, conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 14px 8px repeat-x; }
+    .d-modal.open .rcpt-paper { animation: print 1.4s steps(14, end) .3s both; }
+    @keyframes print { from { clip-path: inset(0 0 100% 0); transform: translateY(-14px); } to { clip-path: inset(0 0 0 0); transform: none; } }
+    .rcpt-h { display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed #B9B3A8; }
+    .rcpt-h b { letter-spacing: .3em; }
+    .rcpt-lines li { display: flex; justify-content: space-between; gap: 14px; }
+    .rcpt-lines li span:last-child, .rcpt-row span:last-child, .rcpt-row b { white-space: nowrap; }
+    .rcpt-row { display: flex; justify-content: space-between; gap: 14px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #B9B3A8; }
+    .rcpt-row + .rcpt-row { margin-top: 2px; padding-top: 2px; border-top: 0; }
+    .rcpt-row.disc { color: #A8432C; }
+    .rcpt-row.tot { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #B9B3A8; font-size: 16px; font-weight: 700; }
+    @media (prefers-reduced-motion: reduce) { .d-modal.open .rcpt-paper, .bv-items img.drop, .bv-bag.thud { animation: none; } }
   </style>
 </head>
 <body data-brand="Ayla Store">
@@ -422,7 +461,7 @@
         <button type="button" data-v="4" aria-pressed="false" style="--c:#EFE6D6" aria-label="Молоко"></button>
       </div>
       <div class="bbuy">
-        <div><p class="bname" id="bName">Сумка «Лимон»</p><p class="bprice" id="bPrice">21 000 ₸</p></div>
+        <div><p class="bname" id="bName">Сумка «Лимон»</p><p class="bprice" id="bPrice">21 000 ₸<s>26 000 ₸</s></p></div>
         <button class="btn" type="button" id="bAdd">В корзину</button>
       </div>
     </div>
@@ -588,10 +627,11 @@
   <div class="shade" data-close-drawer></div>
   <aside class="panel" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
     <div class="panel-head"><h2 id="drawerTitle">Корзина</h2><button type="button" data-close-drawer aria-label="Закрыть корзину">×</button></div>
+    <div class="bagviz" aria-hidden="true"><div class="bv-items" id="bvItems"></div><div class="bv-bag" id="bvBag"><span>AYLA</span></div></div>
     <div class="lines-list" id="cartLines"></div>
     <div class="panel-foot">
       <div class="total"><span>Итого</span><span id="cartTotal">0 ₸</span></div>
-      <p>Доставка по Алматы бесплатно от 30 000 ₸</p>
+      <p>При оформлении — −10% на первый заказ. Доставка по Алматы бесплатно от 30 000 ₸</p>
       <button class="btn" type="button" id="checkout">Оформить заказ</button>
     </div>
   </aside>
@@ -602,6 +642,15 @@
     <button class="d-close" type="button" data-close aria-label="Закрыть">×</button>
     <h3 id="orderTitle">Оформление заказа</h3>
     <p>Менеджер подтвердит заказ и наличие в WhatsApp.</p>
+    <div class="rcpt" aria-label="Чек заказа">
+      <div class="rcpt-paper">
+        <p class="rcpt-h"><b>AYLA</b><span data-rc="date"></span></p>
+        <ul class="rcpt-lines" data-rc="lines"></ul>
+        <p class="rcpt-row"><span>Сумма</span><span data-rc="sum"></span></p>
+        <p class="rcpt-row disc"><span>Первый заказ −10%</span><span data-rc="disc"></span></p>
+        <p class="rcpt-row tot"><span>К оплате</span><b data-rc="total"></b></p>
+      </div>
+    </div>
     <form class="d-form" data-wa-form="Новый заказ с сайта" novalidate>
       <div class="d-field">
         <label for="oName">Имя</label>
@@ -796,12 +845,37 @@
       });
       $('#cartTotal').textContent = money(total());
       $('#checkout').disabled = !cart.size;
+      renderBag(false);
+    }
+    // крафтовый пакет в корзине: покупки выглядывают сверху, при открытии падают в него по очереди
+    const bvItems = $('#bvItems');
+    const bvBag = $('#bvBag');
+    const SLOTS = [[16, -9], [76, 7], [134, -4], [46, 11], [104, -12], [150, 5]];
+    function renderBag(drop) {
+      if (!bvItems) return;
+      bvItems.textContent = '';
+      let k = 0;
+      cart.forEach((it) => {
+        if (k >= SLOTS.length) return;
+        const im = document.createElement('img');
+        im.alt = '';
+        im.src = U(it.p.img, 140, 180);
+        im.style.setProperty('--x', SLOTS[k][0] + 'px');
+        im.style.setProperty('--rot', SLOTS[k][1] + 'deg');
+        if (drop && !reduce) { im.classList.add('drop'); im.style.setProperty('--dl', (0.3 + k * 0.13).toFixed(2) + 's'); }
+        bvItems.appendChild(im);
+        k += 1;
+      });
+      if (drop && k && !reduce) {
+        bvBag.classList.remove('thud');
+        setTimeout(() => { void bvBag.offsetWidth; bvBag.classList.add('thud'); }, 760 + (k - 1) * 130);
+      }
     }
     const openDrawer = (open) => {
       drawer.classList.toggle('open', open);
       drawer.setAttribute('aria-hidden', String(!open));
       document.body.classList.toggle('modal-open', open);
-      if (open) render();
+      if (open) { render(); renderBag(true); }
     };
     cartBtn.addEventListener('click', () => openDrawer(true));
     $$('[data-close-drawer]').forEach((b) => b.addEventListener('click', () => openDrawer(false)));
@@ -811,9 +885,36 @@
       if (!form || !form.closest('#order')) return [];
       const rows = [];
       cart.forEach((it) => rows.push([it.p.name + (it.size ? ', ' + it.size : '') + ' × ' + it.q, money(it.p.price * it.q)]));
-      rows.push(['Итого', money(total())]);
+      const t = total();
+      const disc = Math.round(t * 0.1);
+      rows.push(['Сумма', money(t)]);
+      rows.push(['Скидка на первый заказ', '−' + money(disc)]);
+      rows.push(['К оплате', money(t - disc)]);
       return rows;
     };
+    // чек в окне оформления: строки корзины, скидка 10% на первый заказ и сумма к оплате
+    window.addEventListener('demo:modal', (e) => {
+      if (!e.detail || e.detail.id !== 'order') return;
+      const m = e.detail.modal;
+      const q = (n) => m.querySelector('[data-rc="' + n + '"]');
+      if (!q('lines')) return;
+      const now = new Date();
+      q('date').textContent = now.toLocaleDateString('ru-RU') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+      cart.forEach((it) => {
+        const li = document.createElement('li');
+        const a = document.createElement('span');
+        a.textContent = it.p.name + (it.size ? ', ' + it.size : '') + (it.q > 1 ? ' × ' + it.q : '');
+        const b = document.createElement('span');
+        b.textContent = money(it.p.price * it.q);
+        li.append(a, b);
+        q('lines').appendChild(li);
+      });
+      const t = total();
+      const disc = Math.round(t * 0.1);
+      q('sum').textContent = money(t);
+      q('disc').textContent = '−' + money(disc);
+      q('total').textContent = money(t - disc);
+    });
     window.addEventListener('demo:sent', (e) => { if (e.detail && e.detail.form && e.detail.form.closest('#order')) { cart.clear(); $('#cartCount').textContent = '0'; } });
 
     // ---------- быстрый просмотр: фото, размер, в корзину ----------
@@ -1022,6 +1123,16 @@
       const first = look < 0;
       look = i;
       cards.forEach((c, k) => { c.classList.toggle('on', k === i); c.setAttribute('aria-pressed', String(k === i)); });
+      // коридор: соседние образы развёрнуты к центру и уходят вглубь, выбранный выходит вперёд
+      cards.forEach((c, k) => {
+        const off = k - i;
+        const n = Math.min(2, Math.abs(off));
+        const turn = off === 0 ? 0 : (off < 0 ? 1 : -1) * (22 + (n - 1) * 8);
+        c.style.setProperty('--r', turn + 'deg');
+        c.style.setProperty('--z', (-80 * n) + 'px');
+        c.style.setProperty('--s', off === 0 ? '1.16' : '1');
+        c.style.zIndex = String(10 - Math.abs(off));
+      });
       const r = lineup.getBoundingClientRect();
       const c = cards[i].getBoundingClientRect();
       looksSec.style.setProperty('--lx', (c.left + c.width / 2 - looksSec.getBoundingClientRect().left) + 'px');
@@ -1109,7 +1220,11 @@
         bWord.textContent = v.word;
         bWord.classList.remove('swap');
         bName.textContent = v.name;
-        $('#bPrice').textContent = money(byId(v.id).price);
+        // цена зависит от модели; если есть скидка — рядом старая цена
+        const vp = byId(v.id);
+        const pr = $('#bPrice');
+        pr.textContent = money(vp.price);
+        if (vp.old) { const s = document.createElement('s'); s.textContent = money(vp.old); pr.appendChild(s); }
         bName.style.opacity = '1';
       }, 260);
       window.dispatchEvent(new CustomEvent('ayla:variant', { detail: i }));
