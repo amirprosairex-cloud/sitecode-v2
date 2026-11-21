@@ -95,9 +95,15 @@
     bootCubes();
     window.__scReady = true;
     window.dispatchEvent(new Event('sc:ready'));
-    // живой фон первого экрана проявляется вместе с текстом
+    // живой фон первого экрана проявляется вместе с текстом; тот же фон плывёт за нижними разделами и за заявкой
     const sky = $('.hero-sky');
-    if (sky && shader && shader.ok) shader.sky(sky, $('.hero'));
+    if (sky && shader && shader.ok) {
+      shader.sky(sky, $('.hero'));
+      const lowerSky = $('.lower-sky');
+      if (lowerSky) shader.sky(lowerSky, $('#lower'));
+      const backSky = $('#backSky');
+      if (backSky) shader.sky(backSky, $('#contact'));
+    }
   }
 
   function runIntro() {
@@ -149,16 +155,44 @@
   $$('a', mnav).forEach((a) => a.addEventListener('click', () => setMenu(false)));
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menuOpen) setMenu(false); });
 
-  let isDeep = false;
+  /* ---------- Тема: белая по умолчанию, ночная по кнопке; выбор запоминается ---------- */
+  const themeBtn = $('#themeToggle');
+  const metaTheme = $('meta[name="theme-color"]');
+  const applyTheme = (t) => {
+    if (t === 'dark') root.setAttribute('data-theme', 'dark');
+    else root.removeAttribute('data-theme');
+    if (themeBtn) {
+      themeBtn.setAttribute('aria-checked', String(t === 'dark'));
+      themeBtn.setAttribute('aria-label', t === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему');
+    }
+    if (metaTheme) metaTheme.setAttribute('content', t === 'dark' ? '#060A1D' : '#E7EBF1');
+    window.dispatchEvent(new CustomEvent('sc:theme', { detail: t }));
+  };
+  applyTheme(root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => {
+      const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      try { window.localStorage.setItem('sc-theme', next); } catch (e) { /* приватный режим */ }
+      if (reduce || !document.startViewTransition) { applyTheme(next); return; }
+      // новая тема раскрывается кругом от кнопки
+      const r = themeBtn.getBoundingClientRect();
+      const x = r.left + r.width / 2;
+      const y = r.top + r.height / 2;
+      const end = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+      root.classList.add('theme-anim');
+      const vt = document.startViewTransition(() => applyTheme(next));
+      vt.ready.then(() => {
+        root.animate(
+          { clipPath: ['circle(0px at ' + x + 'px ' + y + 'px)', 'circle(' + end.toFixed(0) + 'px at ' + x + 'px ' + y + 'px)'] },
+          { duration: 760, easing: 'cubic-bezier(.7, 0, .2, 1)', pseudoElement: '::view-transition-new(root)' }
+        );
+      }).catch(() => {});
+      vt.finished.then(() => root.classList.remove('theme-anim'), () => root.classList.remove('theme-anim'));
+    });
+  }
+
   function updateHeader(y) {
     header.classList.toggle('is-scrolled', y > 24);
-    // ниже примеров сайт тёмный: шапка тоже темнеет, а фон под заявкой становится ночным,
-    // пока тёмные разделы целиком закрывают экран — переключение не видно
-    if (m.darkTop) {
-      header.classList.toggle('on-dark', y > m.darkTop - 40);
-      const deep = y > m.darkTop + 60;
-      if (deep !== isDeep) { isDeep = deep; root.classList.toggle('deep', deep); }
-    }
     if (menuOpen) return;
     if (y > lastY + 6 && y > 420) header.classList.add('is-hidden');
     else if (y < lastY - 6 || y < 420) header.classList.remove('is-hidden');
@@ -185,14 +219,13 @@
   const toast = $('#leadToast');
   const works = $('#works');
   const benefits = $$('.benefit');
-  const darkStart = $('#benefits');
   const stepsEl = $('#steps');
   const stepItems = $$('.step');
   const marquee = $('.marquee-track');
   const night = $('#night');
   const anatomy = $('#anatomy');
   const storyStage = $('.story-stage');
-  const m = { vh: window.innerHeight, storyTop: 0, storyH: 1, worksTop: 0, stepsTop: 0, stepsH: 1, mqW: 0, darkTop: 0 };
+  const m = { vh: window.innerHeight, storyTop: 0, storyH: 1, worksTop: 0, stepsTop: 0, stepsH: 1, mqW: 0 };
   const docTop = (el) => el.getBoundingClientRect().top + window.scrollY;
 
   function measureShifts() {
@@ -210,7 +243,6 @@
     m.storyTop = docTop(story);
     m.storyH = Math.max(1, story.offsetHeight);
     m.worksTop = docTop(works);
-    m.darkTop = darkStart ? docTop(darkStart) : 0;
     m.stepsTop = docTop(stepsEl);
     m.stepsH = Math.max(1, stepsEl.offsetHeight);
     m.mqW = marquee ? marquee.scrollWidth / 2 : 0;

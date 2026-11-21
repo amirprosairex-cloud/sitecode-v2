@@ -100,12 +100,13 @@
     }
   `;
 
-  // живой фон первого экрана: светлая бумага, по ней плывут голубые и солнечные пятна
+  // живой фон: светлая бумага, по ней плывут голубые и солнечные пятна; в тёмной теме — ночь с синими облаками
   const SKY_FS = HEAD + NOISE + `
     uniform vec2 uRes;
     uniform float uTime;
     uniform vec2 uMouse;
     uniform float uFade;
+    uniform float uDark;
     varying vec2 vUv;
     void main() {
       float asp = uRes.x / uRes.y;
@@ -114,16 +115,24 @@
       vec2 q = vec2(fbm(p * .9 + t), fbm(p * .9 - t + 4.));
       float f = fbm(p * 1.05 + q * 1.7 + uMouse * .12);
       float g = fbm(p * 1.3 - q * 1.2 + 7. + t);
+      vec2 m = uMouse * vec2(asp, 1.) * .5;
+      float near = exp(-dot(p - m, p - m) * 5.);
       vec3 paper = vec3(.906, .922, .945);
       vec3 col = mix(paper, vec3(.74, .8, 1.), smoothstep(.42, .78, f) * .7);
       col = mix(col, vec3(.18, .38, 1.), smoothstep(.6, .92, f) * .13);
       col = mix(col, vec3(1., .82, .45), smoothstep(.55, .85, g) * .22);
-      vec2 m = uMouse * vec2(asp, 1.) * .5;
-      col += vec3(.06, .06, .09) * exp(-dot(p - m, p - m) * 5.);
-      col += grain(uTime) * .018;
-      gl_FragColor = vec4(mix(paper, col, uFade), 1.);
+      col += vec3(.06, .06, .09) * near;
+      vec3 night = vec3(.024, .039, .114);
+      vec3 dk = mix(night, vec3(.09, .15, .44), smoothstep(.42, .8, f) * .8);
+      dk = mix(dk, vec3(.22, .42, 1.), smoothstep(.62, .92, f) * .24);
+      dk = mix(dk, vec3(1., .76, .34), smoothstep(.58, .88, g) * .08);
+      dk += vec3(.05, .08, .2) * near;
+      vec3 base = mix(paper, night, uDark);
+      col = mix(col, dk, uDark) + grain(uTime) * mix(.018, .012, uDark);
+      gl_FragColor = vec4(mix(base, col, uFade), 1.);
     }
   `;
+  const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
 
   const ok = (() => {
     try {
@@ -335,6 +344,7 @@
     let fade = reduce ? 1 : 0;
     let on = false;
     let raf = 0;
+    let dark = isDark() ? 1 : 0;
     function draw(now) {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
@@ -343,9 +353,15 @@
       mouse.y += (mouse.ty - mouse.y) * (1 - Math.exp(-dt * 2.5));
       gl.uniform1f(u('uTime'), reduce ? 12 : (now - t0) / 1000);
       gl.uniform1f(u('uFade'), fade);
+      gl.uniform1f(u('uDark'), dark);
       gl.uniform2f(u('uMouse'), mouse.x, mouse.y);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
+    // тема меняется сразу: переход делает круг, который раскрывается от кнопки
+    window.addEventListener('sc:theme', () => {
+      dark = isDark() ? 1 : 0;
+      if (reduce || !on) draw(performance.now());
+    });
     const loop = (now) => {
       if (!on) { raf = 0; return; }
       raf = requestAnimationFrame(loop);
