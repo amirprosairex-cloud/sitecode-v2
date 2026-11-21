@@ -149,8 +149,16 @@
   $$('a', mnav).forEach((a) => a.addEventListener('click', () => setMenu(false)));
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menuOpen) setMenu(false); });
 
+  let isDeep = false;
   function updateHeader(y) {
     header.classList.toggle('is-scrolled', y > 24);
+    // ниже примеров сайт тёмный: шапка тоже темнеет, а фон под заявкой становится ночным,
+    // пока тёмные разделы целиком закрывают экран — переключение не видно
+    if (m.darkTop) {
+      header.classList.toggle('on-dark', y > m.darkTop - 40);
+      const deep = y > m.darkTop + 60;
+      if (deep !== isDeep) { isDeep = deep; root.classList.toggle('deep', deep); }
+    }
     if (menuOpen) return;
     if (y > lastY + 6 && y > 420) header.classList.add('is-hidden');
     else if (y < lastY - 6 || y < 420) header.classList.remove('is-hidden');
@@ -177,13 +185,14 @@
   const toast = $('#leadToast');
   const works = $('#works');
   const benefits = $$('.benefit');
+  const darkStart = $('#benefits');
   const stepsEl = $('#steps');
   const stepItems = $$('.step');
   const marquee = $('.marquee-track');
   const night = $('#night');
   const anatomy = $('#anatomy');
   const storyStage = $('.story-stage');
-  const m = { vh: window.innerHeight, storyTop: 0, storyH: 1, worksTop: 0, stepsTop: 0, stepsH: 1, mqW: 0 };
+  const m = { vh: window.innerHeight, storyTop: 0, storyH: 1, worksTop: 0, stepsTop: 0, stepsH: 1, mqW: 0, darkTop: 0 };
   const docTop = (el) => el.getBoundingClientRect().top + window.scrollY;
 
   function measureShifts() {
@@ -201,6 +210,7 @@
     m.storyTop = docTop(story);
     m.storyH = Math.max(1, story.offsetHeight);
     m.worksTop = docTop(works);
+    m.darkTop = darkStart ? docTop(darkStart) : 0;
     m.stepsTop = docTop(stepsEl);
     m.stepsH = Math.max(1, stepsEl.offsetHeight);
     m.mqW = marquee ? marquee.scrollWidth / 2 : 0;
@@ -347,7 +357,7 @@
     const idxEl = $('#cfIndex');
     const stage = $('#cflowStage');
     // цвет текста на кнопке под цвет акцента
-    const ACFG = { '#C9A35E': '#16120F', '#E2A43A': '#2A1B12', '#1A1A22': '#FFD84D', '#5BE6D6': '#053F3C', '#F7B9C9': '#2E1F27', '#2A2610': '#F3E6A6' };
+    const ACFG = { '#C9A35E': '#16120F', '#E2A43A': '#2A1B12', '#1A1A22': '#FFD84D', '#5BE6D6': '#053F3C', '#9FF5EA': '#0B2C31', '#F7B9C9': '#2E1F27', '#2A2610': '#F3E6A6' };
     const touch = window.matchMedia('(hover: none)').matches;
     let cur = 0;
     let timer = 0;
@@ -452,101 +462,6 @@
     stage.addEventListener('pointerleave', auto);
 
     render(true);
-  }
-
-  /* ---------- Робот-помощник ---------- */
-  const bot = $('#bot');
-  if (bot) {
-    const btn = $('#botBtn');
-    const look = $('.bot-look', bot);
-    const eyes = $('.bot-eyes', bot);
-    const bubble = $('#botBubble');
-    const menu = $('#botMenu');
-    let tx = 0;
-    let ty = 0;
-    let ex = 0;
-    let ey = 0;
-    let focusEl = null;
-    let hideT = 0;
-    let open = false;
-
-    const lookAt = (x, y) => {
-      const r = btn.getBoundingClientRect();
-      const dx = x - (r.left + r.width / 2);
-      const dy = y - (r.top + r.height * 0.45);
-      const d = Math.hypot(dx, dy) || 1;
-      const k = Math.min(1, d / 260);
-      tx = dx / d * 8 * k;
-      ty = dy / d * 6 * k;
-    };
-    window.addEventListener('pointermove', (e) => { if (!focusEl) lookAt(e.clientX, e.clientY); }, { passive: true });
-    // смотрит на поле, в которое вы пишете
-    document.addEventListener('focusin', (e) => {
-      if (!e.target.matches || !e.target.matches('input, textarea')) return;
-      focusEl = e.target;
-      const r = focusEl.getBoundingClientRect();
-      lookAt(r.left + r.width / 2, r.top + r.height / 2);
-    });
-    document.addEventListener('focusout', () => { focusEl = null; });
-    if (!reduce) {
-      const eyeLoop = () => {
-        ex += (tx - ex) * 0.16;
-        ey += (ty - ey) * 0.16;
-        look.setAttribute('transform', 'translate(' + ex.toFixed(2) + ' ' + ey.toFixed(2) + ')');
-        requestAnimationFrame(eyeLoop);
-      };
-      requestAnimationFrame(eyeLoop);
-      const blink = () => {
-        eyes.classList.add('blink');
-        setTimeout(() => eyes.classList.remove('blink'), 140);
-        setTimeout(blink, 2200 + Math.random() * 3800);
-      };
-      setTimeout(blink, 2600);
-    }
-    btn.addEventListener('pointerenter', () => bot.classList.add('is-happy'));
-    btn.addEventListener('pointerleave', () => bot.classList.remove('is-happy'));
-
-    let saidAt = 0;
-    const say = (msg) => {
-      if (open || !msg) return;
-      bubble.textContent = msg;
-      bubble.classList.add('is-on');
-      bot.classList.add('is-talking');
-      setTimeout(() => bot.classList.remove('is-talking'), 1400);
-      saidAt = window.scrollY;
-      clearTimeout(hideT);
-      hideT = setTimeout(() => bubble.classList.remove('is-on'), 5600);
-    };
-    // подсказка не мешает читать: прячется, как только человек листает дальше
-    window.addEventListener('scroll', () => {
-      if (bubble.classList.contains('is-on') && Math.abs(window.scrollY - saidAt) > 260) bubble.classList.remove('is-on');
-    }, { passive: true });
-    const said = new Set();
-    const sections = $$('[data-bot]');
-    // на телефоне приветствие на первом экране закрыло бы кнопки — бот заговорит со следующего раздела
-    if (window.innerWidth < 760) { const h = $('.hero[data-bot]'); if (h) said.add(h); }
-    const sio = new IntersectionObserver((es) => {
-      es.forEach((e) => {
-        if (!e.isIntersecting || said.has(e.target)) return;
-        said.add(e.target);
-        say(e.target.dataset.bot);
-      });
-    }, { threshold: 0.35 });
-    const startTalking = () => setTimeout(() => sections.forEach((s) => sio.observe(s)), 1800);
-    if (root.classList.contains('is-ready')) startTalking();
-    else window.addEventListener('sc:ready', startTalking, { once: true });
-
-    const setOpen = (v) => {
-      open = v;
-      menu.hidden = !v;
-      btn.setAttribute('aria-expanded', String(v));
-      if (v) bubble.classList.remove('is-on');
-    };
-    btn.addEventListener('click', (e) => { e.stopPropagation(); setOpen(!open); });
-    bubble.addEventListener('click', () => setOpen(true));
-    document.addEventListener('click', (e) => { if (open && !bot.contains(e.target)) setOpen(false); });
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && open) setOpen(false); });
-    $$('a', menu).forEach((a) => a.addEventListener('click', () => setOpen(false)));
   }
 
   /* ---------- Калькулятор ---------- */

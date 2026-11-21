@@ -78,7 +78,7 @@
 <main id="main">
 
   <!-- ГЛАВНЫЙ ЭКРАН -->
-  <section class="hero" id="top" data-cubes-zone data-bot="Привет! Я помощник SiteCode. Листайте вниз — сайт соберётся прямо у вас на глазах.">
+  <section class="hero" id="top" data-cubes-zone>
     <canvas class="hero-sky" aria-hidden="true"></canvas>
     <div class="hero-copy">
       <h1 class="hero-title" data-split>Сайты, которые приносят заявки</h1>
@@ -99,7 +99,7 @@
   </section>
 
   <!-- ИСТОРИЯ: кубики собираются в сайт, телефон и заявку -->
-  <section class="story" id="story" data-cubes-zone aria-label="Как устроен сайт от SiteCode" data-bot="Смотрите: из кубиков собрался сайт. Дальше будет телефон и заявка.">
+  <section class="story" id="story" data-cubes-zone aria-label="Как устроен сайт от SiteCode">
     <div class="story-sticky">
       <div class="story-stage" aria-hidden="true">
         <div class="fallback-phone">
@@ -149,7 +149,7 @@
   </section>
 
   <!-- ПРИМЕРЫ: 3D-карусель, фон меняется под выбранный сайт -->
-  <section class="works" id="works" data-bot="Листайте примеры стрелками или свайпом. Любой сайт можно открыть и потыкать.">
+  <section class="works" id="works">
     <div class="marquee" aria-hidden="true">
       <div class="marquee-track">
         <span>барбершопы</span><i></i><span>кофейни</span><i></i><span>стоматологии</span><i></i><span>салоны красоты</span><i></i><span>детейлинг</span><i></i><span>магазины</span><i></i><span>учебные центры</span><i></i>
@@ -187,7 +187,7 @@
           </a>
         </article>
 
-        <article class="cf-card" data-bg="#0B5F5A" data-fg="#EFFFFC" data-ac="#5BE6D6" data-kind="Стоматология" data-name="Inzhu Dental" data-tags="3D-зуб|Отбеливание|Запись на приём" data-desc="3D-моляр превращается в имплант с чертежом размеров. Ползунок отбеливания меняет оттенок 3D-зуба, в финале — гарантия 5 лет.">
+        <article class="cf-card" data-bg="#283739" data-fg="#EFFFFC" data-ac="#9FF5EA" data-kind="Стоматология" data-name="Inzhu Dental" data-tags="Стеклянная линза|Чертёж импланта|Запись на приём" data-desc="Стеклянная линза скользит по улыбке и показывает её после отбеливания. Чертёж импланта собирается при прокрутке, ползунок отбеливает эмаль прямо на фото.">
           <a class="work-frame" href="demos/dental.html" target="_blank" rel="noopener" aria-label="Открыть демо стоматологии Inzhu Dental">
             <span class="work-bar" aria-hidden="true"><i></i><i></i><i></i><span>inzhudental.kz</span></span>
             <span class="work-screen"><img src="assets/img/works/dental.jpg" alt="" decoding="async"></span>
@@ -235,66 +235,161 @@
     </div>
   </section>
 
-  <!-- ЧТО ПОЛУЧАЕТ БИЗНЕС -->
-  <section class="benefits" id="benefits">
-    <div class="benefits-side">
+  <!-- ЧТО ПОЛУЧАЕТ БИЗНЕС: живые плитки, каждая показывает, как это работает -->
+  <section class="bento-sec" id="benefits" data-dark>
+    <div class="sec-head">
       <h2 data-split>Что получает ваш бизнес</h2>
       <p>Всё, чтобы клиент нашёл вас, понял цены и записался, не выходя из телефона.</p>
-      <a class="btn btn-blue" href="#contact" data-wa="Здравствуйте! Хочу сайт для своего бизнеса." data-magnetic>Хочу такой сайт</a>
     </div>
-    <ul class="benefit-list">
-      <li class="benefit">
-        <h3>Заявки в WhatsApp и Telegram</h3>
-        <p>Форма записи или заказа отправляет сообщение прямо вам. Без сложных программ и настроек.</p>
-      </li>
-      <li class="benefit">
-        <h3>Удобно с телефона</h3>
-        <p>Проверяем сайт на iPhone и Android, на маленьких и больших экранах.</p>
-      </li>
-      <li class="benefit">
-        <h3>Всё о бизнесе на одной странице</h3>
-        <p>Услуги и цены, фото, адрес на карте, кнопки звонка и Instagram.</p>
-      </li>
-      <li class="benefit">
-        <h3>Правки включены в стоимость</h3>
-        <p>Меняем тексты, фото и блоки, пока результат вам не понравится.</p>
-      </li>
-      <li class="benefit">
-        <h3>Все доступы остаются у вас</h3>
-        <p>После запуска передаём сайт и доступы. Вы ни от кого не зависите.</p>
-      </li>
-      <li class="benefit">
-        <h3>Видно, откуда приходят клиенты</h3>
-        <p>Подключаем аналитику: сколько людей зашло на сайт и откуда они пришли.</p>
-      </li>
-    </ul>
+    <div class="bento">
+      <article class="tile t-wa" data-spot>
+        <div class="tile-copy">
+          <h3>Заявки сразу в WhatsApp</h3>
+          <p>Клиент выбирает услугу и время, нажимает «Записаться» — сообщение уже у вас. Без программ и настроек.</p>
+        </div>
+        <div class="wa-scene" aria-hidden="true">
+          <div class="wa-form">
+            <p class="wa-form-title"><i></i>Запись онлайн</p>
+            <p class="wa-field"><span>Имя</span><b data-f="name">Айгерим</b></p>
+            <p class="wa-field"><span>Услуга</span><b data-f="service">Стрижка и укладка</b></p>
+            <p class="wa-field"><span>Когда</span><b data-f="time">Сегодня, 18:30</b></p>
+            <p class="wa-send">Записаться</p>
+          </div>
+          <div class="wa-link">
+            <svg class="wa-pipe" viewBox="0 0 200 100" preserveAspectRatio="none"><path class="wa-path" d="M0 70 C 60 70, 110 18, 200 22"/></svg>
+            <i class="wa-dot"></i>
+          </div>
+          <div class="wa-phone">
+            <div class="wa-top"><i></i><div><b>Заявки с сайта</b><small>в сети</small></div></div>
+            <div class="wa-chat" id="waChat"></div>
+            <p class="wa-count">Сегодня <b id="waCount">6</b> заявок</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="tile t-phone" data-spot>
+        <div class="tile-copy">
+          <h3>Удобно с телефона</h3>
+          <p>Проверяем сайт на iPhone и Android, на маленьких и больших экранах.</p>
+        </div>
+        <div class="mini-phone" aria-hidden="true">
+          <div class="mp-screen"><img src="assets/img/works/m-shop.jpg" alt="" loading="lazy" decoding="async"></div>
+          <i class="mp-island"></i>
+        </div>
+      </article>
+
+      <article class="tile t-page" data-spot>
+        <div class="tile-copy">
+          <h3>Всё о бизнесе на одной странице</h3>
+          <p>Услуги и цены, фото, адрес на карте, кнопки звонка и Instagram.</p>
+        </div>
+        <div class="stack" aria-hidden="true">
+          <div class="sb sb-price"><b>Услуги и цены</b><i></i><i></i><i></i></div>
+          <div class="sb sb-photo"><span></span><span></span><span></span></div>
+          <div class="sb sb-map"><em></em><b>ул. Абая, 52</b></div>
+          <div class="sb sb-btns"><span>Позвонить</span><span>Instagram</span></div>
+        </div>
+      </article>
+
+      <article class="tile t-edit" data-spot>
+        <div class="tile-copy">
+          <h3>Правки включены в стоимость</h3>
+          <p>Меняем тексты, фото и блоки, пока результат вам не понравится.</p>
+        </div>
+        <div class="editor" aria-hidden="true">
+          <p class="ed-bar"><i></i><i></i><i></i><span>Прайс</span></p>
+          <p class="ed-row">Мужская стрижка<span class="ed-val"><span id="edVal">5 000</span> ₸<i class="ed-caret"></i></span></p>
+          <p class="ed-row ed-dim">Стрижка и борода<span>8 000 ₸</span></p>
+          <p class="ed-tag">Правка <b id="edNum">№3</b> — бесплатно</p>
+        </div>
+      </article>
+
+      <article class="tile t-keys" data-spot>
+        <div class="tile-copy">
+          <h3>Все доступы остаются у вас</h3>
+          <p>После запуска передаём сайт и доступы. Вы ни от кого не зависите.</p>
+        </div>
+        <div class="keys" aria-hidden="true">
+          <p class="url"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>ваш-бизнес.kz</p>
+          <ul>
+            <li style="--k:0">Домен</li>
+            <li style="--k:1">Хостинг</li>
+            <li style="--k:2">Пароли и доступы</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="tile t-stats" data-spot>
+        <div class="tile-copy">
+          <h3>Видно, откуда приходят клиенты</h3>
+          <p>Подключаем аналитику: сколько людей зашло на сайт и откуда они пришли.</p>
+        </div>
+        <div class="bars" aria-hidden="true">
+          <p class="bars-note">Пример отчёта за месяц</p>
+          <div class="bar" style="--v:.46;--k:0"><span>Instagram</span><i></i><b>46%</b></div>
+          <div class="bar" style="--v:.31;--k:1"><span>2ГИС</span><i></i><b>31%</b></div>
+          <div class="bar" style="--v:.15;--k:2"><span>Google</span><i></i><b>15%</b></div>
+          <div class="bar" style="--v:.08;--k:3"><span>Рассылка</span><i></i><b>8%</b></div>
+        </div>
+      </article>
+
+      <article class="tile t-cta">
+        <p class="cta-big">Лендинг от <b>15 000 ₸</b> и запуск от 3 дней</p>
+        <p class="cta-sub">Покажем эскиз главного экрана бесплатно, до оплаты.</p>
+        <a class="btn btn-blue" href="#contact" data-wa="Здравствуйте! Хочу сайт для своего бизнеса." data-magnetic>Хочу такой сайт</a>
+      </article>
+    </div>
   </section>
 
   <!-- ЦЕНЫ -->
-  <section class="prices" id="prices" data-bot="Хотите, посчитаем цену вашего сайта? Калькулятор чуть ниже.">
-    <div class="prices-head">
+  <section class="prices" id="prices" data-dark>
+    <div class="sec-head">
       <h2 data-split>Цены</h2>
       <p>Без скрытых платежей: цену называем до начала работы. Оплата частями — половина перед стартом, половина после запуска.</p>
     </div>
 
     <div class="tiers">
-      <article class="tier">
-        <div class="tier-name"><h3>Лендинг</h3><p>3–5 дней</p></div>
-        <p class="tier-desc">Одна страница, которая продаёт: услуги, цены, фото, отзывы и запись в WhatsApp.</p>
+      <article class="tier is-lead" data-spot>
+        <div class="tier-top"><h3>Лендинг</h3><span class="tier-time">3–5 дней</span></div>
+        <a class="tier-shot" href="demos/barbershop.html" target="_blank" rel="noopener" aria-label="Пример лендинга — барбершоп USTARA, откроется в новой вкладке">
+          <span class="ts-bar" aria-hidden="true"><i></i><i></i><i></i><span>ustara.kz</span></span>
+          <span class="ts-screen"><img src="assets/img/works/barbershop.jpg" alt="" loading="lazy" decoding="async"></span>
+        </a>
         <p class="tier-price"><span>от</span>15 000 ₸</p>
-        <a class="btn btn-line tier-btn" href="#contact" data-wa="Здравствуйте! Хочу лендинг для бизнеса.">Хочу лендинг</a>
+        <ul class="tier-list">
+          <li>Одна страница, которая продаёт</li>
+          <li>Услуги, цены, фото и отзывы</li>
+          <li>Запись в WhatsApp</li>
+        </ul>
+        <a class="btn btn-blue tier-btn" href="#contact" data-wa="Здравствуйте! Хочу лендинг для бизнеса.">Хочу лендинг</a>
       </article>
-      <article class="tier">
-        <div class="tier-name"><h3>Корпоративный сайт</h3><p>10–14 дней</p></div>
-        <p class="tier-desc">До 10 страниц: о компании, услуги, команда, портфолио и блог.</p>
+      <article class="tier" data-spot>
+        <div class="tier-top"><h3>Корпоративный сайт</h3><span class="tier-time">10–14 дней</span></div>
+        <a class="tier-shot" href="demos/dental.html" target="_blank" rel="noopener" aria-label="Пример сайта клиники — Inzhu Dental, откроется в новой вкладке">
+          <span class="ts-bar" aria-hidden="true"><i></i><i></i><i></i><span>inzhudental.kz</span></span>
+          <span class="ts-screen"><img src="assets/img/works/dental.jpg" alt="" loading="lazy" decoding="async"></span>
+        </a>
         <p class="tier-price"><span>от</span>35 000 ₸</p>
-        <a class="btn btn-line tier-btn" href="#contact" data-wa="Здравствуйте! Хочу корпоративный сайт.">Хочу корпоративный</a>
+        <ul class="tier-list">
+          <li>До 10 страниц</li>
+          <li>О компании, услуги и команда</li>
+          <li>Портфолио и блог</li>
+        </ul>
+        <a class="btn btn-glass tier-btn" href="#contact" data-wa="Здравствуйте! Хочу корпоративный сайт.">Хочу корпоративный</a>
       </article>
-      <article class="tier">
-        <div class="tier-name"><h3>Интернет-магазин</h3><p>21–30 дней</p></div>
-        <p class="tier-desc">Каталог с фильтрами, корзина, заказ в WhatsApp или онлайн-оплата.</p>
+      <article class="tier" data-spot>
+        <div class="tier-top"><h3>Интернет-магазин</h3><span class="tier-time">21–30 дней</span></div>
+        <a class="tier-shot" href="demos/shop.html" target="_blank" rel="noopener" aria-label="Пример интернет-магазина — Ayla Store, откроется в новой вкладке">
+          <span class="ts-bar" aria-hidden="true"><i></i><i></i><i></i><span>aylastore.kz</span></span>
+          <span class="ts-screen"><img src="assets/img/works/shop.jpg" alt="" loading="lazy" decoding="async"></span>
+        </a>
         <p class="tier-price"><span>от</span>55 000 ₸</p>
-        <a class="btn btn-line tier-btn" href="#contact" data-wa="Здравствуйте! Хочу интернет-магазин.">Хочу магазин</a>
+        <ul class="tier-list">
+          <li>Каталог с фильтрами</li>
+          <li>Корзина и заказ в WhatsApp</li>
+          <li>Онлайн-оплата — по желанию</li>
+        </ul>
+        <a class="btn btn-glass tier-btn" href="#contact" data-wa="Здравствуйте! Хочу интернет-магазин.">Хочу магазин</a>
       </article>
     </div>
 
@@ -346,7 +441,7 @@
   </section>
 
   <!-- КАК РАБОТАЕМ -->
-  <section class="process" id="process">
+  <section class="process" id="process" data-dark>
     <div class="process-head">
       <h2 data-split>Как мы работаем</h2>
       <p>Четыре шага от первого сообщения до сайта, на который приходят клиенты.</p>
@@ -356,27 +451,31 @@
         <span class="step-num">1</span>
         <h3>Заявка</h3>
         <p>Пишете в WhatsApp или оставляете заявку на сайте. Задаём пару вопросов о бизнесе.</p>
+        <p class="step-chat me">Здравствуйте! Нужен сайт для кофейни ☕<small>10:02</small></p>
       </li>
       <li class="step">
         <span class="step-num">2</span>
         <h3>Эскиз</h3>
         <p>Показываем, как будет выглядеть главный экран вашего сайта. Бесплатно и до оплаты.</p>
+        <p class="step-chat">Вот главный экран вашего сайта 👇<img src="assets/img/works/coffee.jpg" alt="" loading="lazy" decoding="async"><small>SiteCode · 14:40</small></p>
       </li>
       <li class="step">
         <span class="step-num">3</span>
         <h3>Разработка</h3>
         <p>После согласования эскиза — предоплата 50%. Собираем сайт, показываем по ходу и вносим правки.</p>
+        <p class="step-chat">Сайт собран — посмотрите с телефона<small>SiteCode · день 3</small></p>
       </li>
       <li class="step">
         <span class="step-num">4</span>
         <h3>Запуск</h3>
         <p>Подключаем домен, проверяем на телефонах и передаём доступы. Остальные 50% — после запуска.</p>
+        <p class="step-chat me">Всё работает! Отправляю вторую половину 👍<small>18:15</small></p>
       </li>
     </ol>
   </section>
 
   <!-- ВОПРОСЫ -->
-  <section class="faq" id="faq" data-bot="Не нашли ответ? Нажмите на меня — напишем в WhatsApp.">
+  <section class="faq" id="faq" data-dark>
     <div class="faq-side">
       <h2 data-split>Частые вопросы</h2>
       <p>Не нашли ответ? Напишите нам в <a href="#contact" data-wa="Здравствуйте! У меня вопрос про сайт.">WhatsApp</a>.</p>
@@ -410,7 +509,7 @@
   </section>
 
   <!-- ЗАЯВКА -->
-  <section class="contact" id="contact" data-cubes-zone data-bot="Оставьте имя — ответим в WhatsApp, обычно за 30 минут.">
+  <section class="contact" id="contact" data-cubes-zone data-dark>
     <div class="contact-orb" aria-hidden="true"><span class="orb-logo-fallback">{/}</span></div>
     <div class="contact-copy">
       <h2 data-split>Давайте соберём ваш сайт</h2>
@@ -479,36 +578,9 @@
   </div>
 </footer>
 
-<!-- Помощник: глаза следят за курсором, подсказывает по разделам -->
-<div class="bot" id="bot">
-  <p class="bot-bubble" id="botBubble" role="status" aria-live="polite"></p>
-  <div class="bot-menu" id="botMenu" hidden>
-    <p>Чем помочь?</p>
-    <a href="#contact" data-wa="Здравствуйте! Хочу обсудить сайт для бизнеса.">Написать в WhatsApp</a>
-    <a href="https://t.me/Go_Lumi" target="_blank" rel="noopener">Написать в Telegram</a>
-    <a href="#calc" data-bot-close>Рассчитать цену</a>
-  </div>
-  <button class="bot-btn" id="botBtn" type="button" aria-expanded="false" aria-controls="botMenu" aria-label="Помощник SiteCode: написать нам">
-    <svg viewBox="0 0 120 120" aria-hidden="true">
-      <line x1="60" y1="22" x2="60" y2="10" stroke="#0F1733" stroke-width="4" stroke-linecap="round"/>
-      <circle class="bot-led" cx="60" cy="9" r="6" fill="#FFC233"/>
-      <rect x="10" y="22" width="100" height="74" rx="24" fill="#0F1733" stroke="#FFFFFF" stroke-width="3"/>
-      <rect x="20" y="31" width="80" height="56" rx="16" fill="#1C2C70"/>
-      <g class="bot-look">
-        <g class="bot-eyes">
-          <rect class="bot-eye" x="36" y="45" width="14" height="22" rx="7"/>
-          <rect class="bot-eye" x="70" y="45" width="14" height="22" rx="7"/>
-        </g>
-        <path class="bot-mouth" d="M53 75 q7 5 14 0" fill="none" stroke="#9FB6FF" stroke-width="3" stroke-linecap="round"/>
-      </g>
-      <rect x="48" y="96" width="24" height="8" rx="3" fill="#0F1733"/>
-      <rect x="34" y="104" width="52" height="8" rx="4" fill="#0F1733"/>
-    </svg>
-  </button>
-</div>
-
 <script src="assets/js/shader.js"></script>
 <script src="assets/js/main.js"></script>
+<script src="assets/js/bento.js"></script>
 <script type="module" src="assets/js/cubes.js"></script>
 </body>
 </html>
