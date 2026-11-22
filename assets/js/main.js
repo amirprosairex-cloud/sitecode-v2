@@ -529,7 +529,7 @@
       pages.style.setProperty('--fill', ((n - 1) / 29 * 100).toFixed(1) + '%');
 
       const items = [[type.dataset.name, Number(type.value)]];
-      if (n > 5) items.push(['Ещё страниц: ' + (n - 5), (n - 5) * 900]);
+      if (n > 1) items.push(['Ещё страниц: ' + (n - 1), (n - 1) * 900]);
       $$('.calc-extras input:checked', calc).forEach((x) => items.push([x.dataset.name, Number(x.value)]));
       const sum = items.reduce((a, it) => a + it[1], 0);
       const k = Number(urg.value);
