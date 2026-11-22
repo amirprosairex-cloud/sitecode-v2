@@ -328,8 +328,10 @@
     const S = setup(canvas, SKY_FS);
     if (!S) return;
     const { gl, u } = S;
+    // фон мягкий: на телефоне хватает меньшего разрешения, так легче держать 60 кадров рядом с кубиками
+    const maxPx = window.matchMedia('(pointer: coarse)').matches ? 2.6e5 : 4.2e5;
     const resize = () => {
-      const [W, H] = fit(canvas, gl, 4.2e5, 1);
+      const [W, H] = fit(canvas, gl, maxPx, 1);
       gl.uniform2f(u('uRes'), W, H);
       if (reduce) draw(performance.now());
     };
@@ -370,10 +372,15 @@
     new ResizeObserver(resize).observe(canvas);
     resize();
     if (reduce) return;
-    new IntersectionObserver((es) => {
-      on = es[0].isIntersecting;
+    // один фон может стоять за несколькими разделами: рисуем, пока на экране хоть один из них
+    const zones = [].concat(zone || canvas).filter(Boolean);
+    const seen = new Set();
+    const io = new IntersectionObserver((es) => {
+      es.forEach((e) => { if (e.isIntersecting) seen.add(e.target); else seen.delete(e.target); });
+      on = seen.size > 0;
       if (on && !raf) { last = performance.now(); raf = requestAnimationFrame(loop); }
-    }).observe(zone || canvas);
+    });
+    zones.forEach((z) => io.observe(z));
   }
 
   window.SCShader = { ok, intro, sky };

@@ -95,14 +95,12 @@
     bootCubes();
     window.__scReady = true;
     window.dispatchEvent(new Event('sc:ready'));
-    // живой фон первого экрана проявляется вместе с текстом; тот же фон плывёт за нижними разделами и за заявкой
-    const sky = $('.hero-sky');
-    if (sky && shader && shader.ok) {
-      shader.sky(sky, $('.hero'));
+    // живой фон проявляется вместе с текстом: один на первый экран, историю и заявку, без шва между ними; у нижних разделов свой
+    const backSky = $('#backSky');
+    if (backSky && shader && shader.ok) {
+      shader.sky(backSky, [$('.hero'), $('#story'), $('#contact')]);
       const lowerSky = $('.lower-sky');
       if (lowerSky) shader.sky(lowerSky, $('#lower'));
-      const backSky = $('#backSky');
-      if (backSky) shader.sky(backSky, $('#contact'));
     }
   }
 

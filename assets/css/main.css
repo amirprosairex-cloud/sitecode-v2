@@ -227,7 +227,7 @@ h1, h2, h3, p, dl, dd { margin: 0; }
   width: clamp(250px, calc(var(--phone-w, 280px) * 1.16), 340px);
   padding: 14px 16px 16px;
   border-radius: 22px; background: #fff; color: var(--ink);
-  box-shadow: 0 30px 60px -24px rgba(5, 10, 30, .7), 0 0 0 1px rgba(15, 23, 51, .06);
+  box-shadow: 0 30px 60px -26px rgba(15, 23, 51, .45), 0 0 0 1px rgba(15, 23, 51, .07);
   opacity: 0; transform: translate(-50%, -26px) scale(.94); transform-origin: 50% 0;
   transition: opacity .35s ease, transform .7s cubic-bezier(.2, 1.4, .3, 1);
   pointer-events: none;
@@ -271,33 +271,38 @@ h1, h2, h3, p, dl, dd { margin: 0; }
 .no-cubes .fallback-phone .fp-wa { height: 34px; background: var(--wa); }
 .no-cubes .story { --phone-cx: 72%; --phone-top: calc(50% - 250px); --phone-w: 250px; }
 
-/* ---------- Фон-сцена: на истории «гаснет свет» ---------- */
+/* ---------- Фон-сцена истории: светлая в светлой теме, тёмная в тёмной ---------- */
 .backdrop { position: fixed; inset: 0; z-index: 0; background: var(--paper); pointer-events: none; }
-/* тёмная панель поднимается вместе с верхним краем истории: текст на ней виден сразу, без пустого места */
+/* панель поднимается вместе с верхним краем истории: в светлой теме она прозрачная — за кубиками плывёт тот же живой фон,
+   что и на первом экране, и только мягко светится место, где собирается сайт; в тёмной — «гаснет свет» */
 .night {
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background: #090F2C;
   clip-path: inset(100% 0 0 0);
   will-change: clip-path;
 }
 .night::after {
   content: ""; position: absolute; inset: 0;
-  background: radial-gradient(55% 50% at var(--gx, 70%) var(--gy, 48%), rgba(68, 112, 255, .42), rgba(68, 112, 255, 0) 72%);
+  background: radial-gradient(50% 46% at var(--gx, 70%) var(--gy, 48%), rgba(255, 255, 255, .62), rgba(255, 255, 255, 0) 72%);
   opacity: var(--glow, 0);
 }
-.night-ready .story { color: #EEF2FF; }
-.night-ready .story-step p:last-child { color: rgba(226, 233, 255, .74); }
-.night-ready .story-num { color: #8FA8FF; }
-.night-ready .story-bars i { background: rgba(255, 255, 255, .16); }
-.night-ready .story-bars i::after { background: #8FA8FF; }
-.night-ready .no-cubes .fallback-phone, .night-ready.no-cubes .fallback-phone { background: #DDE4F1; }
+[data-theme="dark"] .night { background: #090F2C; }
+[data-theme="dark"] .night::after { background: radial-gradient(55% 50% at var(--gx, 70%) var(--gy, 48%), rgba(68, 112, 255, .42), rgba(68, 112, 255, 0) 72%); }
+[data-theme="dark"] .story { color: #EEF2FF; }
+[data-theme="dark"] .story-step p:last-child { color: rgba(226, 233, 255, .74); }
+[data-theme="dark"] .story-num { color: #8FA8FF; }
+[data-theme="dark"] .story-bars i { background: rgba(255, 255, 255, .16); }
+[data-theme="dark"] .story-bars i::after { background: #8FA8FF; }
+[data-theme="dark"] .no-cubes .fallback-phone, [data-theme="dark"].no-cubes .fallback-phone { background: #DDE4F1; }
+[data-theme="dark"] .lead-toast { box-shadow: 0 30px 60px -24px rgba(5, 10, 30, .7), 0 0 0 1px rgba(15, 23, 51, .06); }
+[data-theme="dark"] .anat b { box-shadow: 0 14px 30px -12px rgba(0, 0, 0, .6); }
 
 /* Подписи «из чего состоит сайт» */
 .anatomy { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .5s; }
 .anatomy.is-on { opacity: 1; }
 .no-cubes .anatomy { display: none; }
 .anatomy-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.anatomy-lines line { stroke: rgba(176, 200, 255, .75); stroke-width: 1.5; stroke-dasharray: 4 5; }
+.anatomy-lines line { stroke: rgba(46, 98, 255, .55); stroke-width: 1.5; stroke-dasharray: 4 5; }
+[data-theme="dark"] .anatomy-lines line { stroke: rgba(176, 200, 255, .75); }
 .anat i {
   position: absolute; left: var(--ax, -99px); top: var(--ay, -99px);
   width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: #fff;
@@ -308,7 +313,7 @@ h1, h2, h3, p, dl, dd { margin: 0; }
   position: absolute; left: var(--lx, -999px); top: var(--ly, -999px);
   padding: 9px 15px; border-radius: 999px; background: #fff; color: var(--ink);
   font: 600 14px/1 var(--text); white-space: nowrap;
-  box-shadow: 0 14px 30px -12px rgba(0, 0, 0, .6);
+  box-shadow: 0 14px 30px -14px rgba(15, 23, 51, .42), 0 0 0 1px rgba(15, 23, 51, .07);
   opacity: 0; transform: translate(-50%, -50%) scale(.85);
   transition: opacity .4s, transform .55s cubic-bezier(.2, 1.4, .3, 1);
   transition-delay: calc(var(--k, 0) * 110ms);
@@ -1007,9 +1012,6 @@ h1, h2, h3, p, dl, dd { margin: 0; }
 .intro-gl { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 .intro-skip { position: absolute; left: 0; right: 0; bottom: 24px; z-index: 1; text-align: center; font-size: 13px; color: rgba(255, 255, 255, .55); transition: opacity .4s; }
 .intro.is-out .intro-skip { opacity: 0; }
-
-/* ---------- Живой фон первого экрана ---------- */
-.hero-sky { position: absolute; inset: 0; z-index: 0; display: block; width: 100%; height: 100%; pointer-events: none; }
 
 /* =========================================================
    Адаптив

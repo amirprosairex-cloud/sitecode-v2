@@ -62,18 +62,27 @@ function boot() {
     m: '#8B9FDB', // приглушённый синий
     v: '#2348D6', // насыщенный синий для слова Code
     x: '#2E62FF', // скобки логотипа — зависят от темы
-    z: '#16215A'  // черта логотипа — зависит от темы
+    z: '#16215A', // черта логотипа — зависит от темы
+    f: '#16215A', // рамка телефона — зависит от темы
+    c: '#16215A', // шапка окна браузера — зависит от темы
+    o: '#16215A', // край окна по белому — зависит от темы
+    p: '#16215A'  // край окна по синему — зависит от темы
   };
   const PAL = {};
   Object.keys(HEX).forEach((k) => { PAL[k] = new THREE.Color(HEX[k]); });
-  // логотип как иконка: на светлом фоне синие скобки и тёмная черта, на ночном — белые скобки и синяя черта
-  const logoColors = () => {
+  // цвета под тему: логотип как иконка — на светлом фоне синие скобки и тёмная черта, на ночном белые скобки и синяя черта;
+  // рамки телефона и окна браузера на светлом фоне тёмные, на ночном светлые
+  const themeColors = () => {
     const dark = document.documentElement.getAttribute('data-theme') === 'dark';
     PAL.x.set(dark ? '#F4F6FB' : '#2E62FF');
     PAL.z.set(dark ? '#2E62FF' : '#16215A');
+    PAL.f.set(dark ? HEX.g : '#16215A');
+    PAL.c.set(dark ? HEX.g : '#16215A');
+    PAL.o.set(dark ? HEX.w : '#16215A');
+    PAL.p.set(dark ? HEX.b : '#16215A');
   };
-  logoColors();
-  window.addEventListener('sc:theme', logoColors);
+  themeColors();
+  window.addEventListener('sc:theme', themeColors);
 
   const small = window.innerWidth < 760;
   const N = small ? 460 : 960;
@@ -322,66 +331,68 @@ function boot() {
     };
   }
 
+  // c — шапка окна, o и p — его края (по белому и по синему): на ночном фоне они как раньше,
+  // на светлом складываются в тёмную рамку, иначе белая страница растворяется в фоне
   const BROWSER_WIDE = [
-    'g1r1y1e1g4w14g8',
-    'w1k2w14g2w1g2w1g2w1s2w2',
-    'b30',
-    'b2w11b4l11b2',
-    'b2w8b7l7s2l2b2',
-    'b17l7s2l2b2',
-    'b2l9b6l3w1l7b2',
-    'b2l6b9l2w3l4w1l1b2',
-    'b17l1w5l2w3b2',
-    'b2s5b10w11b2',
-    'b30',
-    'w30',
-    'w1l8w2l8w2l8w1',
-    'w1l8w2l3s2l3w2l8w1',
-    'w1g8w2g8w2g8w1',
-    'w1k5g3w2k5g3w2k5g3w1',
-    'w1m6g2w2m6g2w2m6g2w1',
-    'w1g8w2g8w2g8w1',
-    'w30'
+    'c1r1y1e1c4w14c8',
+    'o1k2w14g2w1g2w1g2w1s2w1o1',
+    'p1b28p1',
+    'p1b1w11b4l11b1p1',
+    'p1b1w8b7l7s2l2b1p1',
+    'p1b16l7s2l2b1p1',
+    'p1b1l9b6l3w1l7b1p1',
+    'p1b1l6b9l2w3l4w1l1b1p1',
+    'p1b16l1w5l2w3b1p1',
+    'p1b1s5b10w11b1p1',
+    'p1b28p1',
+    'o1w28o1',
+    'o1l8w2l8w2l8o1',
+    'o1l8w2l3s2l3w2l8o1',
+    'o1g8w2g8w2g8o1',
+    'o1k5g3w2k5g3w2k5g3o1',
+    'o1m6g2w2m6g2w2m6g2o1',
+    'o1g8w2g8w2g8o1',
+    'o30'
   ];
   const BROWSER_NARROW = [
-    'g1r1y1e1g2w12g4',
-    'w1k2w11g2w1g2w1s2',
-    'b22',
-    'b2w8b3l8b1',
-    'b2w6b5l4s2l2b1',
-    'b2l7b4l2w1l5b1',
-    'b2s4b7w4l1w3b1',
-    'b22',
-    'w22',
-    'w1l9w2l9w1',
-    'w1l4s2l3w2l9w1',
-    'w1k5g4w2k5g4w1',
-    'w1m7g2w2m7g2w1',
-    'w22'
+    'c1r1y1e1c2w12c4',
+    'o1k2w10g2w1g2w1s2o1',
+    'p1b20p1',
+    'p1b1w8b3l8p1',
+    'p1b1w6b5l4s2l2p1',
+    'p1b1l7b4l2w1l5p1',
+    'p1b1s4b7w4l1w3p1',
+    'p1b20p1',
+    'o1w20o1',
+    'o1l9w2l9o1',
+    'o1l4s2l3w2l9o1',
+    'o1k5g4w2k5g4o1',
+    'o1m7g2w2m7g2o1',
+    'o22'
   ];
-  // рамка телефона серебристая: история идёт на тёмном фоне
+  // f — рамка телефона, её цвет зависит от темы
   const PHONE = [
-    '.1g9.1',
-    'g1w3k3w3g1',
-    'g1w1k2w4g2g1',
-    'g1b9g1',
-    'g1b1w6b2g1',
-    'g1b1w4b4g1',
-    'g1b9g1',
-    'g1b1l6b2g1',
-    'g1b9g1',
-    'g1b1s4b4g1',
-    'g1b9g1',
-    'g1w9g1',
-    'g1w1l7w1g1',
-    'g1w1l3s2l2w1g1',
-    'g1w1l7w1g1',
-    'g1w1k5g2w1g1',
-    'g1w1m5g2w1g1',
-    'g1w9g1',
-    'g1w1e7w1g1',
-    'g1w9g1',
-    '.1g9.1'
+    '.1f9.1',
+    'f1w3k3w3f1',
+    'f1w1k2w4g2f1',
+    'f1b9f1',
+    'f1b1w6b2f1',
+    'f1b1w4b4f1',
+    'f1b9f1',
+    'f1b1l6b2f1',
+    'f1b9f1',
+    'f1b1s4b4f1',
+    'f1b9f1',
+    'f1w9f1',
+    'f1w1l7w1f1',
+    'f1w1l3s2l2w1f1',
+    'f1w1l7w1f1',
+    'f1w1k5g2w1f1',
+    'f1w1m5g2w1f1',
+    'f1w9f1',
+    'f1w1e7w1f1',
+    'f1w9f1',
+    '.1f9.1'
   ];
   // логотип {/}: x — скобки, z — черта; цвета подставляются под тему
   const LOGO = [
