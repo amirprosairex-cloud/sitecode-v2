@@ -625,6 +625,9 @@ function boot() {
     const wTop = top(worksEl);
     const cTop = top(contactEl);
     const logoAt = cTop - vh * 0.12;
+    // на широком экране логотип стоит рядом с формой, пока её листают, и уезжает, только когда показывается подвал;
+    // на телефоне он над формой, поэтому дальше рассыпается в облако
+    const logoHold = w >= 900 ? Math.max(logoAt, cTop + contactEl.offsetHeight - vh) : logoAt;
 
     // шар → слово «Code» на месте текста → окно сайта
     const code = buildCodeCells();
@@ -657,7 +660,7 @@ function boot() {
       { f: phone, at: sTop + vh * 2 },
       { f: cloud, at: wTop - vh * 0.1 },
       { f: cloud, at: cTop - vh * 0.95 },
-      { f: logo, at: logoAt }
+      { f: logo, at: logoAt, hold: logoHold }
     );
     if (w < 900) stations.push({ f: cloud, at: cTop + vh * 0.85 });
     lead.from = sTop + vh * 1.5;
@@ -786,9 +789,10 @@ function boot() {
 
     if (started && enter < 2) enter = Math.min(2, enter + dt / 1.5);
 
-    // после последней остановки логотип уезжает вместе со страницей, а не залезает под подвал
+    // логотип едет вместе с экраном, пока листают заявку, а когда показывается подвал — уезжает вместе со страницей
     const lastSt = stations[stations.length - 1];
-    const lift = B === lastSt && lastSt.f === logo && sy > lastSt.at ? (sy - lastSt.at) * view.H / view.h : 0;
+    const holdTo = lastSt.hold || lastSt.at;
+    const lift = B === lastSt && lastSt.f === logo && sy > holdTo ? (sy - holdTo) * view.H / view.h : 0;
 
     for (let i = 0; i < N; i++) {
       let sc;
